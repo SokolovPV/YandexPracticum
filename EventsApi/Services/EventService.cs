@@ -14,7 +14,7 @@ namespace EventsApi.Services
     /// </summary>
     public EventDTO? GetEvent(Guid id)
     {
-      var _event =  Events.FirstOrDefault(q => q.Id == id);
+      var _event = Events.FirstOrDefault(q => q.Id == id);
       return _event is null ? null : new EventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);
     }
 
@@ -30,13 +30,11 @@ namespace EventsApi.Services
     /// <summary>
     /// Метод добавления мероприятия
     /// </summary>
-    public void AddEvent(InputEventDTO createEventDTO)
+    public EventDTO AddEvent(InputEventDTO createEventDTO)
     {
-      Events.Add(new Event(
-        title: createEventDTO.Title,
-        description: createEventDTO.Description,
-        startAt: createEventDTO.StartAt.Value,
-        endAt: createEventDTO.EndAt.Value));
+      var _event = new Event(title: createEventDTO.Title, description: createEventDTO.Description, startAt: createEventDTO.StartAt.Value, endAt: createEventDTO.EndAt.Value));
+      Events.Add(_event);
+      return new EventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);
     }
 
     /// <summary>
@@ -49,7 +47,7 @@ namespace EventsApi.Services
         return false;
 
       _event.Title = updateEvent.Title;
-      _event.Description = updateEvent.Description; 
+      _event.Description = updateEvent.Description;
       _event.EndAt = updateEvent.EndAt.Value;
       _event.StartAt = updateEvent.StartAt.Value;
 
@@ -64,7 +62,7 @@ namespace EventsApi.Services
     /// <returns></returns>
     public bool RemoveEvent(Guid id)
     {
-      var _event =  Events.FirstOrDefault(q => q.Id == id);
+      var _event = Events.FirstOrDefault(q => q.Id == id);
       return _event is null ? false : Events.Remove(_event);
     }
   }
