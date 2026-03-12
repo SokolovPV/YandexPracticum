@@ -13,8 +13,8 @@ namespace EventsApi.Models
     /// <summary>Название мероприятия</summary>   
 		public string Title { get; set; }
 
-    /// <summary>Название мероприятия</summary>
-    public string Description { get; set; }
+    /// <summary>Описание мероприятия</summary>
+    public string? Description { get; set; }
 
     /// <summary>Дата начала мероприятия</summary>
     public DateTime StartAt { get; set; }

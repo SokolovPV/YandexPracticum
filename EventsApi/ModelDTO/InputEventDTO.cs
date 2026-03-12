@@ -7,7 +7,7 @@ namespace EventsApi.ModelDTO
   public record InputEventDTO()
   {
     /// <summary>Название мероприятия</summary>
-    [Required(ErrorMessage = "Название мероприятия обязателено для заполнения")]
+    [Required(ErrorMessage = "Название мероприятия обязательно для заполнения")]
     public string Title { get; init; }
     /// <summary>Описание мероприятия</summary>
     public string Description { get; init; }
