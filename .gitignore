@@ -2,6 +2,7 @@
 # Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
 ################################################################################
 
-/EventsApi/bin/Debug/net8.0
+/EventsApi/bin
 /EventsApi/obj
-/.vs/
+/.vs
+*.bak
