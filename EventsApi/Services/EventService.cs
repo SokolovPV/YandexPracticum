@@ -32,7 +32,7 @@ namespace EventsApi.Services
     /// </summary>
     public EventDTO AddEvent(InputEventDTO createEventDTO)
     {
-      var _event = new Event(title: createEventDTO.Title, description: createEventDTO.Description, startAt: createEventDTO.StartAt.Value, endAt: createEventDTO.EndAt.Value));
+      var _event = new Event(title: createEventDTO.Title, description: createEventDTO.Description, startAt: createEventDTO.StartAt.Value, endAt: createEventDTO.EndAt.Value);
       Events.Add(_event);
       return new EventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);
     }
