@@ -12,7 +12,7 @@ namespace EventsApi.Services
     /// <summary>
     /// Метод получения мероприятия по идентификатору
     /// </summary>
-    public EventDTO GetEvent(Guid id)
+    public EventDTO? GetEvent(Guid id)
     {
       var _event =  Events.FirstOrDefault(q => q.Id == id);
       return _event is null ? null : new EventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);

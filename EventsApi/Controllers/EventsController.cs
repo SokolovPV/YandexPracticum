@@ -18,7 +18,7 @@ namespace EventsApi.Controllers
 		/// </summary>
 		[HttpGet]
 		[Produces("application/json")]
-		[ProducesResponseType(typeof(List<Event>), StatusCodes.Status200OK)]
+		[ProducesResponseType(typeof(List<EventDTO>), StatusCodes.Status200OK)]
 		public ActionResult<List<Event>> GetEvents()
 		{
 			return Ok(_eventService.GetEvents());
