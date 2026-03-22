@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 
 /// <summary>Глобальный обработчик для перехвата исключений, если мы их не обработали в коде </summary>
@@ -26,12 +27,7 @@ public class GlobalExceptionHandlingMiddleware
 
     private async Task HandleException(HttpContext httpContext, Exception ex)
     {
-        _logger.LogError(
-            ex,
-            "Unhandled exception. Method={Method}, Path={Path}, RequestId={RequestId}",
-            httpContext.Request.Method,
-            httpContext.Request.Path,
-            httpContext.Request.Headers["x-request-id"]);
+        _logger.LogError(ex, "Необработанное исключение. Метод={Method}, Путь={Path}", httpContext.Request.Method, httpContext.Request.Path);
 
         //если заголовки были отправлены клиенту, мы не сможем их поменять
         if (httpContext.Response.HasStarted)
@@ -55,7 +51,8 @@ public class GlobalExceptionHandlingMiddleware
     private static int MapStatusCode(Exception ex)
         => ex switch
         {
-            //ValidationException ve => StatusCodes.Status400BadRequest,
+            ValidationException ve => StatusCodes.Status400BadRequest,
+            //404 Not Found для ситуаций, когда ресурс не найден;
             _ => StatusCodes.Status500InternalServerError
         };
 }
