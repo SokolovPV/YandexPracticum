@@ -6,3 +6,5 @@
 /EventsApi/obj
 /.vs
 *.bak
+/TestEventsApi/obj
+/TestEventsApi/bin
