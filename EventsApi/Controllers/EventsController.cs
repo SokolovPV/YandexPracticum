@@ -2,6 +2,7 @@
 using EventsApi.ModelDTO;
 using EventsApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace EventsApi.Controllers
 {
@@ -18,10 +19,10 @@ namespace EventsApi.Controllers
     /// </summary>
     [HttpGet]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(List<EventDTO>), StatusCodes.Status200OK)]
-    public ActionResult<List<Event>> GetEvents()
+    [ProducesResponseType(typeof(PaginatedResult), StatusCodes.Status200OK)]
+    public ActionResult<List<Event>> GetEvents(string? title, DateTime? from, DateTime? to, int? page, int? pageSize)
     {
-      return Ok(_eventService.GetEvents());
+      return Ok(_eventService.GetEvents(title, from, to, page, pageSize));
     }
 
     /// <summary>

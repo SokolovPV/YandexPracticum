@@ -5,7 +5,7 @@ namespace EventsApi.Interfaces
 {
 	public interface IEventService
 	{
-		List<EventDTO> GetEvents();
+    PaginatedResult GetEvents(string? title, DateTime? from, DateTime? to, int? page, int? pageSize);
 		EventDTO? GetEvent(Guid id);
 		EventDTO AddEvent(InputEventDTO createEventDTO);
 		bool ChangeEvent(Guid id, InputEventDTO updateEvent);
