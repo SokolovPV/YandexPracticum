@@ -1,6 +1,6 @@
 namespace TestEventsApi
 {
-  public class UnitTest1
+  public class EventServiceTests
   {
     [Fact]
     public void Test1()
