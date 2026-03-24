@@ -52,7 +52,7 @@ public class GlobalExceptionHandlingMiddleware
         => ex switch
         {
             ValidationException ve => StatusCodes.Status400BadRequest,
-            //BadHttpRequestException re => StatusCodes.Status404NotFound, //404 Not Found для ситуаций, когда ресурс не найден;
+            //NotFoundException nfe => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError
         };
 }

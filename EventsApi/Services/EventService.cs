@@ -10,7 +10,7 @@ namespace EventsApi.Services
   {
     private const int page_default = 1;
     private const int pageSize_default = 10;
-    private static List<Event> Events { get; set; } = [];
+    public static List<Event> Events { get; set; } = [];
 
     /// <summary>
     /// Метод получения мероприятия по идентификатору
@@ -31,7 +31,11 @@ namespace EventsApi.Services
     {
       var _event = Events.AsEnumerable();
       var _page = page ?? page_default;
-      var _pageSize = page ?? pageSize_default;
+      var _pageSize = pageSize ?? pageSize_default;
+      
+      // на случай если отрицательные числа номер и размер страницы
+      _page = Math.Abs(_page);
+      _pageSize = Math.Abs(_pageSize);
 
       if (!string.IsNullOrEmpty(title))
         _event = _event.Where(q => q.Title.Contains(title, comparisonType: StringComparison.CurrentCultureIgnoreCase));
@@ -71,6 +75,9 @@ namespace EventsApi.Services
     /// </summary>
     public bool ChangeEvent(Guid id, InputEventDTO updateEvent)
     {
+      if (updateEvent.StartAt > updateEvent.EndAt)
+        return false;
+
       var _event = Events.FirstOrDefault(q => q.Id == id);
       if (_event is null)
         return false;
@@ -79,7 +86,6 @@ namespace EventsApi.Services
       _event.Description = updateEvent.Description;
       _event.EndAt = updateEvent.EndAt.Value;
       _event.StartAt = updateEvent.StartAt.Value;
-
 
       return true;
     }
