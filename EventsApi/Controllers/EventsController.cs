@@ -17,6 +17,11 @@ namespace EventsApi.Controllers
     /// <summary>
     /// Метод возвращает список мероприятий
     /// </summary>
+    /// <param name="title">поиск по названию</param>
+    /// <param name="from"> события, которые начинаются не раньше указанной даты</param>
+    /// <param name="to">события, которые заканчиваются не позже указанной даты</param>
+    /// <param name="page"> страница, которую необходимо вернуть</param>
+    /// <param name="pageSize">количество элементов на странице</param>
     [HttpGet]
     [Produces("application/json")]
     [ProducesResponseType(typeof(PaginatedResult), StatusCodes.Status200OK)]
