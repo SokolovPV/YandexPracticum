@@ -79,7 +79,7 @@ namespace EventsApi.Services
     public bool ChangeEvent(Guid id, InputEventDTO updateEvent)
     {
       if (updateEvent.StartAt > updateEvent.EndAt)
-        throw new ValidationException("Дата начала мероприятия позже даты окончания.");// false;
+        throw new ValidationException("Дата начала мероприятия больше даты завершения.");// false;
 
       var _event = Events.FirstOrDefault(q => q.Id == id);
       if (_event is null)
