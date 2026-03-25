@@ -1,8 +1,8 @@
-﻿using EventsApi.Interfaces;
+﻿using EventsApi.CustomException;
+using EventsApi.Interfaces;
 using EventsApi.ModelDTO;
 using EventsApi.Models;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace EventsApi.Services
 {
@@ -18,6 +18,9 @@ namespace EventsApi.Services
     public EventDTO? GetEvent(Guid id)
     {
       var _event = Events.FirstOrDefault(q => q.Id == id);
+      if (_event == null)
+        throw new KeyNotExistException(id, "Идентификатор мероприятия не найден");
+
       return _event is null ? null : new EventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);
     }
 
@@ -32,7 +35,7 @@ namespace EventsApi.Services
       var _event = Events.AsEnumerable();
       var _page = page ?? page_default;
       var _pageSize = pageSize ?? pageSize_default;
-      
+
       // на случай если отрицательные числа номер и размер страницы
       _page = Math.Abs(_page);
       _pageSize = Math.Abs(_pageSize);
@@ -76,11 +79,11 @@ namespace EventsApi.Services
     public bool ChangeEvent(Guid id, InputEventDTO updateEvent)
     {
       if (updateEvent.StartAt > updateEvent.EndAt)
-        return false;
+        throw new ValidationException("Дата начала мероприятия позже даты окончания.");// false;
 
       var _event = Events.FirstOrDefault(q => q.Id == id);
       if (_event is null)
-        return false;
+        throw new KeyNotExistException(id, "Идентификатор мероприятия не найден.");
 
       _event.Title = updateEvent.Title;
       _event.Description = updateEvent.Description;
@@ -98,6 +101,9 @@ namespace EventsApi.Services
     public bool RemoveEvent(Guid id)
     {
       var _event = Events.FirstOrDefault(q => q.Id == id);
+      if (_event is null)
+        throw new KeyNotExistException(id, "Идентификатор мероприятия не найден.");
+
       return _event is null ? false : Events.Remove(_event);
     }
   }

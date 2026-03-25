@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using EventsApi.CustomException;
 using Microsoft.AspNetCore.Mvc;
 
 /// <summary>Глобальный обработчик для перехвата исключений, если мы их не обработали в коде </summary>
@@ -52,7 +53,7 @@ public class GlobalExceptionHandlingMiddleware
         => ex switch
         {
             ValidationException ve => StatusCodes.Status400BadRequest,
-            //NotFoundException nfe => StatusCodes.Status404NotFound,
+            KeyNotExistException kne => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError
         };
 }

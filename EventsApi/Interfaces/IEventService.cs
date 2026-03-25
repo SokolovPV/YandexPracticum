@@ -1,5 +1,4 @@
 ﻿using EventsApi.ModelDTO;
-using EventsApi.Models;
 
 namespace EventsApi.Interfaces
 {
