@@ -44,7 +44,7 @@ namespace EventsApi.Services
         _event = _event.Where(q => q.StartAt >= from);
 
       if (to.HasValue)
-        _event = _event.Where(q => q.StartAt <= to);
+        _event = _event.Where(q => q.EndAt <= to);
 
       int filteredCount = _event.Count();
       var items = _event
