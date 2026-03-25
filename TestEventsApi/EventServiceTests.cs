@@ -216,7 +216,7 @@ namespace TestEventsApi
       var invalidUpdate = new InputEventDTO
       {
         Title = "Updated Event",
-        StartAt = createdEvent.EndAt.AddHours(1),
+        StartAt = createdEvent!.EndAt.AddHours(1),
         EndAt = createdEvent.EndAt
       };
 
@@ -278,7 +278,7 @@ namespace TestEventsApi
 
       Assert.Equal(1, result.TotalItems);
       Assert.Equal("Super Event", result.Events[0].Title);
-      Assert.True(result.Events[0].StartAt >= from && result.Events[0].StartAt <= to);
+      Assert.True(result.Events[0].StartAt >= from && result.Events[0].EndAt <= to);
     }
 
     private void InitData()
@@ -289,8 +289,8 @@ namespace TestEventsApi
         {
           Title = $"New Event #{i}",
           Description = "Updated description {}",
-          StartAt = DateTime.Now.AddMinutes(1),
-          EndAt = DateTime.Now.AddMinutes(i)
+          StartAt = DateTime.Now.AddMinutes(i),
+          EndAt = DateTime.Now.AddMinutes(i+3)
         });
       }
     }
