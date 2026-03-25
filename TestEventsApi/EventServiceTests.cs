@@ -159,7 +159,7 @@ namespace TestEventsApi
     [Fact]
     public void Filter_ByDate_To()
     {
-      var to = DateTime.Now.AddDays(3);
+      var to = DateTime.Now.AddDays(4);
       _service.AddEvent(new InputEventDTO() { Title = "Updated Event", StartAt = DateTime.Now.AddHours(1), EndAt = DateTime.Now.AddDays(1) });
       _service.AddEvent(new InputEventDTO() { Title = "Updated Event", StartAt = DateTime.Now.AddHours(2), EndAt = DateTime.Now.AddDays(2) });
       _service.AddEvent(new InputEventDTO() { Title = "Updated Event", StartAt = DateTime.Now.AddHours(3), EndAt = DateTime.Now.AddDays(3) });
