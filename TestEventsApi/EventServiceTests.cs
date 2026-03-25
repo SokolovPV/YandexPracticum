@@ -103,13 +103,16 @@ namespace TestEventsApi
     /// тест:удаление существующего события
     /// </summary>
     [Fact]
-    public void RemoveEvent_Success()
+    public void RemoveEvent_Success_ThrowsKeyNotExistException()
     {
+      // удаляем мероприятие 
       var success = _service.RemoveEvent(_testEventId);
-      var result = _service.GetEvent(_testEventId);
+
+      // пытыемся получить удаленное мероприятие 
+      var exception = Assert.Throws<KeyNotExistException>(() => _service.GetEvent(_testEventId));
 
       Assert.True(success);
-      Assert.Null(result);
+      Assert.Contains("Идентификатор мероприятия не найден", exception.Message);
     }
 
     /// <summary>
