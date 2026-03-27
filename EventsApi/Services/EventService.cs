@@ -10,6 +10,8 @@ namespace EventsApi.Services
   {
     private const int page_default = 1;
     private const int pageSize_default = 10;
+    private const string key_not_found_exception = "Идентификатор мероприятия не найден.";
+    private const string dateFrom_more_dateTo_exception = "Дата начала мероприятия больше даты завершения.";
     public static List<Event> Events { get; set; } = [];
 
     /// <summary>
@@ -19,9 +21,9 @@ namespace EventsApi.Services
     {
       var _event = Events.FirstOrDefault(q => q.Id == id);
       if (_event == null)
-        throw new KeyNotExistException(id, "Идентификатор мероприятия не найден");
+        throw new KeyNotExistException(id, key_not_found_exception);
 
-      return _event is null ? null : new EventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);
+      return new EventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);
     }
 
     /// <summary> Метод получения мероприятий </summary>
@@ -36,7 +38,10 @@ namespace EventsApi.Services
       var _page = page ?? page_default;
       var _pageSize = pageSize ?? pageSize_default;
 
-      // на случай если отрицательные числа номер и размер страницы
+      if(_page == 0 || _page > 1000 || _pageSize == 0 || _pageSize > 1000)
+        throw new ValidationException("Некорректные значения для пагинации.");
+
+        // на случай если отрицательные числа номер и размер страницы
       _page = Math.Abs(_page);
       _pageSize = Math.Abs(_pageSize);
 
@@ -68,6 +73,9 @@ namespace EventsApi.Services
     /// </summary>
     public EventDTO AddEvent(InputEventDTO createEventDTO)
     {
+      if (createEventDTO.StartAt > createEventDTO.EndAt)
+        throw new ValidationException(dateFrom_more_dateTo_exception);// false;
+
       var _event = new Event(title: createEventDTO.Title, description: createEventDTO.Description, startAt: createEventDTO.StartAt.Value, endAt: createEventDTO.EndAt.Value);
       Events.Add(_event);
       return new EventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);
@@ -79,11 +87,11 @@ namespace EventsApi.Services
     public bool ChangeEvent(Guid id, InputEventDTO updateEvent)
     {
       if (updateEvent.StartAt > updateEvent.EndAt)
-        throw new ValidationException("Дата начала мероприятия больше даты завершения.");// false;
+        throw new ValidationException(dateFrom_more_dateTo_exception);// false;
 
       var _event = Events.FirstOrDefault(q => q.Id == id);
       if (_event is null)
-        throw new KeyNotExistException(id, "Идентификатор мероприятия не найден.");
+        throw new KeyNotExistException(id, key_not_found_exception);
 
       _event.Title = updateEvent.Title;
       _event.Description = updateEvent.Description;
@@ -102,9 +110,9 @@ namespace EventsApi.Services
     {
       var _event = Events.FirstOrDefault(q => q.Id == id);
       if (_event is null)
-        throw new KeyNotExistException(id, "Идентификатор мероприятия не найден.");
+        throw new KeyNotExistException(id, key_not_found_exception);
 
-      return _event is null ? false : Events.Remove(_event);
+      return Events.Remove(_event);
     }
   }
 }
