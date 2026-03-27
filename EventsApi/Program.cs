@@ -16,13 +16,12 @@ namespace EventsApi
 				{
 					options.ValidateOnBuild = true;
 					options.ValidateScopes = true;
-        });
+				});
 			}
 
 			builder.Services.AddControllers();
 			builder.Services.AddSwaggerGen(options =>
 			{
-				// Путь к XML-файлу с документацией
 				var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
 				var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 				options.IncludeXmlComments(xmlPath);
@@ -30,12 +29,12 @@ namespace EventsApi
 			builder.Services.AddScoped<IEventService, EventService>();
 
 			var app = builder.Build();
+			app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 			if (app.Environment.IsDevelopment())
 			{
 				app.UseSwagger();
-				app.UseSwaggerUI();				
+				app.UseSwaggerUI();
 			}
-
 			app.MapControllers();
 			app.Run();
 		}
