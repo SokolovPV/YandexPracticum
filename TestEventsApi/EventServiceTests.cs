@@ -1,7 +1,6 @@
 using EventsApi.CustomException;
 using EventsApi.ModelDTO;
 using EventsApi.Services;
-using NuGet.Frameworks;
 using System.ComponentModel.DataAnnotations;
 
 namespace TestEventsApi
