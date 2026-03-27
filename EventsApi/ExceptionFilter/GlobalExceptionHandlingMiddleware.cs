@@ -42,7 +42,8 @@ public class GlobalExceptionHandlingMiddleware
         var error = new ProblemDetails
         {
             Status = statusCode,
-            Detail = ex.Message
+            Detail = ex.Message,
+            Title = MapTitle(ex)
         };
 
         await httpContext.Response.WriteAsJsonAsync(error);
@@ -56,4 +57,12 @@ public class GlobalExceptionHandlingMiddleware
             KeyNotExistException kne => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError
         };
+
+    private static string MapTitle(Exception ex)
+      => ex switch
+      {
+        ValidationException ve => "Validation Failed",
+        KeyNotExistException kne => "Invalid Identifier",
+        _ => "Unknown Error"
+      };
 }
