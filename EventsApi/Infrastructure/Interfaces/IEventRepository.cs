@@ -1,5 +1,4 @@
 ﻿using EventsApi.Models.Domain;
-using System.Linq.Expressions;
 
 namespace EventsApi.Infrastructure.Interfaces
 {
@@ -8,9 +7,9 @@ namespace EventsApi.Infrastructure.Interfaces
         /// <summary>
         /// Добавление события в репозиторий
         /// </summary>
-        /// <param name="event">Само событие</param>
+        /// <param name="_event">Само событие</param>
         /// <param name="ct">Токен отмены</param>
-        Task AddAsync(Event @event, CancellationToken ct);
+        Task AddAsync(Event _event, CancellationToken ct);
 
         /// <summary>
         /// Удаление события из репозитория
@@ -29,9 +28,9 @@ namespace EventsApi.Infrastructure.Interfaces
         /// <summary>
         /// Обновление события
         /// </summary>
-        /// <param name="event">Само событие</param>
+        /// <param name="_event">Само событие</param>
         /// <param name="ct">Токен отмены</param>
-        Task UpdateAsync(Event @event, CancellationToken ct);
+        Task UpdateAsync(Event _event, CancellationToken ct);
 
 
         /// <summary>
@@ -41,13 +40,13 @@ namespace EventsApi.Infrastructure.Interfaces
         /// <param name="page">Номер страницы с данными для возврата</param>
         /// <param name="pageSize">Количество элементов на странице</param>
         /// <param name="ct">Токен отмены</param>
-        List<Event> ListAsync(Expression<Func<Event, bool>> query, int page, int pageSize, CancellationToken ct);
+        List<Event> ListAsync(Func<Event, bool> query, int page, int pageSize, CancellationToken ct);
 
         /// <summary>
         /// Получение количества элементов в базе по фильтру
         /// </summary>
         /// <param name="query">Предикат для фильтрации событий</param>
         /// <param name="ct">Токен отмены</param>
-        Task<int> CountAsync(Expression<Func<Event, bool>> query, CancellationToken ct);
+        Task<int> CountAsync(Func<Event, bool> query, CancellationToken ct);
     }
 }
