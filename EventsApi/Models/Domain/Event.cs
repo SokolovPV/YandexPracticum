@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EventsApi.Models
+namespace EventsApi.Models.Domain
 {
   /// <summary>
   /// Модель мероприятия

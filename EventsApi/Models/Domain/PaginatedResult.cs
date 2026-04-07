@@ -1,4 +1,6 @@
-﻿namespace EventsApi.ModelDTO
+﻿using EventsApi.Models.ModelDTO;
+
+namespace EventsApi.Models.Domain
 {
   /// <summary>
   /// Модель ответа со списком мероприятий 

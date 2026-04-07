@@ -1,6 +1,6 @@
-﻿using EventsApi.Interfaces;
-using EventsApi.ModelDTO;
-using EventsApi.Models;
+﻿using EventsApi.Application.Interfaces;
+using EventsApi.Models.Domain;
+using EventsApi.Models.ModelDTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 

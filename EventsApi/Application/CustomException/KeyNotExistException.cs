@@ -1,4 +1,4 @@
-﻿namespace EventsApi.CustomException
+﻿namespace EventsApi.Application.CustomException
 {
   public class KeyNotExistException : Exception
   {

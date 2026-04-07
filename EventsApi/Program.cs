@@ -1,6 +1,6 @@
 
-using EventsApi.Interfaces;
-using EventsApi.Services;
+using EventsApi.Application.Interfaces;
+using EventsApi.Application.Services;
 using System.Reflection;
 
 namespace EventsApi

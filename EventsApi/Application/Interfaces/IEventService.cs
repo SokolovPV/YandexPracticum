@@ -1,6 +1,7 @@
-﻿using EventsApi.ModelDTO;
+﻿using EventsApi.Models.Domain;
+using EventsApi.Models.ModelDTO;
 
-namespace EventsApi.Interfaces
+namespace EventsApi.Application.Interfaces
 {
 	public interface IEventService
 	{

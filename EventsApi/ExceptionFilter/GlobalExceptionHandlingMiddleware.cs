@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using EventsApi.CustomException;
+using EventsApi.Application.CustomException;
 using Microsoft.AspNetCore.Mvc;
 
 /// <summary>Глобальный обработчик для перехвата исключений, если мы их не обработали в коде </summary>

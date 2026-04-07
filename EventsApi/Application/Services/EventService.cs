@@ -1,10 +1,10 @@
-﻿using EventsApi.CustomException;
-using EventsApi.Interfaces;
-using EventsApi.ModelDTO;
-using EventsApi.Models;
+﻿using EventsApi.Application.Interfaces;
+using EventsApi.CustomException;
+using EventsApi.Models.Domain;
+using EventsApi.Models.ModelDTO;
 using System.ComponentModel.DataAnnotations;
 
-namespace EventsApi.Services
+namespace EventsApi.Application.Services
 {
   public class EventService : IEventService
   {

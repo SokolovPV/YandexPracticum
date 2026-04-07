@@ -1,4 +1,4 @@
-﻿namespace EventsApi.ModelDTO
+﻿namespace EventsApi.Models.ModelDTO
 {
   /// <summary>
   /// Модель для отображения мероприятия
