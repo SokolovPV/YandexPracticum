@@ -36,7 +36,7 @@ namespace EventsApi.Controllers
     /// <param name="id">Параметр идентификатор мероприятия</param>
     [HttpGet("{id:Guid}")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(EventDTO), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResponceEventDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult GetEventById(Guid id)
     {

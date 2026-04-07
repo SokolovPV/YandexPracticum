@@ -8,7 +8,7 @@
   /// <param name="PageSize">количество мероприятий на текущей странице</param>
   /// <param name="TotalItems">общее количество мероприятий</param>
   public record PaginatedResult(
-    List<EventDTO> Events,
+    List<ResponceEventDTO> Events,
     int Page,
     int PageSize,
     int TotalItems);
