@@ -1,7 +1,7 @@
 ﻿using EventsApi.Application.Interfaces;
 using EventsApi.CustomException;
 using EventsApi.Models.Domain;
-using EventsApi.Models.ModelDTO;
+using EventsApi.Models.ModelDTO.Event;
 using System.ComponentModel.DataAnnotations;
 
 namespace EventsApi.Application.Services

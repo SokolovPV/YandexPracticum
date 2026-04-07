@@ -1,5 +1,4 @@
-﻿using EventsApi.Models.Domain;
-using EventsApi.Models.ModelDTO;
+﻿using EventsApi.Models.ModelDTO.Event;
 
 namespace EventsApi.Application.Interfaces
 {

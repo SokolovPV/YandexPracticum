@@ -15,6 +15,7 @@
   <ItemGroup>
     <Folder Include="Infrastructure\Repository\" />
     <Folder Include="Infrastructure\Interfaces\" />
+    <Folder Include="Models\ModelDTO\Booking\" />
   </ItemGroup>
 
 </Project>

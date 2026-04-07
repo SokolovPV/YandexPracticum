@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EventsApi.Models.ModelDTO
+namespace EventsApi.Models.ModelDTO.Event
 {
   [DateValidation]
   /// <summary>Модель данных для создания мероприятия </summary>
