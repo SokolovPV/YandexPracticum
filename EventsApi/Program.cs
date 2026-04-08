@@ -1,7 +1,9 @@
-
+using System.Reflection;
 using EventsApi.Application.Interfaces;
 using EventsApi.Application.Services;
-using System.Reflection;
+using EventsApi.ExceptionFilter;
+using EventsApi.Infrastructure.Interfaces;
+using EventsApi.Infrastructure.Repository;
 
 namespace EventsApi
 {
@@ -26,7 +28,14 @@ namespace EventsApi
 				var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 				options.IncludeXmlComments(xmlPath);
 			});
+
+			builder.Services.AddSingleton<IEventRepository, InMemoryEventRepository>();
+			builder.Services.AddSingleton<IBookingRepository, InMemoryBookingRepository>();
+
 			builder.Services.AddScoped<IEventService, EventService>();
+			builder.Services.AddScoped<IBookingService, BookingService>();
+
+			builder.Services.AddHostedService<BookingBackgroundService>();
 
 			var app = builder.Build();
 			app.UseMiddleware<GlobalExceptionHandlingMiddleware>();

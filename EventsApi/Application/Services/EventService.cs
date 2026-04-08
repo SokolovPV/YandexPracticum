@@ -1,118 +1,108 @@
-﻿using EventsApi.Application.Interfaces;
-using EventsApi.CustomException;
+﻿using System.ComponentModel.DataAnnotations;
+using EventsApi.Application.CustomException;
+using EventsApi.Application.Interfaces;
+using EventsApi.Infrastructure.Interfaces;
 using EventsApi.Models.Domain;
 using EventsApi.Models.ModelDTO.Event;
-using System.ComponentModel.DataAnnotations;
-
-namespace EventsApi.Application.Services
+namespace EventsApi.Application.Services;
+/// <summary>
+/// Сервис для работы с событиями
+/// </summary>
+public class EventService(IEventRepository _repository, ILogger<EventService> _logger) : IEventService
 {
-  public class EventService : IEventService
-  {
-    private const int page_default = 1;
-    private const int pageSize_default = 10;
     private const string key_not_found_exception = "Идентификатор мероприятия не найден.";
     private const string dateFrom_more_dateTo_exception = "Дата начала мероприятия больше даты завершения.";
-    public static List<Event> Events { get; set; } = [];
 
-    /// <summary>
-    /// Метод получения мероприятия по идентификатору
-    /// </summary>
-    public EventDTO? GetEvent(Guid id)
+    /// <inheritdoc/>
+    public async Task<ResponseEventDTO> AddEventAsync(InputEventDTO createEventDTO, CancellationToken ct)
     {
-      var _event = Events.FirstOrDefault(q => q.Id == id);
-      if (_event == null)
-        throw new KeyNotExistException(id, key_not_found_exception);
+        if (createEventDTO.StartAt > createEventDTO.EndAt)
+            throw new ValidationException(dateFrom_more_dateTo_exception);// false;
 
-      return new EventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);
+        var _event = new Event(
+            title: createEventDTO.Title,
+            description: createEventDTO.Description,
+            startAt: createEventDTO.StartAt.Value,
+            endAt: createEventDTO.EndAt.Value);
+        await _repository.AddAsync(_event, ct);
+        _logger.LogInformation("Событие создано. Идентификатор события: {EventId}", _event.Id);
+        return new ResponseEventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);
     }
 
-    /// <summary> Метод получения мероприятий </summary>
-    /// <param name="title"> поиск по названию </param>
-    /// <param name="from">события, которые начинаются не раньше указанной даты</param>
-    /// <param name="to">события, которые заканчиваются не позже указанной даты</param>
-    /// <param name="page">страница, которую необходимо вернуть</param>
-    /// <param name="pageSize">количество элементов на странице</param>
-    public PaginatedResult GetEvents(string? title, DateTime? from, DateTime? to, int? page, int? pageSize)
+    /// <inheritdoc/>
+    public async Task<ResponseEventDTO?> GetEventAsync(Guid eventId, CancellationToken ct)
     {
-      var _event = Events.AsEnumerable();
-      var _page = page ?? page_default;
-      var _pageSize = pageSize ?? pageSize_default;
+        ct.ThrowIfCancellationRequested();
 
-      if(_page == 0 || _page > 1000 || _pageSize == 0 || _pageSize > 1000)
-        throw new ValidationException("Некорректные значения для пагинации.");
+        var _event = await _repository.GetByIdAsync(eventId, ct);
+        if (_event == null)
+            throw new KeyNotExistException(eventId, key_not_found_exception);
 
-        // на случай если отрицательные числа номер и размер страницы
-      _page = Math.Abs(_page);
-      _pageSize = Math.Abs(_pageSize);
-
-      if (!string.IsNullOrEmpty(title))
-        _event = _event.Where(q => q.Title.Contains(title, comparisonType: StringComparison.CurrentCultureIgnoreCase));
-
-      if (from.HasValue)
-        _event = _event.Where(q => q.StartAt >= from);
-
-      if (to.HasValue)
-        _event = _event.Where(q => q.EndAt <= to);
-
-      int filteredCount = _event.Count();
-      var items = _event
-         .Skip((_page - 1) * _pageSize)
-         .Take(_pageSize)
-         .Select(q => new EventDTO(Id: q.Id, Title: q.Title, Description: q.Description, StartAt: q.StartAt, EndAt: q.EndAt))
-         .ToList();
-
-      return new PaginatedResult(
-        Events: items,
-        Page: _page,
-        PageSize: _pageSize,
-        TotalItems: filteredCount);
+        return new ResponseEventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);
     }
 
-    /// <summary>
-    /// Метод добавления мероприятия
-    /// </summary>
-    public EventDTO AddEvent(InputEventDTO createEventDTO)
+    /// <inheritdoc/>
+    public async Task<PaginatedResult> GetEventsAsync(EventsFilter filter, CancellationToken ct)
     {
-      if (createEventDTO.StartAt > createEventDTO.EndAt)
-        throw new ValidationException(dateFrom_more_dateTo_exception);// false;
+        ct.ThrowIfCancellationRequested();
 
-      var _event = new Event(title: createEventDTO.Title, description: createEventDTO.Description, startAt: createEventDTO.StartAt.Value, endAt: createEventDTO.EndAt.Value);
-      Events.Add(_event);
-      return new EventDTO(Id: _event.Id, Title: _event.Title, Description: _event.Description, StartAt: _event.StartAt, EndAt: _event.EndAt);
+        _logger.LogInformation("Получение событий с пагинацией. Страница: {Page}, Фильтр: {Filter}", filter.page, filter.title);
+
+        //формируем  фильтр по рараметрам из запроса
+        Func<Event, bool> query = e =>
+        (string.IsNullOrEmpty(filter.title) || e.Title.Contains(filter.title, StringComparison.OrdinalIgnoreCase)) &&
+        (!filter.from.HasValue || e.StartAt >= filter.from) &&
+        (!filter.to.HasValue || e.EndAt <= filter.to);
+
+
+        int filteredCount = await _repository.CountAsync(query, ct);
+        var events = await _repository.ListAsync(query, filter.page, filter.pageSize, ct);
+
+        return new PaginatedResult(
+          Events: events.Select(q => new ResponseEventDTO(Id: q.Id, Title: q.Title, Description: q.Description, StartAt: q.StartAt, EndAt: q.EndAt)).ToList(),
+          Page: filter.page,
+          PageSize: filter.pageSize,
+          TotalItems: filteredCount);
     }
 
-    /// <summary>
-    /// Метод изменения мероприятия
-    /// </summary>
-    public bool ChangeEvent(Guid id, InputEventDTO updateEvent)
+    /// <inheritdoc/>
+    public async Task ChangeEventAsync(Guid eventId, InputEventDTO updateEvent, CancellationToken ct)
     {
-      if (updateEvent.StartAt > updateEvent.EndAt)
-        throw new ValidationException(dateFrom_more_dateTo_exception);// false;
+        ct.ThrowIfCancellationRequested();
+        _logger.LogInformation("Обновление события {eventId}", eventId);
+        if (updateEvent.StartAt.HasValue && updateEvent.EndAt.HasValue &&
+            updateEvent.StartAt > updateEvent.EndAt)
+        {
+            _logger.LogError(dateFrom_more_dateTo_exception);
+            throw new ValidationException(dateFrom_more_dateTo_exception);// false;
+        }
 
-      var _event = Events.FirstOrDefault(q => q.Id == id);
-      if (_event is null)
-        throw new KeyNotExistException(id, key_not_found_exception);
+        var _event = await _repository.GetByIdAsync(eventId, ct);
+        if (_event is null)
+        {
+            _logger.LogError("Ошибка обновления: событие не найдено. Идентификатор ID: {eventId}", eventId);
+            throw new KeyNotExistException(eventId, key_not_found_exception);
+        }
 
-      _event.Title = updateEvent.Title;
-      _event.Description = updateEvent.Description;
-      _event.EndAt = updateEvent.EndAt.Value;
-      _event.StartAt = updateEvent.StartAt.Value;
+        _event.Title = updateEvent.Title;
+        _event.Description = updateEvent.Description;
+        _event.EndAt = updateEvent.EndAt.Value;
+        _event.StartAt = updateEvent.StartAt.Value;
 
-      return true;
+        await _repository.UpdateAsync(_event, ct);
+        _logger.LogInformation("Событие обновлено. ID: {eventId}", eventId);
     }
 
-    /// <summary>
-    /// Метод удаления мероприятия
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    public bool RemoveEvent(Guid id)
+    /// <inheritdoc/>
+    public async Task RemoveEventAsync(Guid eventId, CancellationToken ct)
     {
-      var _event = Events.FirstOrDefault(q => q.Id == id);
-      if (_event is null)
-        throw new KeyNotExistException(id, key_not_found_exception);
+        ct.ThrowIfCancellationRequested();
+        _logger.LogInformation("Удаление события ID: {eventId}", eventId);
 
-      return Events.Remove(_event);
+        if (!await _repository.DeleteAsync(eventId, ct))
+        {
+            throw new KeyNotExistException(eventId, key_not_found_exception);
+        }
+        _logger.LogInformation("Событие удалено. ID: {eventId} ", eventId);
     }
-  }
 }

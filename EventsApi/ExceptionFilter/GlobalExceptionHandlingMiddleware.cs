@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using EventsApi.Application.CustomException;
 using Microsoft.AspNetCore.Mvc;
-
-/// <summary>Глобальный обработчик для перехвата исключений, если мы их не обработали в коде </summary>
+namespace EventsApi.ExceptionFilter;
+/// <summary>
+/// Глобальный обработчик для перехвата исключений, если мы их не обработали в коде
+/// </summary>
 public class GlobalExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
@@ -61,8 +63,8 @@ public class GlobalExceptionHandlingMiddleware
     private static string MapTitle(Exception ex)
       => ex switch
       {
-        ValidationException ve => "Validation Failed",
-        KeyNotExistException kne => "Invalid Identifier",
-        _ => "Unknown Error"
+          ValidationException ve => "Validation Failed",
+          KeyNotExistException kne => "Invalid Identifier",
+          _ => "Unknown Error"
       };
 }

@@ -1,6 +1,3 @@
-using EventsApi.Application.CustomException;
-using EventsApi.Application.Services;
-using EventsApi.ModelDTO;
 using System.ComponentModel.DataAnnotations;
 
 namespace TestEventsApi

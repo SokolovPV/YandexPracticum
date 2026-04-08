@@ -1,9 +1,19 @@
-﻿namespace EventsApi.Models.Domain
+﻿namespace EventsApi.Models.Domain;
+/// <summary>
+/// Статус бронирования
+/// </summary>
+public enum BookingStatus
 {
-    public enum BookingStatus
-    {
-        Pending,
-        Confirmed,
-        Rejected
-    }
+    /// <summary>
+    ///  Бронь создана, ожидает обработки
+    /// </summary>
+    Pending,
+    /// <summary>
+    /// Бронь подтверждена
+    /// </summary>
+    Confirmed,
+    /// <summary>
+    /// Бронь отклонена
+    /// </summary>
+    Rejected
 }
