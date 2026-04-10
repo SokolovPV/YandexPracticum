@@ -1,30 +1,28 @@
 ﻿using System.ComponentModel.DataAnnotations;
+namespace EventsApi.Infrastructure.Attribute;
 
-namespace EventsApi.Infrastructure.Attribute
+[AttributeUsage(AttributeTargets.Property)]
+public class CompareDatesAttribute : ValidationAttribute
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    public class CompareDatesAttribute : ValidationAttribute
+    public string PropertyName { get; set; }
+
+    public CompareDatesAttribute(string propertyName)
     {
-        public string PropertyName { get; set; }
+        PropertyName = propertyName;
+    }
 
-        public CompareDatesAttribute(string propertyName)
-        {
-            PropertyName = propertyName;
-        }
+    protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+    {
+        var propertyInfo = validationContext.ObjectType.GetProperty(PropertyName);
+        if (propertyInfo == null)
+            return new ValidationResult($"Свойство {PropertyName} не найдено.");
 
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
-        {
-            var propertyInfo = validationContext.ObjectType.GetProperty(PropertyName);
-            if (propertyInfo == null)
-                return new ValidationResult($"Свойство {PropertyName} не найдено.");
+        var startDateValue = (DateTime)propertyInfo.GetValue(validationContext.ObjectInstance);
+        var endDateValue = (DateTime)value;
 
-            var startDateValue = (DateTime)propertyInfo.GetValue(validationContext.ObjectInstance);
-            var endDateValue = (DateTime)value;
+        if (endDateValue <= startDateValue)
+            return new ValidationResult("Дата окончания должна быть больше даты начала.");
 
-            if (endDateValue <= startDateValue)
-                return new ValidationResult("Дата окончания должна быть больше даты начала.");
-
-            return ValidationResult.Success;
-        }
+        return ValidationResult.Success;
     }
 }
