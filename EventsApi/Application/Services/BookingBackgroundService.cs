@@ -40,7 +40,7 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
             {
                 logger.LogError(ex, "Ошибка при обработке бронирования");
             }
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
         }
     }
     public override Task StopAsync(CancellationToken cancellationToken)
