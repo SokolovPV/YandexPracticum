@@ -19,6 +19,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// <param name="filter">фильтр значений</param>
   /// <param name="ct">токен отмены</param>
   [HttpGet]
+  [Tags("АПИ для событий")]
   [ProducesResponseType(typeof(PaginatedResult), StatusCodes.Status200OK)]
   public async Task<IActionResult> GetEvents([FromQuery] EventsFilter filter, CancellationToken ct)
   {
@@ -32,6 +33,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// <param name="eventId">Параметр идентификатор мероприятия</param>
   /// <param name="ct">токен отмены</param>
   [HttpGet("{eventId:Guid}")]
+  [Tags("АПИ для событий")]
   [ProducesResponseType(typeof(ResponseEventDTO), StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
   public async Task<IActionResult> GetEventById([Required] Guid eventId, CancellationToken ct)
@@ -47,6 +49,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// <param name="createEventDTO">Новое мероприятие</param>
   /// <param name="ct">токен отмены</param>
   [HttpPost]
+  [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status201Created)]
   public async Task<IActionResult> AddEvent([FromBody][Required] InputEventDTO createEventDTO, CancellationToken ct)
   {
@@ -62,6 +65,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// <param name="updateEventDto">данне для обновления</param>
   /// <param name="ct">токен отмены</param>
   [HttpPut("{eventId:Guid}")]
+  [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
   public async Task<IActionResult> UpdateEvent([Required] Guid eventId, [FromBody] InputEventDTO updateEventDto, CancellationToken ct)
@@ -77,6 +81,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// <param name="eventId">Параметр идентификатор мероприятия</param>
   /// <param name="ct">токен отмены</param>
   [HttpDelete("{eventId:Guid}")]
+  [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
   public async Task<IActionResult> DeleteEvent([Required] Guid eventId, CancellationToken ct)
@@ -90,6 +95,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// Метод для создания бронирования
   /// </summary>
   [HttpPost("{eventId:guid}/book")]
+  [Tags("АПИ для бронирования")]
   [ProducesResponseType(StatusCodes.Status202Accepted)]
   public async Task<IActionResult> AddBook([Required] Guid eventId, CancellationToken ct)
   {

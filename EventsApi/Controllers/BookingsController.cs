@@ -15,7 +15,7 @@ public class BookingsController(IBookingService bookingService, ILogger<Bookings
     /// Информация по бронированию
     /// </summary>
     [HttpGet("{bookingId:guid}")]
-    [Tags("API для бронирования")]
+    [Tags("АПИ для бронирования")]
     public async Task<IActionResult> GetBooking([Required] Guid bookingId, CancellationToken ct)
     {
         logger.LogDebug("Обработка запроса GET {methodName}. Получение информации для бронирования: {bookingId}", nameof(GetBooking), bookingId);
