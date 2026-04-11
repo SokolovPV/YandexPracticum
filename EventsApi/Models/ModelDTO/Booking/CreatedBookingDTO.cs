@@ -1,8 +1,8 @@
 namespace EventsApi.Models.ModelDTO.Booking;
 /// <summary>
-/// Модель DTO для отображения бронирования
+/// Модель DTO для отображения бронирования при создании
 /// </summary>
-public record ResponseBookingDTO()
+public record CreatedBookingDTO()
 {
     /// <summary>
     /// Идентификатор бронирования
@@ -18,4 +18,9 @@ public record ResponseBookingDTO()
     /// Статус бронирования
     /// </summary>
     public string Status { get; init; }
+
+    /// <summary>
+    /// дата и время создания брони
+    /// </summary>
+    public DateTime CreatedAt { get; init; }
 }

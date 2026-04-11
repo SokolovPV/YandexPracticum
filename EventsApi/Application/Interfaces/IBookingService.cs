@@ -1,4 +1,5 @@
-﻿using EventsApi.Models.ModelDTO.Booking;
+﻿using EventsApi.Models.Domain;
+using EventsApi.Models.ModelDTO.Booking;
 
 namespace EventsApi.Application.Interfaces;
 /// <summary>
@@ -11,7 +12,7 @@ public interface IBookingService
     /// </summary>
     /// <param name="eventId">ID события</param>
     /// <param name="ct">Токен отмены</param>
-    Task<ResponseBookingDTO> CreateBookingAsync(Guid eventId, CancellationToken ct);
+    Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken ct);
 
     /// <summary>
     /// Получение брони по идентификатору
@@ -19,5 +20,5 @@ public interface IBookingService
     /// <param name="bookingId">ID </param>
     /// <param name="ct">Токен отмены</param>
     /// <returns></returns>
-    Task<ResponseBookingDTO> GetBookingByIdAsync(Guid bookingId, CancellationToken ct);
+    Task<Booking> GetBookingByIdAsync(Guid bookingId, CancellationToken ct);
 }

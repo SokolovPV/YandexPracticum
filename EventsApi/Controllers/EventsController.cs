@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using EventsApi.Application.Interfaces;
-using EventsApi.Application.Services;
+using EventsApi.Models.ModelDTO.Booking;
 using EventsApi.Models.ModelDTO.Event;
 using Microsoft.AspNetCore.Mvc;
 namespace EventsApi.Controllers;
@@ -100,14 +100,20 @@ public class EventsController(IEventService eventService, IBookingService bookin
   public async Task<IActionResult> AddBook([Required] Guid eventId, CancellationToken ct)
   {
     logger.LogDebug("Обработка запроса POST {methodName}", nameof(AddBook));
-
-    var responseBookingDTO = await bookingService.CreateBookingAsync(eventId, ct);
+    var booking = await bookingService.CreateBookingAsync(eventId, ct);
+    var responseDto = new CreatedBookingDTO
+    {
+      Id = booking.Id,
+      Status = booking.Status.ToString(),
+      CreatedAt = booking.CreatedAt,
+      EventID = booking.EventId
+    };
 
     return AcceptedAtAction(
         actionName: "GetBooking",
         controllerName: "Bookings",
-        routeValues: new { bookingId = responseBookingDTO.Id },
-        value: responseBookingDTO
+        routeValues: new { bookingId = booking.Id },
+        value: responseDto
     );
   }
 }

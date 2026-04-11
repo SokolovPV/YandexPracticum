@@ -37,8 +37,8 @@ namespace TestEventsApi
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(BookingStatus.Pending.ToString(), result.Status);
-            Assert.Equal(eventId, result.EventID);
+            Assert.Equal(BookingStatus.Pending, result.Status);
+            Assert.Equal(eventId, result.EventId);
             repositoryMock.Verify(r => r.AddAsync(It.Is<Booking>(b => b.EventId == eventId), ct), Times.Once);
             eventServiceMock.Verify(s => s.GetEventAsync(eventId, ct), Times.Once);
         }
@@ -70,7 +70,7 @@ namespace TestEventsApi
             {
                 var result = await bookingService.CreateBookingAsync(eventId, ct);
                 createdIds.Add(result.Id);
-                returnEventId = returnEventId != result.EventID ? result.EventID : returnEventId;
+                returnEventId = returnEventId != result.EventId ? result.EventId : returnEventId;
             }
 
             // Assert
@@ -235,10 +235,10 @@ namespace TestEventsApi
             await backgroundService.StopAsync(CancellationToken.None);
 
             // Assert
-            var resultDto = await bookingService.GetBookingByIdAsync(booking.Id, CancellationToken.None);
+            var returnBooking = await bookingService.GetBookingByIdAsync(booking.Id, CancellationToken.None);
 
-            Assert.NotNull(resultDto);
-            Assert.Equal(BookingStatus.Confirmed.ToString(), resultDto.Status);
+            Assert.NotNull(returnBooking);
+            Assert.Equal(BookingStatus.Confirmed, returnBooking.Status);
 
             repositoryMock.Verify(r => r.UpdateAsync(
                 It.Is<Booking>(b => b.Id == booking.Id && b.Status == BookingStatus.Confirmed),

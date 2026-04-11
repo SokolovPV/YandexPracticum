@@ -1,7 +1,6 @@
 ﻿using EventsApi.Application.Interfaces;
-using EventsApi.Application.Services;
+using EventsApi.Models.ModelDTO.Booking;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 
 namespace EventsApi.Controllers;
@@ -16,12 +15,20 @@ public class BookingsController(IBookingService bookingService, ILogger<Bookings
     /// </summary>
     [HttpGet("{bookingId:guid}")]
     [Tags("АПИ для бронирования")]
+    [ProducesResponseType(typeof(InfoBookingDTO), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetBooking([Required] Guid bookingId, CancellationToken ct)
     {
-        logger.LogDebug("Обработка запроса GET {methodName}. Получение информации для бронирования: {bookingId}", nameof(GetBooking), bookingId);
+        logger.LogDebug("Обработка запроса GET {methodName}. Получение информации по бронированию: {bookingId}", nameof(GetBooking), bookingId);
 
-        var bookingInfo = await bookingService.GetBookingByIdAsync(bookingId, ct);
+        var booking = await bookingService.GetBookingByIdAsync(bookingId, ct);
+        var infoBookingDTO = new InfoBookingDTO(
+            Id: booking.Id,
+            EventID: booking.EventId,
+            Status: booking.Status.ToString(),
+            CreatedAt: booking.CreatedAt,
+            ProcessedAt: booking.ProcessedAt.Value
+        );
 
-        return Ok(bookingInfo);
+        return Ok(infoBookingDTO);
     }
 }
