@@ -189,16 +189,19 @@ namespace TestEventsApi
 
 
         [Fact]
-        public async Task ExecuteAsync_UpdateStatus()
+        [Trait("Category", "сервис бронирования")]
+        public async Task ExecuteAsync_UpdateStatus_Confirmed()
         {
             // Arrange
-            var repositoryMock = new Mock<IBookingRepository>();
+            var bookingRepositoryMock = new Mock<IBookingRepository>();
+            var eventRepositoryMock = new Mock<IEventRepository>();
             var loggerBgMock = new Mock<ILogger<BookingBackgroundService>>();
             var loggerSvcMock = new Mock<ILogger<BookingService>>();
             var eventServiceMock = new Mock<IEventService>();
             var scopeFactoryMock = new Mock<IServiceScopeFactory>();
             var scopeMock = new Mock<IServiceScope>();
             var serviceProviderMock = new Mock<IServiceProvider>();
+            var now = DateTime.Now;
 
             scopeFactoryMock
                 .Setup(s => s.CreateScope())
@@ -208,20 +211,31 @@ namespace TestEventsApi
                 .Returns(serviceProviderMock.Object);
             serviceProviderMock
                 .Setup(s => s.GetService(typeof(IBookingRepository)))
-                .Returns(repositoryMock.Object);
+                .Returns(bookingRepositoryMock.Object);
+            serviceProviderMock
+                .Setup(s => s.GetService(typeof(IEventRepository)))
+                .Returns(eventRepositoryMock.Object);
 
-            var booking = new Booking(Guid.NewGuid());
+            var @event = new Event(
+                    title: "тестовое событие",
+                    startAt: now,
+                    endAt: now.AddDays(1));
+            var booking = new Booking(@event.Id);
 
-            repositoryMock
+            bookingRepositoryMock
                 .Setup(r => r.ListAsync(It.IsAny<Func<Booking, bool>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<Booking> { booking });
 
-            repositoryMock
+            bookingRepositoryMock
                 .Setup(r => r.GetByIdAsync(booking.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(booking);
 
+            eventRepositoryMock
+                .Setup(r => r.GetByIdAsync(booking.EventId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(@event);
+
             var backgroundService = new BookingBackgroundService(scopeFactoryMock.Object, loggerBgMock.Object);
-            var bookingService = new BookingService(eventServiceMock.Object, repositoryMock.Object, loggerSvcMock.Object);
+            var bookingService = new BookingService(eventServiceMock.Object, bookingRepositoryMock.Object, loggerSvcMock.Object);
             using var cts = new CancellationTokenSource();
 
             // Act
@@ -240,8 +254,74 @@ namespace TestEventsApi
             Assert.NotNull(returnBooking);
             Assert.Equal(BookingStatus.Confirmed, returnBooking.Status);
 
-            repositoryMock.Verify(r => r.UpdateAsync(
+            bookingRepositoryMock.Verify(r => r.UpdateAsync(
                 It.Is<Booking>(b => b.Id == booking.Id && b.Status == BookingStatus.Confirmed),
+                It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        [Trait("Category", "сервис бронирования")]
+        public async Task ExecuteAsync_UpdateStatus_Rejected()
+        {
+            // Arrange
+            var bookingRepositoryMock = new Mock<IBookingRepository>();
+            var eventRepositoryMock = new Mock<IEventRepository>();
+            var loggerBgMock = new Mock<ILogger<BookingBackgroundService>>();
+            var loggerSvcMock = new Mock<ILogger<BookingService>>();
+            var eventServiceMock = new Mock<IEventService>();
+            var scopeFactoryMock = new Mock<IServiceScopeFactory>();
+            var scopeMock = new Mock<IServiceScope>();
+            var serviceProviderMock = new Mock<IServiceProvider>();
+            var now = DateTime.Now;
+
+            scopeFactoryMock
+                .Setup(s => s.CreateScope())
+                .Returns(scopeMock.Object);
+            scopeMock
+                .Setup(s => s.ServiceProvider)
+                .Returns(serviceProviderMock.Object);
+            serviceProviderMock
+                .Setup(s => s.GetService(typeof(IBookingRepository)))
+                .Returns(bookingRepositoryMock.Object);
+            serviceProviderMock
+                .Setup(s => s.GetService(typeof(IEventRepository)))
+                .Returns(eventRepositoryMock.Object);
+
+            var booking = new Booking(Guid.NewGuid());
+            bookingRepositoryMock
+                .Setup(r => r.ListAsync(It.IsAny<Func<Booking, bool>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<Booking> { booking });
+
+            bookingRepositoryMock
+                .Setup(r => r.GetByIdAsync(booking.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(booking);
+
+            eventRepositoryMock
+                .Setup(r => r.GetByIdAsync(booking.EventId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(() => null);
+
+            var backgroundService = new BookingBackgroundService(scopeFactoryMock.Object, loggerBgMock.Object);
+            var bookingService = new BookingService(eventServiceMock.Object, bookingRepositoryMock.Object, loggerSvcMock.Object);
+            using var cts = new CancellationTokenSource();
+            // Act
+            await backgroundService.StartAsync(cts.Token);
+
+            // Ждем 3 сек чтобы бронь успела поменять статус
+            await Task.Delay(TimeSpan.FromSeconds(3));
+
+            cts.Cancel();
+
+            await backgroundService.StopAsync(CancellationToken.None);
+
+            // Assert
+            var returnBooking = await bookingService.GetBookingByIdAsync(booking.Id, CancellationToken.None);
+
+            Assert.NotNull(returnBooking);
+            Assert.Equal(BookingStatus.Rejected, returnBooking.Status);
+
+            bookingRepositoryMock.Verify(r => r.UpdateAsync(
+                It.Is<Booking>(b => b.Id == booking.Id && b.Status == BookingStatus.Rejected),
                 It.IsAny<CancellationToken>()),
                 Times.Once);
         }

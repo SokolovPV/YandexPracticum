@@ -19,7 +19,7 @@ public class Event()
   /// <summary>Дата окончания мероприятия</summary>
   public DateTime EndAt { get; set; }
 
-  public Event(string title, string description, DateTime startAt, DateTime endAt) : this()
+  public Event(string title, DateTime startAt, DateTime endAt, string? description = default) : this()
   {
     Id = Guid.NewGuid();
     Title = title;

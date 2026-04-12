@@ -20,27 +20,42 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
             {
                 await using var scope = scopeFactory.CreateAsyncScope();
                 var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+                var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
                 Func<Booking, bool> query = e => e.Status == BookingStatus.Pending;
                 var bookings = await bookingRepository.ListAsync(query, stoppingToken);
                 foreach (var booking in bookings)
                 {
                     await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
-                    booking.Status = BookingStatus.Confirmed;
-                    booking.ProcessedAt = DateTime.UtcNow;
-                    await bookingRepository.UpdateAsync(booking, stoppingToken);
-
-                    logger.LogInformation("Обработка бронирования {currentBooking} завершена", booking.Id);
+                    try
+                    {
+                        booking.Status = BookingStatus.Confirmed;
+                        var @event = await eventRepository.GetByIdAsync(booking.EventId, stoppingToken);
+                        if (@event is null)
+                            throw new NullReferenceException($"Мероприятие {booking.EventId} удалено, создание бронирования невозможно.");
+                    }
+                    catch (NullReferenceException ex)
+                    {
+                        logger.LogWarning(ex.Message);
+                        booking.Status = BookingStatus.Rejected;
+                    }
+                    finally
+                    {
+                        booking.ProcessedAt = DateTime.UtcNow;
+                        await bookingRepository.UpdateAsync(booking, stoppingToken);
+                    }
+                    logger.LogDebug("Обработка бронирования {currentBooking} завершена", booking.Id);
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
+                logger.LogInformation("Сервис обработки бронирования завершен по требованию.");
                 break;
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Ошибка при обработке бронирования");
             }
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
         }
     }
     public override Task StopAsync(CancellationToken cancellationToken)
