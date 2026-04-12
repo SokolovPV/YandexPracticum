@@ -38,6 +38,10 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
                         logger.LogWarning(ex.Message);
                         booking.Status = BookingStatus.Rejected;
                     }
+                    catch (Exception ex)
+                    {
+                        throw; // прокидываем выше по стеку 
+                    }
                     finally
                     {
                         booking.ProcessedAt = DateTime.UtcNow;
