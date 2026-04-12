@@ -26,7 +26,7 @@ public class BookingsController(IBookingService bookingService, ILogger<Bookings
             EventID: booking.EventId,
             Status: booking.Status.ToString(),
             CreatedAt: booking.CreatedAt,
-            ProcessedAt: booking.ProcessedAt.Value
+            ProcessedAt: booking.ProcessedAt
         );
 
         return Ok(infoBookingDTO);

@@ -7,4 +7,4 @@ namespace EventsApi.Models.ModelDTO.Booking;
 /// <param name="Status">Статус бронирования</param>
 /// <param name="CreatedAt">дата и время создания брони</param>
 /// <param name="ProcessedAt">дата и время создания брони</param>
-public record InfoBookingDTO(Guid Id, Guid EventID, string Status, DateTime CreatedAt, DateTime ProcessedAt);
+public record InfoBookingDTO(Guid Id, Guid EventID, string Status, DateTime CreatedAt, DateTime? ProcessedAt);
