@@ -1,11 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
-namespace EventsApi.ModelDTO
+using EventsApi.Infrastructure.Attribute;
+namespace EventsApi.Models.ModelDTO.Event;
+/// <summary>Модель данных для создания мероприятия </summary>
+public record InputEventDTO
 {
-  [DateValidation]
-  /// <summary>Модель данных для создания мероприятия </summary>
-  public record InputEventDTO()
-  {
     /// <summary>Название мероприятия</summary>
     [Required(ErrorMessage = "Название мероприятия обязательно для заполнения")]
     public string Title { get; init; }
@@ -18,24 +16,6 @@ namespace EventsApi.ModelDTO
     /// <summary>Дата окончания мероприятия</summary>
     [Required(ErrorMessage = "Дата окончания мероприятия обязательна для заполнения")]
     [DataType(DataType.DateTime)]
+    [CompareDates(nameof(StartAt))]
     public DateTime? EndAt { get; init; }
-  }
-
-
-  public class DateValidationAttribute : ValidationAttribute
-  {
-    public override bool IsValid(object? value)
-    {
-      if (value is InputEventDTO createEventDTO)
-      {
-        if (createEventDTO.StartAt > createEventDTO.EndAt)
-        {
-          ErrorMessage = "Дата начала мероприятия больше даты завершения.";
-          return false;
-        }
-        return true;
-      }
-      return false;
-    }
-  }
 }
