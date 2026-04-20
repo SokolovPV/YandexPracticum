@@ -37,7 +37,7 @@ public interface IEventService
     /// <param name="updateEvent">Входящая модель обновления события </param>
     /// <param name="ct">Токен отмены</param>
     /// <returns></returns>
-    Task ChangeEventAsync(Guid eventId, InputEventDTO updateEvent, CancellationToken ct);
+    Task ChangeEventAsync(Guid eventId, UpdateEventDTO updateEvent, CancellationToken ct);
 
 
     /// <summary>

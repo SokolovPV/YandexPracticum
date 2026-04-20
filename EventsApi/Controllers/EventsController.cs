@@ -62,13 +62,13 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// Метод обновления даных мероприятия
   /// </summary>
   /// <param name="eventId">идентификатор мероприятия</param>
-  /// <param name="updateEventDto">данне для обновления</param>
+  /// <param name="updateEventDto">данные для обновления</param>
   /// <param name="ct">токен отмены</param>
   [HttpPut("{eventId:Guid}")]
   [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
-  public async Task<IActionResult> UpdateEvent([Required] Guid eventId, [FromBody] InputEventDTO updateEventDto, CancellationToken ct)
+  public async Task<IActionResult> UpdateEvent([Required] Guid eventId, [FromBody] UpdateEventDTO updateEventDto, CancellationToken ct)
   {
     logger.LogDebug("Обработка запроса PUT {methodName} c id: {id}", nameof(UpdateEvent), eventId);
     await eventService.ChangeEventAsync(eventId, updateEventDto, ct);

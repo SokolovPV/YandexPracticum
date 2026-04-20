@@ -70,7 +70,7 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
     }
 
     /// <inheritdoc/>
-    public async Task ChangeEventAsync(Guid eventId, InputEventDTO updateEvent, CancellationToken ct)
+    public async Task ChangeEventAsync(Guid eventId, UpdateEventDTO updateEvent, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         _logger.LogInformation("Обновление события {eventId}", eventId);

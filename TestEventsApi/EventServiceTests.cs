@@ -446,7 +446,7 @@ namespace TestEventsApi
             var nonExistentId = Guid.NewGuid();
             var ct = CancellationToken.None;
 
-            var updateDto = new InputEventDTO
+            var updateDto = new UpdateEventDTO
             {
                 Title = "Тестовое событие",
                 StartAt = DateTime.Now,
@@ -475,7 +475,7 @@ namespace TestEventsApi
             var ct = CancellationToken.None;
 
             // НЕВАЛИДНЫЕ данные: Начало (5ч) > Конец (2ч)
-            var invalidUpdateDto = new InputEventDTO
+            var invalidUpdateDto = new UpdateEventDTO
             {
                 Title = "Обновление",
                 StartAt = now.AddHours(5),
@@ -505,7 +505,7 @@ namespace TestEventsApi
             var existedEvent = Create("old title", now, now.AddHours(1), "old Description");
             var eventId = existedEvent.Id;
 
-            var updateDto = new InputEventDTO
+            var updateDto = new UpdateEventDTO
             {
                 Title = "New title",
                 StartAt = now.AddDays(1),
@@ -547,7 +547,7 @@ namespace TestEventsApi
                 .ReturnsAsync(It.IsAny<Event>());
 
             //Act  Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.ChangeEventAsync(It.IsAny<Guid>(), It.IsAny<InputEventDTO>(), cts.Token));
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.ChangeEventAsync(It.IsAny<Guid>(), It.IsAny<UpdateEventDTO>(), cts.Token));
             repositoryMock.Verify(r => r.UpdateAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
