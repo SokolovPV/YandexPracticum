@@ -23,45 +23,73 @@ namespace TestEventsApi
             var loggerMock = new Mock<ILogger<EventService>>();
             var service = new EventService(repositoryMock.Object, loggerMock.Object);
             var ct = CancellationToken.None;
-            var dto = new InputEventDTO
+            int count_seats = 10;
+            var dto = new CreateEventDTO
             {
                 Title = "Тестовое событие",
                 StartAt = DateTime.Now,
-                EndAt = DateTime.Now.AddHours(1)
+                EndAt = DateTime.Now.AddHours(1),
+                TotalSeats = count_seats
             };
             repositoryMock.Setup(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()));
 
             // Act
-            var result = await service.AddEventAsync(dto, ct);
+            var result = await service.CreateEventAsync(dto, ct);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(dto.Title, result.Title);
             Assert.Equal(dto.EndAt, result.EndAt);
             Assert.Equal(dto.StartAt, result.StartAt);
+            Assert.Equal(count_seats, result.TotalSeats);
+            Assert.Equal(count_seats, result.AvailableSeats);
             Assert.NotEqual(Guid.Empty, result.Id);
             repositoryMock.Verify(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         [Trait("Category", " создание события")]
-        public async Task CreateEvent_ThrowValidationException()
+        public async Task CreateEvent_DateFromMoreThanDateTo_ThrowValidationException()
         {
             // Arrange
             var repositoryMock = new Mock<IEventRepository>();
             var loggerMock = new Mock<ILogger<EventService>>();
             var service = new EventService(repositoryMock.Object, loggerMock.Object);
             var ct = CancellationToken.None;
-            var dto = new InputEventDTO
+            var dto = new CreateEventDTO
             {
                 Title = "Тестовое событие с невалидной моделью данных",
                 StartAt = DateTime.Now.AddHours(2),
-                EndAt = DateTime.Now.AddHours(1) // Конец позже начала
+                EndAt = DateTime.Now.AddHours(1), // Конец позже начала
+                TotalSeats = 1
             };
             repositoryMock.Setup(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()));
 
             //Act  Assert
-            await Assert.ThrowsAsync<ValidationException>(async () => await service.AddEventAsync(dto, ct));
+            await Assert.ThrowsAsync<ValidationException>(async () => await service.CreateEventAsync(dto, ct));
+            repositoryMock.Verify(r => r.AddAsync(It.IsAny<Event>(), ct), Times.Never);
+        }
+
+        [Fact]
+        [Trait("Category", " создание события")]
+        public async Task CreateEvent_TotalSeatsMoreThanRange_ThrowValidationException()
+        {
+            // Arrange
+            var repositoryMock = new Mock<IEventRepository>();
+            var loggerMock = new Mock<ILogger<EventService>>();
+            var service = new EventService(repositoryMock.Object, loggerMock.Object);
+            var ct = CancellationToken.None;
+            var dto = new CreateEventDTO
+            {
+                Title = "Тестовое событие с невалидной моделью данных",
+                StartAt = DateTime.Now.AddHours(1),
+                EndAt = DateTime.Now.AddHours(2), // Конец позже начала
+                TotalSeats = 200
+            };
+            repositoryMock.Setup(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()));
+
+            //Act  Assert
+            await Assert.ThrowsAsync<ValidationException>(async () => await service.CreateEventAsync(dto, ct));
             repositoryMock.Verify(r => r.AddAsync(It.IsAny<Event>(), ct), Times.Never);
         }
 
@@ -76,16 +104,17 @@ namespace TestEventsApi
             var service = new EventService(repositoryMock.Object, loggerMock.Object);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
-            var dto = new InputEventDTO
+            var dto = new CreateEventDTO
             {
                 Title = "Тестовое событие",
                 StartAt = DateTime.Now.AddHours(1),
-                EndAt = DateTime.Now.AddHours(2)
+                EndAt = DateTime.Now.AddHours(2),
+                TotalSeats = 1
             };
             repositoryMock.Setup(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()));
 
             // Act Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.AddEventAsync(dto, cts.Token));
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.CreateEventAsync(dto, cts.Token));
             repositoryMock.Verify(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -107,9 +136,9 @@ namespace TestEventsApi
             var ct = CancellationToken.None;
             var fakeEvents = new List<Event>
             {
-                Create("Корпоратив", now.AddHours(1),now.AddHours(2)),
-                Create("Ужин в ресторане", now.AddHours(2), now.AddHours(3)),
-                Create("Вечеринка на высшем уровне", now.AddHours(3),now.AddHours(4))
+                Event.Create("Корпоратив", now.AddHours(1),now.AddHours(2), 1),
+                Event.Create("Ужин в ресторане", now.AddHours(2), now.AddHours(3), 1),
+                Event.Create("Вечеринка на высшем уровне", now.AddHours(3),now.AddHours(4), 1)
             };
             repositoryMock
                 .Setup(r => r.CountAsync(It.IsAny<Func<Event, bool>>(), It.IsAny<CancellationToken>()))
@@ -160,9 +189,9 @@ namespace TestEventsApi
             var now = DateTime.Now;
             var fakeEvents = new List<Event>
             {
-                Create("Корпоратив", now.AddHours(1),now.AddHours(2)),
-                Create("Ужин в ресторане", now.AddHours(2), now.AddHours(3)),
-                Create("Вечеринка на высшем уровне", now.AddHours(3),now.AddHours(4))
+                Event.Create("Корпоратив", now.AddHours(1),now.AddHours(2), 1),
+                Event.Create("Ужин в ресторане", now.AddHours(2), now.AddHours(3), 1),
+                Event.Create("Вечеринка на высшем уровне", now.AddHours(3),now.AddHours(4), 1)
             };
             repositoryMock
                 .Setup(r => r.ListAsync(It.IsAny<Func<Event, bool>>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
@@ -191,9 +220,9 @@ namespace TestEventsApi
             var ct = CancellationToken.None;
             var fakeEvents = new List<Event>
             {
-                Create("Корпоратив", now.AddHours(1),now.AddHours(2)),
-                Create("Ужин в ресторане", now.AddHours(2), now.AddHours(3)),
-                Create("Вечеринка на высшем уровне", now.AddHours(3),now.AddHours(4))
+                Event.Create("Корпоратив", now.AddHours(1),now.AddHours(2), 1),
+                Event.Create("Ужин в ресторане", now.AddHours(2), now.AddHours(3), 1),
+                Event.Create("Вечеринка на высшем уровне", now.AddHours(3),now.AddHours(4), 1)
             };
             repositoryMock
                 .Setup(r => r.ListAsync(It.IsAny<Func<Event, bool>>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
@@ -223,9 +252,9 @@ namespace TestEventsApi
             var ct = CancellationToken.None;
             var fakeEvents = new List<Event>
             {
-                Create("Корпоратив", now.AddHours(1),now.AddHours(2)),
-                Create("Ужин в ресторане", now.AddHours(2), now.AddHours(3)),
-                Create("Вечеринка на высшем уровне", now.AddHours(3),now.AddHours(4))
+                Event.Create("Корпоратив", now.AddHours(1),now.AddHours(2), 1),
+                Event.Create("Ужин в ресторане", now.AddHours(2), now.AddHours(3), 1),
+                Event.Create("Вечеринка на высшем уровне", now.AddHours(3),now.AddHours(4), 1)
             };
 
             repositoryMock
@@ -258,12 +287,12 @@ namespace TestEventsApi
             // Создаем список тестовых данных, которые "якобы" есть в репозитории
             var fakeEvents = new List<Event>
             {
-                Create("Событие 1", now, now.AddHours(1)),
-                Create("Событие 2", now, now.AddHours(1)),
-                Create("Событие 3", now, now.AddHours(1)),
-                Create("Событие 4", now, now.AddHours(1)),
-                Create("Событие 5", now, now.AddHours(1)),
-                Create("Событие 6", now, now.AddHours(1))
+                Event.Create("Событие 1", now, now.AddHours(1), 1),
+                Event.Create("Событие 2", now, now.AddHours(1), 1),
+                Event.Create("Событие 3", now, now.AddHours(1), 1),
+                Event.Create("Событие 4", now, now.AddHours(1), 1),
+                Event.Create("Событие 5", now, now.AddHours(1), 1),
+                Event.Create("Событие 6", now, now.AddHours(1), 1)
             };
 
             repositoryMock
@@ -305,12 +334,12 @@ namespace TestEventsApi
             // Создаем список тестовых данных
             var fakeEvents = new List<Event>
             {
-                Create("Событие 1", targetDate, now.AddHours(5)),
-                Create("Событие 2", now.AddHours(1), now.AddHours(5)),
-                Create("Событие 3", now, now.AddHours(5)),
-                Create("Вечеринка в 10 часов", targetDate, now.AddHours(5)),
-                Create("Событие 4", now.AddHours(2), now.AddHours(5)),
-                Create("Событие 5", now.AddHours(1), now.AddHours(5))
+                Event.Create("Событие 1", targetDate, now.AddHours(5), 1),
+                Event.Create("Событие 2", now.AddHours(1), now.AddHours(5), 1),
+                Event.Create("Событие 3", now, now.AddHours(5), 1),
+                Event.Create("Вечеринка в 10 часов", targetDate, now.AddHours(5), 1),
+                Event.Create("Событие 4", now.AddHours(2), now.AddHours(5), 1),
+                Event.Create("Событие 5", now.AddHours(1), now.AddHours(5), 1)
             };
 
             Func<Event, bool> queru = q => q.Title.Contains(filter.title, StringComparison.InvariantCultureIgnoreCase) && q.StartAt >= filter.from;
@@ -349,7 +378,7 @@ namespace TestEventsApi
             cts.Cancel();
             var fakeEvents = new List<Event>
             {
-                Create("Событие", DateTime.Now.AddHours(1), DateTime.Now.AddHours(2)),
+                Event.Create("Событие", DateTime.Now.AddHours(1), DateTime.Now.AddHours(2), 1),
             };
             var filter = new EventsFilter { page = 2, pageSize = 2 };
             repositoryMock
@@ -376,7 +405,7 @@ namespace TestEventsApi
             var repositoryMock = new Mock<IEventRepository>();
             var loggerMock = new Mock<ILogger<EventService>>();
             var service = new EventService(repositoryMock.Object, loggerMock.Object);
-            var domainEvent = Create("Тестовое событие", DateTime.Now, DateTime.Now.AddHours(5));
+            var domainEvent = Event.Create("Тестовое событие", DateTime.Now, DateTime.Now.AddHours(5), 1);
             var generatedId = domainEvent.Id;
             var ct = CancellationToken.None;
             repositoryMock
@@ -451,6 +480,7 @@ namespace TestEventsApi
                 Title = "Тестовое событие",
                 StartAt = DateTime.Now,
                 EndAt = DateTime.Now.AddHours(1),
+                TotalSeats = 1
             };
             repositoryMock.Setup(r => r.GetByIdAsync(nonExistentId, It.IsAny<CancellationToken>())).ReturnsAsync((Event?)null);
 
@@ -463,14 +493,14 @@ namespace TestEventsApi
 
         [Fact]
         [Trait("Category", "обновление события")]
-        public async Task ChangeEvent_ThrowValidationException()
+        public async Task ChangeEvent_DateFromMoreThanDateTo_ThrowValidationException()
         {
             // Arrange
             var repositoryMock = new Mock<IEventRepository>();
             var loggerMock = new Mock<ILogger<EventService>>();
             var service = new EventService(repositoryMock.Object, loggerMock.Object);
             var now = DateTime.Now;
-            var existedEvent = Create("Old событие", now, now.AddHours(1));
+            var existedEvent = Event.Create("Old событие", now, now.AddHours(1), 1);
             var eventId = existedEvent.Id;
             var ct = CancellationToken.None;
 
@@ -479,7 +509,8 @@ namespace TestEventsApi
             {
                 Title = "Обновление",
                 StartAt = now.AddHours(5),
-                EndAt = now.AddHours(2)
+                EndAt = now.AddHours(2),
+                TotalSeats = 1
             };
 
             repositoryMock.Setup(r => r.GetByIdAsync(eventId, It.IsAny<CancellationToken>())).ReturnsAsync(existedEvent);
@@ -493,6 +524,37 @@ namespace TestEventsApi
 
         [Fact]
         [Trait("Category", "обновление события")]
+        public async Task ChangeEvent_TotalSeatsMoreThanRange_ThrowValidationException()
+        {
+            // Arrange
+            var repositoryMock = new Mock<IEventRepository>();
+            var loggerMock = new Mock<ILogger<EventService>>();
+            var service = new EventService(repositoryMock.Object, loggerMock.Object);
+            var now = DateTime.Now;
+            var existedEvent = Event.Create("Old событие", now, now.AddHours(1), 1);
+            var eventId = existedEvent.Id;
+            var ct = CancellationToken.None;
+
+            // НЕВАЛИДНЫЕ данные: TotalSeats < 1
+
+            var invalidUpdateDto = new UpdateEventDTO
+            {
+                Title = "Обновление",
+                StartAt = now.AddHours(1),
+                EndAt = now.AddHours(2),
+                TotalSeats = 0
+            };
+
+            repositoryMock.Setup(r => r.GetByIdAsync(eventId, It.IsAny<CancellationToken>())).ReturnsAsync(existedEvent);
+
+            // Assert
+            await Assert.ThrowsAsync<ValidationException>(async () => await service.ChangeEventAsync(eventId, invalidUpdateDto, ct));
+
+            repositoryMock.Verify(r => r.UpdateAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        [Trait("Category", "обновление события")]
         public async Task ChangeEvent_ChangeAllData_Success()
         {
             // Arrange
@@ -502,7 +564,7 @@ namespace TestEventsApi
             var now = DateTime.Now;
             var ct = CancellationToken.None;
 
-            var existedEvent = Create("old title", now, now.AddHours(1), "old Description");
+            var existedEvent = Event.Create("old title", now, now.AddHours(1), 1);
             var eventId = existedEvent.Id;
 
             var updateDto = new UpdateEventDTO
@@ -510,6 +572,7 @@ namespace TestEventsApi
                 Title = "New title",
                 StartAt = now.AddDays(1),
                 EndAt = now.AddDays(1).AddHours(2),
+                TotalSeats = 1,
                 Description = "New Description"
             };
 
@@ -615,8 +678,5 @@ namespace TestEventsApi
 
 
         #endregion
-
-        private Event Create(string Title, DateTime StartAt, DateTime EndAt, string? Description = default) =>
-            new Event { Title = Title, StartAt = StartAt, EndAt = EndAt, Description = Description };
     }
 }

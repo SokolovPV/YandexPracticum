@@ -24,7 +24,14 @@ namespace TestEventsApi
             var bookingService = new BookingService(eventServiceMock.Object, repositoryMock.Object, loggerMock.Object);
             var eventId = Guid.NewGuid();
             var ct = CancellationToken.None;
-            var eventDto = new ResponseEventDTO(Id: eventId, Title: "Test", Description: String.Empty, StartAt: DateTime.Now, EndAt: DateTime.Now.AddHours(1));
+            var eventDto = new EventInfoDTO(
+                            Id: eventId,
+                            Title: "Test",
+                            Description: String.Empty,
+                            StartAt: DateTime.Now,
+                            EndAt: DateTime.Now.AddHours(1),
+                            TotalSeats: 1,
+                            AvailableSeats: 1);
             repositoryMock
                 .Setup(r => r.AddAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()));
 
@@ -54,7 +61,14 @@ namespace TestEventsApi
             var bookingService = new BookingService(eventServiceMock.Object, repositoryMock.Object, loggerMock.Object);
             var eventId = Guid.NewGuid();
             var ct = CancellationToken.None;
-            var eventDto = new ResponseEventDTO(Id: eventId, Title: "Test Event", Description: String.Empty, StartAt: DateTime.Now, EndAt: DateTime.Now.AddHours(5));
+            var eventDto = new EventInfoDTO(
+                            Id: eventId,
+                            Title: "Test Event",
+                            Description: String.Empty,
+                            StartAt: DateTime.Now,
+                            EndAt: DateTime.Now.AddHours(5),
+                            TotalSeats: 1,
+                            AvailableSeats: 1);
             repositoryMock
                 .Setup(r => r.AddAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()));
 
@@ -216,10 +230,11 @@ namespace TestEventsApi
                 .Setup(s => s.GetService(typeof(IEventRepository)))
                 .Returns(eventRepositoryMock.Object);
 
-            var @event = new Event(
+            var @event = Event.Create(
                     title: "тестовое событие",
                     startAt: now,
-                    endAt: now.AddDays(1));
+                    endAt: now.AddDays(1),
+                    totalSeats: 1);
             var booking = new Booking(@event.Id);
 
             bookingRepositoryMock

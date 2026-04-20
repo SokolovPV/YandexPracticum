@@ -1,4 +1,5 @@
-﻿using EventsApi.Models.ModelDTO.Event;
+﻿using EventsApi.Models.Domain;
+using EventsApi.Models.ModelDTO.Event;
 
 namespace EventsApi.Application.Interfaces;
 /// <summary>
@@ -12,7 +13,7 @@ public interface IEventService
     /// <param name="createEventDTO">Входящая модель создания события</param>
     /// <param name="ct">токен отмены</param>
     /// <returns></returns>
-    Task<ResponseEventDTO> AddEventAsync(InputEventDTO createEventDTO, CancellationToken ct);
+    Task<EventInfoDTO> CreateEventAsync(CreateEventDTO createEventDTO, CancellationToken ct);
 
 
     /// <summary>
@@ -28,7 +29,7 @@ public interface IEventService
     /// </summary>
     /// <param name="eventId">ID события</param>
     /// <param name="ct">Токен отмены</param>
-    Task<ResponseEventDTO?> GetEventAsync(Guid eventId, CancellationToken ct);
+    Task<EventInfoDTO?> GetEventAsync(Guid eventId, CancellationToken ct);
 
     /// <summary>
     /// Обновление события

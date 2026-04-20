@@ -15,4 +15,7 @@ public record UpdateEventDTO
     [DataType(DataType.DateTime)]
     [CompareDates(nameof(StartAt))]
     public DateTime? EndAt { get; init; }
+
+    /// <summary> Общее количество мест на событии </summary>
+    public int? TotalSeats { get; init; }
 }
