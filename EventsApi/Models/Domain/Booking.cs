@@ -1,4 +1,6 @@
-﻿namespace EventsApi.Models.Domain;
+﻿using System.Runtime.InteropServices;
+
+namespace EventsApi.Models.Domain;
 /// <summary>
 /// Модель бронирования
 /// </summary>
@@ -31,5 +33,14 @@ public class Booking
         Status = BookingStatus.Pending;
         CreatedAt = DateTime.Now;
         EventId = eventId;
+    }
+
+    /// <summary>
+    /// Метод создания события
+    /// </summary>
+    /// <param name="eventId">идентификатор события</param>
+    public static Booking Create(Guid eventId)
+    {
+        return new Booking(eventId);
     }
 }
