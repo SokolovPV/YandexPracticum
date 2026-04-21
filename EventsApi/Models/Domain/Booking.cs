@@ -58,7 +58,7 @@ public class Booking
     /// </summary>
     public void Reject()
     {
-        Status = BookingStatus.Confirmed;
+        Status = BookingStatus.Rejected;
         ProcessedAt = DateTime.Now;
     }
 }
