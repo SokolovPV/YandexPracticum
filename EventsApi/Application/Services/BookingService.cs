@@ -15,17 +15,15 @@ public class BookingService(IEventRepository eventRepository, IBookingRepository
     {
         ct.ThrowIfCancellationRequested();
         logger.LogInformation("Создание новой брони для события: {Event}", eventId);
-
-        var _event = await eventRepository.GetByIdAsync(eventId, ct);
-        if (_event is null)
-        {
-            logger.LogError("Идентификатор мероприятия {Id} не найден.", eventId);
-            throw new KeyNotExistException(eventId, key_not_found_exception);
-        }
-
         await _semaphore.WaitAsync(ct);
         try
         {
+            var _event = await eventRepository.GetByIdAsync(eventId, ct);
+            if (_event is null)
+            {
+                logger.LogError("Идентификатор мероприятия {Id} не найден.", eventId);
+                throw new KeyNotExistException(eventId, key_not_found_exception);
+            }
             if (!_event.TryReserveSeats())
                 throw new NoAvailableSeatsException($"Для события ID={_event.Id} отстутствуют свободные места для бронирования");
 
