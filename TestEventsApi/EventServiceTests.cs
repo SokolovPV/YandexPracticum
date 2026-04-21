@@ -83,8 +83,32 @@ namespace TestEventsApi
             {
                 Title = "Тестовое событие с невалидной моделью данных",
                 StartAt = DateTime.Now.AddHours(1),
-                EndAt = DateTime.Now.AddHours(2), // Конец позже начала
-                TotalSeats = 200
+                EndAt = DateTime.Now.AddHours(2),
+                TotalSeats = 200 // больше 100
+            };
+            repositoryMock.Setup(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()));
+
+            //Act  Assert
+            await Assert.ThrowsAsync<ValidationException>(async () => await service.CreateEventAsync(dto, ct));
+            repositoryMock.Verify(r => r.AddAsync(It.IsAny<Event>(), ct), Times.Never);
+        }
+
+
+        [Fact]
+        [Trait("Category", " создание события")]
+        public async Task CreateEvent_TotalSeatsLessThanRange_ThrowValidationException()
+        {
+            // Arrange
+            var repositoryMock = new Mock<IEventRepository>();
+            var loggerMock = new Mock<ILogger<EventService>>();
+            var service = new EventService(repositoryMock.Object, loggerMock.Object);
+            var ct = CancellationToken.None;
+            var dto = new CreateEventDTO
+            {
+                Title = "Тестовое событие с невалидной моделью данных",
+                StartAt = DateTime.Now.AddHours(1),
+                EndAt = DateTime.Now.AddHours(2),
+                TotalSeats = 0 // меньше 1
             };
             repositoryMock.Setup(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()));
 
@@ -138,7 +162,7 @@ namespace TestEventsApi
             {
                 Event.Create("Корпоратив", now.AddHours(1),now.AddHours(2), 1),
                 Event.Create("Ужин в ресторане", now.AddHours(2), now.AddHours(3), 1),
-                Event.Create("Вечеринка на высшем уровне", now.AddHours(3),now.AddHours(4), 1)
+                Event.Create("Вечеринка ", now.AddHours(3),now.AddHours(4), 1)
             };
             repositoryMock
                 .Setup(r => r.CountAsync(It.IsAny<Func<Event, bool>>(), It.IsAny<CancellationToken>()))
@@ -191,7 +215,7 @@ namespace TestEventsApi
             {
                 Event.Create("Корпоратив", now.AddHours(1),now.AddHours(2), 1),
                 Event.Create("Ужин в ресторане", now.AddHours(2), now.AddHours(3), 1),
-                Event.Create("Вечеринка на высшем уровне", now.AddHours(3),now.AddHours(4), 1)
+                Event.Create("ВеЧеринкА на высшем уровне", now.AddHours(3),now.AddHours(4), 1)
             };
             repositoryMock
                 .Setup(r => r.ListAsync(It.IsAny<Func<Event, bool>>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
