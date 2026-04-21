@@ -6,8 +6,9 @@ namespace EventsApi.Application.Services;
 /// <summary>
 /// Сервис для работы с бронированием
 /// </summary>
-public class BookingService(IEventService eventService, IBookingRepository repository, ILogger<BookingService> logger) : IBookingService
+public class BookingService(IEventRepository eventRepository, IBookingRepository bookingRepository, ILogger<BookingService> logger) : IBookingService
 {
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
     private const string key_not_found_exception = "Идентификатор бронирования не найден.";
     /// <inheritdoc/>
     public async Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken ct)
@@ -15,20 +16,36 @@ public class BookingService(IEventService eventService, IBookingRepository repos
         ct.ThrowIfCancellationRequested();
         logger.LogInformation("Создание новой брони для события: {Event}", eventId);
 
-        //если событие не найдено - вернет Status404NotFound
-        await eventService.GetEventAsync(eventId, ct);
+        var _event = await eventRepository.GetByIdAsync(eventId, ct);
+        if (_event is null)
+        {
+            logger.LogError("Идентификатор мероприятия {Id} не найден.", eventId);
+            throw new KeyNotExistException(eventId, key_not_found_exception);
+        }
 
-        var newBooking = new Booking(eventId);
-        await repository.AddAsync(newBooking, ct);
-        logger.LogInformation("Бронирование создано. ID: {Id} ", newBooking.Id);
-        return newBooking;
+        await _semaphore.WaitAsync(ct);
+        try
+        {
+            if (!_event.TryReserveSeats())
+                throw new NoAvailableSeatsException($"Для события ID={_event.Id} отстутствуют свободные места для бронирования");
+
+            var newBooking = Booking.Create(eventId);
+            await bookingRepository.AddAsync(newBooking, ct);
+            await eventRepository.UpdateAsync(_event, ct);
+            logger.LogInformation("Бронирование создано. ID: {Id} ", newBooking.Id);
+            return newBooking;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
     /// <inheritdoc/>
     public async Task<Booking> GetBookingByIdAsync(Guid bookingId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         logger.LogInformation("Получение бронирования : {bookingId}", bookingId);
-        var booking = await repository.GetByIdAsync(bookingId, ct);
+        var booking = await bookingRepository.GetByIdAsync(bookingId, ct);
         if (booking is null)
             throw new KeyNotExistException(bookingId, key_not_found_exception);
         return booking;
