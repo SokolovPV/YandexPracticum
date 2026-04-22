@@ -33,7 +33,7 @@ public class Event()
       string title,
       DateTime startAt,
       DateTime endAt,
-      int totalSeats  = 1,
+      int totalSeats = 1,
       string? description = default) : this()
   {
     Id = Guid.NewGuid();
@@ -64,14 +64,14 @@ public class Event()
     return new Event(title, startAt, endAt, totalSeats, description);
   }
 
-/// <summary>
-/// Метод для занятия мест на событие
-/// </summary>
-/// <param name="count">Количество занимаемых мест</param>
-/// <returns></returns>
+  /// <summary>
+  /// Метод для занятия мест на событие
+  /// </summary>
+  /// <param name="count">Количество занимаемых мест</param>
+  /// <returns></returns>
   public bool TryReserveSeats(int count = 1)
   {
-    if (count > AvailableSeats)
+    if (count > AvailableSeats || count < 1)
       return false;
 
     AvailableSeats -= count;
@@ -83,9 +83,11 @@ public class Event()
   /// </summary>
   /// <param name="count">Количество освобождаемых мест на событие</param>
   /// <returns></returns>
-  public bool ReleaseSeats(int count = 1)
+  public void ReleaseSeats(int count = 1)
   {
-    AvailableSeats += count;
-    return true;
+    if (count + AvailableSeats >= TotalSeats)
+      AvailableSeats = TotalSeats;
+    else
+      AvailableSeats += count;
   }
 }

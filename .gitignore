@@ -8,3 +8,5 @@
 *.bak
 /TestEventsApi/obj
 /TestEventsApi/bin
+TestEventsApi/TestEventsApi.csproj.lscache
+EventsApi/EventsApi.csproj.lscache
