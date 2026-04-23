@@ -312,7 +312,6 @@ namespace TestEventsApi
 
             Assert.NotNull(returnBooking);
             Assert.Equal(BookingStatus.Confirmed, returnBooking.Status);
-            Assert.Equal(2, returnEvent!.AvailableSeats); // кол-во мест уменьшилось 
 
             bookingRepositoryMock.Verify(r => r.UpdateAsync(
                 It.Is<Booking>(b => b.Id == booking.Id && b.Status == BookingStatus.Confirmed),
@@ -429,8 +428,12 @@ namespace TestEventsApi
 
             eventRepositoryMock // эмулируем ошибку - что бы поппасть в блок catch 
                 .Setup(r => r.UpdateAsync(@event, It.IsAny<CancellationToken>()))
-                .Throws<InvalidOperationException>();
-            //.Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask);
+                //.Throws<InvalidOperationException>();
+
+            eventRepositoryMock // эмулируем ошибку - что бы поппасть в блок catch 
+                .Setup(r => r.GetByIdAsync(booking.EventId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(@event);
 
             eventRepositoryMock
                 .Setup(r => r.GetByIdAsync(booking.EventId, It.IsAny<CancellationToken>()))
@@ -439,12 +442,17 @@ namespace TestEventsApi
             var backgroundService = new BookingBackgroundService(scopeFactoryMock.Object, loggerBgMock.Object);
             var bookingService = new BookingService(eventRepositoryMock.Object, bookingRepositoryMock.Object, loggerSvcMock.Object);
             using var cts = new CancellationTokenSource();
+            await bookingService.CreateBookingAsync(@event.Id,cts.Token);
+            var AvailableSeatsBeforProcessing = @event.AvailableSeats;
+
+
 
             // Act
             await backgroundService.StartAsync(cts.Token);
 
-            // Ждем 3 сек чтобы бронь успела поменять статус
-            await Task.Delay(TimeSpan.FromSeconds(3));
+
+            // Ждем 1 сек и отменяем операцию что бы вернуть места
+            await Task.Delay(TimeSpan.FromSeconds(1));
             cts.Cancel();
 
             await backgroundService.StopAsync(CancellationToken.None);
@@ -453,6 +461,7 @@ namespace TestEventsApi
             var returnBooking = await bookingService.GetBookingByIdAsync(booking.Id, CancellationToken.None);
 
             Assert.NotNull(returnBooking);
+            Assert.Equal(2, AvailableSeatsBeforProcessing); // т.к. до catch одно место заброниловась
             Assert.Equal(BookingStatus.Rejected, returnBooking.Status);
             Assert.Equal(@event.TotalSeats, @event.AvailableSeats);
 

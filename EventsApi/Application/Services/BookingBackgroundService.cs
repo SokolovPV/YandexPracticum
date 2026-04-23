@@ -76,27 +76,21 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
 
     public async Task ProcessBookingAsync(Booking booking, CancellationToken cancellationToken)
     {
-        await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), cancellationToken);
         await using var scope = scopeFactory.CreateAsyncScope();
         var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
         var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
-        Event? _event = null;
-
+        Event? _event = await eventRepository.GetByIdAsync(booking.EventId, cancellationToken);
         try
         {
-            _event = await eventRepository.GetByIdAsync(booking.EventId, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), cancellationToken);
+
+
             if (_event is null)
             {
                 logger.LogWarning("Идентификатор мероприятия {Id} не найден.", booking.EventId);
                 booking.Reject();
                 throw new KeyNotExistException();
-            }
-
-            if (!_event.TryReserveSeats())
-            {
-                logger.LogWarning($"Для события ID={_event.Id} отстутствуют свободные места для бронирования");
-                booking.Reject();
-                throw new NoAvailableSeatsException();
             }
 
             try
@@ -114,7 +108,7 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
         catch (Exception ex)
         {
             booking.Reject();
-            if (_event != null && ex is not NoAvailableSeatsException)
+            if (_event != null)
             {
                 _event.ReleaseSeats();
                 await eventRepository.UpdateAsync(_event, cancellationToken);
@@ -123,7 +117,7 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
 
             if (ex is not OperationCanceledException)
                 logger.LogError(ex, "Ошибка при обработке бронирования {ID}", booking.Id);
-                
+
             throw;
         }
         finally
