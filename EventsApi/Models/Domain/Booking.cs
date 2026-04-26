@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace EventsApi.Models.Domain;
+﻿namespace EventsApi.Models.Domain;
 /// <summary>
 /// Модель бронирования
 /// </summary>
