@@ -51,7 +51,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   [HttpPost]
   [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status201Created)]
-  public async Task<IActionResult> AddEvent([FromBody][Required] CreateEventDTO createEventDTO, CancellationToken ct)
+  public async Task<IActionResult> AddEvent([FromBody] CreateEventDTO createEventDTO, CancellationToken ct)
   {
     logger.LogDebug("Обработка запроса POST {methodName}", nameof(AddEvent));
     var responseEventDto = await eventService.CreateEventAsync(createEventDTO, ct);
@@ -68,7 +68,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
-  public async Task<IActionResult> UpdateEvent([Required] Guid eventId, [FromBody] UpdateEventDTO updateEventDto, CancellationToken ct)
+  public async Task<IActionResult> UpdateEvent([Required] Guid eventId, [FromBody] UpdateEventDTO? updateEventDto, CancellationToken ct)
   {
     logger.LogDebug("Обработка запроса PUT {methodName} c id: {id}", nameof(UpdateEvent), eventId);
     await eventService.ChangeEventAsync(eventId, updateEventDto, ct);
