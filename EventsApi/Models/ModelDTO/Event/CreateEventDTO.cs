@@ -9,18 +9,18 @@ public record CreateEventDTO
     public string Title { get; init; }
     
     /// <summary>Описание мероприятия</summary>
-    public string Description { get; init; }
+    public string? Description { get; init; }
    
     /// <summary>Дата начала мероприятия</summary>
     [Required(ErrorMessage = "Дата начала мероприятия обязательно для заполнения")]
     [DataType(DataType.DateTime)]
-    public DateTime? StartAt { get; init; }
+    public DateTimeOffset? StartAt { get; init; }
     
     /// <summary>Дата окончания мероприятия</summary>
     [Required(ErrorMessage = "Дата окончания мероприятия обязательна для заполнения")]
     [DataType(DataType.DateTime)]
     [CompareDates(nameof(StartAt))]
-    public DateTime? EndAt { get; init; }
+    public DateTimeOffset? EndAt { get; init; }
 
     /// <summary>общее количество мест на событии</summary>
     [Required(ErrorMessage = "Общее количество мест на событие обязательно для заполнения")]

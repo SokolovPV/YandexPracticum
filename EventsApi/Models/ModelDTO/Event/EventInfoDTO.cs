@@ -9,4 +9,4 @@
 /// <param name="EndAt">Дата окончания</param>
 /// <param name="TotalSeats">Общее количество мест на событии</param>
 /// <param name="AvailableSeats">Текущее количество свободных мест</param>
-public record EventInfoDTO(Guid Id, string Title, string? Description, DateTime StartAt, DateTime EndAt, int TotalSeats, int AvailableSeats);
+public record EventInfoDTO(Guid Id, string Title, string? Description, DateTimeOffset StartAt, DateTimeOffset EndAt, int TotalSeats, int AvailableSeats);

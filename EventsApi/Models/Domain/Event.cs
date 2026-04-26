@@ -16,10 +16,10 @@ public class Event()
   public string? Description { get; set; }
 
   /// <summary>Дата начала мероприятия</summary>
-  public DateTime StartAt { get; set; }
+  public DateTimeOffset StartAt { get; set; }
 
   /// <summary>Дата окончания мероприятия</summary>
-  public DateTime EndAt { get; set; }
+  public DateTimeOffset EndAt { get; set; }
 
   /// <summary>общее количество мест на событии</summary>
   public int TotalSeats { get; set; }
@@ -31,8 +31,8 @@ public class Event()
 
   public Event(
       string title,
-      DateTime startAt,
-      DateTime endAt,
+      DateTimeOffset startAt,
+      DateTimeOffset endAt,
       int totalSeats = 1,
       string? description = default) : this()
   {
@@ -53,7 +53,7 @@ public class Event()
   /// <param name="endAt">Дата окончания события</param>
   /// <param name="totalSeats">Общее количество мест на событии</param>
   /// <param name="description">Описание события</param>
-  public static Event Create(string title, DateTime startAt, DateTime endAt, int totalSeats, string? description = null)
+  public static Event Create(string title, DateTimeOffset startAt, DateTimeOffset endAt, int totalSeats, string? description = null)
   {
     if (startAt > endAt)
       throw new ValidationException("Дата начала события не может быть позже даты окончания");

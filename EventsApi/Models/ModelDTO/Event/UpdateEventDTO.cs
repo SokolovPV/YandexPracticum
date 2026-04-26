@@ -5,16 +5,16 @@ namespace EventsApi.Models.ModelDTO.Event;
 public record UpdateEventDTO
 {
     /// <summary>Название мероприятия</summary>
-    public string Title { get; init; }
+    public string? Title { get; init; }
     /// <summary>Описание мероприятия</summary>
-    public string Description { get; init; }
+    public string? Description { get; init; }
     /// <summary>Дата начала мероприятия</summary>
     [DataType(DataType.DateTime)]
-    public DateTime? StartAt { get; init; }
+    public DateTimeOffset? StartAt { get; init; }
     /// <summary>Дата окончания мероприятия</summary>
     [DataType(DataType.DateTime)]
     [CompareDates(nameof(StartAt))]
-    public DateTime? EndAt { get; init; }
+    public DateTimeOffset? EndAt { get; init; }
 
     /// <summary> Общее количество мест на событии </summary>
     public int? TotalSeats { get; init; }
