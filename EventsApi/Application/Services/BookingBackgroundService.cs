@@ -14,7 +14,6 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
     private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
     private readonly int ProcessingDelay = 2;
     private readonly int PollingInterval = 2;
-    private const string key_not_found_exception = "Идентификатор мероприятия не найден.";
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Фоновая служба {backgroundServiceName} запущена", nameof(BookingBackgroundService));
@@ -25,36 +24,9 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
             {
                 await using var scope = scopeFactory.CreateAsyncScope();
                 var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
-                //var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
-                Func<Booking, bool> query = e => e.Status == BookingStatus.Pending;
-                var pendingBookings = await bookingRepository.ListAsync(query, stoppingToken);
+                var pendingBookings = await bookingRepository.ListAsync(e => e.Status == BookingStatus.Pending, stoppingToken);
                 var tasks = pendingBookings.Select(booking => ProcessBookingAsync(booking, stoppingToken));
                 await Task.WhenAll(tasks);
-
-
-
-                // foreach (var booking in bookings)
-                // {
-
-                //     try
-                //     {
-                //         booking.Status = BookingStatus.Confirmed;
-                //         var @event = await eventRepository.GetByIdAsync(booking.EventId, stoppingToken);
-                //         if (@event is null)
-                //             throw new NullReferenceException($"Мероприятие {booking.EventId} удалено, создание бронирования невозможно.");
-                //     }
-                //     catch (NullReferenceException ex)
-                //     {
-                //         logger.LogWarning(ex.Message);
-                //         booking.Status = BookingStatus.Rejected;
-                //     }
-                //     finally
-                //     {
-                //         booking.ProcessedAt = DateTime.UtcNow;
-                //         await bookingRepository.UpdateAsync(booking, stoppingToken);
-                //     }
-                //     logger.LogDebug("Обработка бронирования {currentBooking} завершена", booking.Id);
-                // }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -79,31 +51,23 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
         await using var scope = scopeFactory.CreateAsyncScope();
         var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
         var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
-        Event? _event = await eventRepository.GetByIdAsync(booking.EventId, cancellationToken);
+        Event? _event = null;
+
+        cancellationToken.ThrowIfCancellationRequested();
+        await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), cancellationToken);
+
         try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), cancellationToken);
-
+            await _processingSemaphore.WaitAsync(cancellationToken);
+            _event = await eventRepository.GetByIdAsync(booking.EventId, cancellationToken);
 
             if (_event is null)
             {
                 logger.LogWarning("Идентификатор мероприятия {Id} не найден.", booking.EventId);
-                booking.Reject();
-                throw new KeyNotExistException();
+                throw new KeyNotExistException(booking.EventId, ConstantValues.key_not_found_exception);
             }
 
-            try
-            {
-                await _processingSemaphore.WaitAsync(cancellationToken);
-
-                booking.Confirm();
-                await eventRepository.UpdateAsync(_event, cancellationToken);
-            }
-            finally
-            {
-                _processingSemaphore.Release();
-            }
+            booking.Confirm();
         }
         catch (Exception ex)
         {
@@ -115,14 +79,13 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
                 logger.LogInformation("Свободные места для события {Id} - восстановлены.", _event.Id);
             }
 
-            if (ex is not OperationCanceledException)
-                logger.LogError(ex, "Ошибка при обработке бронирования {ID}", booking.Id);
-
             throw;
         }
         finally
         {
+            // вынес в блок finally что-бы всегда сохранялось бронировании из try catch
             await bookingRepository.UpdateAsync(booking, cancellationToken);
+            _processingSemaphore.Release();
         }
     }
 }
