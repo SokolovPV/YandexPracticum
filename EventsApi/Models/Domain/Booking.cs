@@ -32,4 +32,31 @@ public class Booking
         CreatedAt = DateTime.Now;
         EventId = eventId;
     }
+
+    /// <summary>
+    /// Метод создания события
+    /// </summary>
+    /// <param name="eventId">идентификатор события</param>
+    public static Booking Create(Guid eventId)
+    {
+        return new Booking(eventId);
+    }
+
+    /// <summary>
+    /// Подтверждаем бронирование
+    /// </summary>
+    public void Confirm()
+    {
+        Status = BookingStatus.Confirmed;
+        ProcessedAt = DateTime.Now;
+    }
+
+    /// <summary>
+    /// Отменяем бронирование
+    /// </summary>
+    public void Reject()
+    {
+        Status = BookingStatus.Rejected;
+        ProcessedAt = DateTime.Now;
+    }
 }

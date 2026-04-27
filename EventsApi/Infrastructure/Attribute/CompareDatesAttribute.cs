@@ -17,8 +17,8 @@ public class CompareDatesAttribute : ValidationAttribute
         if (propertyInfo == null)
             return new ValidationResult($"Свойство {PropertyName} не найдено.");
 
-        var startDateValue = (DateTime?)propertyInfo.GetValue(validationContext.ObjectInstance);
-        var endDateValue = (DateTime?)value;
+        var startDateValue = (DateTimeOffset?)propertyInfo.GetValue(validationContext.ObjectInstance);
+        var endDateValue = (DateTimeOffset?)value;
 
         if (startDateValue.HasValue && endDateValue.HasValue &&  endDateValue <= startDateValue)
             return new ValidationResult("Дата окончания должна быть больше даты начала.");

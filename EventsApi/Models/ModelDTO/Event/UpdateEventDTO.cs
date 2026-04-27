@@ -2,20 +2,20 @@
 using EventsApi.Infrastructure.Attribute;
 namespace EventsApi.Models.ModelDTO.Event;
 /// <summary>Модель данных для создания мероприятия </summary>
-public record InputEventDTO
+public record UpdateEventDTO
 {
     /// <summary>Название мероприятия</summary>
-    [Required(ErrorMessage = "Название мероприятия обязательно для заполнения")]
-    public string Title { get; init; }
+    public string? Title { get; init; }
     /// <summary>Описание мероприятия</summary>
-    public string Description { get; init; }
+    public string? Description { get; init; }
     /// <summary>Дата начала мероприятия</summary>
-    [Required(ErrorMessage = "Дата начала мероприятия обязательно для заполнения")]
     [DataType(DataType.DateTime)]
-    public DateTime? StartAt { get; init; }
+    public DateTimeOffset? StartAt { get; init; }
     /// <summary>Дата окончания мероприятия</summary>
-    [Required(ErrorMessage = "Дата окончания мероприятия обязательна для заполнения")]
     [DataType(DataType.DateTime)]
     [CompareDates(nameof(StartAt))]
-    public DateTime? EndAt { get; init; }
+    public DateTimeOffset? EndAt { get; init; }
+
+    /// <summary> Общее количество мест на событии </summary>
+    public int? TotalSeats { get; init; }
 }

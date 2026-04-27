@@ -12,7 +12,7 @@ public interface IEventService
     /// <param name="createEventDTO">Входящая модель создания события</param>
     /// <param name="ct">токен отмены</param>
     /// <returns></returns>
-    Task<ResponseEventDTO> AddEventAsync(InputEventDTO createEventDTO, CancellationToken ct);
+    Task<EventInfoDTO> CreateEventAsync(CreateEventDTO createEventDTO, CancellationToken ct);
 
 
     /// <summary>
@@ -28,7 +28,7 @@ public interface IEventService
     /// </summary>
     /// <param name="eventId">ID события</param>
     /// <param name="ct">Токен отмены</param>
-    Task<ResponseEventDTO?> GetEventAsync(Guid eventId, CancellationToken ct);
+    Task<EventInfoDTO?> GetEventAsync(Guid eventId, CancellationToken ct);
 
     /// <summary>
     /// Обновление события
@@ -37,7 +37,7 @@ public interface IEventService
     /// <param name="updateEvent">Входящая модель обновления события </param>
     /// <param name="ct">Токен отмены</param>
     /// <returns></returns>
-    Task ChangeEventAsync(Guid eventId, InputEventDTO updateEvent, CancellationToken ct);
+    Task ChangeEventAsync(Guid eventId, UpdateEventDTO updateEvent, CancellationToken ct);
 
 
     /// <summary>

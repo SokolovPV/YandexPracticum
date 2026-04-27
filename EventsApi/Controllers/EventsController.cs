@@ -34,7 +34,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// <param name="ct">токен отмены</param>
   [HttpGet("{eventId:Guid}")]
   [Tags("АПИ для событий")]
-  [ProducesResponseType(typeof(ResponseEventDTO), StatusCodes.Status200OK)]
+  [ProducesResponseType(typeof(EventInfoDTO), StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
   public async Task<IActionResult> GetEventById([Required] Guid eventId, CancellationToken ct)
   {
@@ -51,10 +51,10 @@ public class EventsController(IEventService eventService, IBookingService bookin
   [HttpPost]
   [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status201Created)]
-  public async Task<IActionResult> AddEvent([FromBody][Required] InputEventDTO createEventDTO, CancellationToken ct)
+  public async Task<IActionResult> AddEvent([FromBody] CreateEventDTO createEventDTO, CancellationToken ct)
   {
     logger.LogDebug("Обработка запроса POST {methodName}", nameof(AddEvent));
-    var responseEventDto = await eventService.AddEventAsync(createEventDTO, ct);
+    var responseEventDto = await eventService.CreateEventAsync(createEventDTO, ct);
     return CreatedAtAction(nameof(GetEventById), new { eventId = responseEventDto.Id }, responseEventDto);
   }
 
@@ -62,13 +62,13 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// Метод обновления даных мероприятия
   /// </summary>
   /// <param name="eventId">идентификатор мероприятия</param>
-  /// <param name="updateEventDto">данне для обновления</param>
+  /// <param name="updateEventDto">данные для обновления</param>
   /// <param name="ct">токен отмены</param>
   [HttpPut("{eventId:Guid}")]
   [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
-  public async Task<IActionResult> UpdateEvent([Required] Guid eventId, [FromBody] InputEventDTO updateEventDto, CancellationToken ct)
+  public async Task<IActionResult> UpdateEvent([Required] Guid eventId, [FromBody] UpdateEventDTO? updateEventDto, CancellationToken ct)
   {
     logger.LogDebug("Обработка запроса PUT {methodName} c id: {id}", nameof(UpdateEvent), eventId);
     await eventService.ChangeEventAsync(eventId, updateEventDto, ct);
@@ -97,6 +97,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   [HttpPost("{eventId:guid}/book")]
   [Tags("АПИ для бронирования")]
   [ProducesResponseType(StatusCodes.Status202Accepted)]
+  [ProducesResponseType(StatusCodes.Status409Conflict)]
   public async Task<IActionResult> AddBook([Required] Guid eventId, CancellationToken ct)
   {
     logger.LogDebug("Обработка запроса POST {methodName}", nameof(AddBook));

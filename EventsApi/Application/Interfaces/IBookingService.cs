@@ -1,5 +1,4 @@
 ﻿using EventsApi.Models.Domain;
-using EventsApi.Models.ModelDTO.Booking;
 
 namespace EventsApi.Application.Interfaces;
 /// <summary>

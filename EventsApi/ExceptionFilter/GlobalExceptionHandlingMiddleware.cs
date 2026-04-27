@@ -31,7 +31,7 @@ public class GlobalExceptionHandlingMiddleware
     private async Task HandleException(HttpContext httpContext, Exception ex)
     {
         _logger.LogError(ex,
-            "Необработанное исключение. Метод={Method}, Путь={Path}, RequestId={RequestId}", 
+            "Необработанное исключение. Метод={Method}, Путь={Path}, RequestId={RequestId}",
             httpContext.Request.Method,
             httpContext.Request.Path,
             httpContext.Request.Headers["x-request-id"]);
@@ -61,6 +61,7 @@ public class GlobalExceptionHandlingMiddleware
         {
             ValidationException ve => StatusCodes.Status400BadRequest,
             KeyNotExistException kne => StatusCodes.Status404NotFound,
+            NoAvailableSeatsException nac => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
         };
 
@@ -69,6 +70,7 @@ public class GlobalExceptionHandlingMiddleware
       {
           ValidationException ve => "Validation Failed",
           KeyNotExistException kne => "Invalid Identifier",
+          NoAvailableSeatsException nac => "No available seats",
           _ => "Unknown Error"
       };
 }
