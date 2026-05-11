@@ -1,0 +1,21 @@
+2026-05-11T12:55:34.8089249+00:00 Microsoft.Testing.Platform.Builder.TestApplication INFORMATION Version: 1.9.1+cb5afc3bb9bb01ebd75b57f89e8358b914ee2a49
+2026-05-11T12:55:34.8239866+00:00 Microsoft.Testing.Platform.Builder.TestApplication INFORMATION Logging mode: asynchronous
+2026-05-11T12:55:34.8249450+00:00 Microsoft.Testing.Platform.Builder.TestApplication INFORMATION Logging level: Information
+2026-05-11T12:55:34.8249529+00:00 Microsoft.Testing.Platform.Builder.TestApplication INFORMATION CreateBuilderAsync entry time: 12:55:34.730
+2026-05-11T12:55:34.8250402+00:00 Microsoft.Testing.Platform.Builder.TestApplication INFORMATION PID: 9560
+2026-05-11T12:55:34.8250763+00:00 Microsoft.Testing.Platform.Builder.TestApplication INFORMATION Runtime information: win-x64 - .NET 10.0.5
+2026-05-11T12:55:34.8250980+00:00 Microsoft.Testing.Platform.Builder.TestApplication INFORMATION Runtime location: C:\Program Files\dotnet\shared\Microsoft.NETCore.App\10.0.5\System.Private.CoreLib.dll
+2026-05-11T12:55:34.8251160+00:00 Microsoft.Testing.Platform.Builder.TestApplication INFORMATION IsDynamicCodeSupported: True
+2026-05-11T12:55:34.8252012+00:00 Microsoft.Testing.Platform.Builder.TestApplication INFORMATION Test module: C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\TestEventsApi\bin\Debug\net10.0\TestEventsApi.dll
+2026-05-11T12:55:34.8254128+00:00 Microsoft.Testing.Platform.Builder.TestApplication INFORMATION Command line arguments: '--server --diagnostic --diagnostic-verbosity Information --diagnostic-output-directory C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\TestEventsApi\bin\Debug\net10.0\Log --results-directory C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\TestResults --client-port 51166'
+2026-05-11T12:55:34.8266172+00:00 Microsoft.Testing.Platform.Builder.TestApplication INFORMATION TESTINGPLATFORM_DEFAULT_HANG_TIMEOUT: ''
+2026-05-11T12:55:34.8621895+00:00 Microsoft.Testing.Platform.Hosts.TestHostBuilder INFORMATION Setting RegisterEnvironmentVariablesConfigurationSource: 'True'
+2026-05-11T12:55:34.8916648+00:00 Microsoft.Testing.Platform.Hosts.TestHostBuilder INFORMATION Setting PlatformExitProcessOnUnhandledException: 'False', config file: False environment variable: 
+2026-05-11T12:55:35.3497382+00:00 Microsoft.Testing.Platform.Requests.TestHostTestFrameworkInvoker INFORMATION Test framework UID: '30ea7c6e-dd24-4152-a360-1387158cd41d' Version: '3.2.2' DisplayName: 'xUnit.net v3 Microsoft.Testing.Platform test framework' Description: 'xUnit.net v3 Microsoft.Testing.Platform test framework'
+2026-05-11T12:55:35.3633116+00:00 xUnit.net INFORMATION xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.5)
+2026-05-11T12:55:35.4354914+00:00 xUnit.net INFORMATION   Discovering: TestEventsApi
+2026-05-11T12:55:35.4973017+00:00 xUnit.net INFORMATION   Discovered:  TestEventsApi
+2026-05-11T12:55:35.5318494+00:00 xUnit.net INFORMATION   Starting:    TestEventsApi
+2026-05-11T12:55:56.0447645+00:00 xUnit.net INFORMATION   Finished:    TestEventsApi (ID = '2a636d7d2cf513997ab1cb31c8b3308beb60d7141710fbe809737f648b586fa1')
+2026-05-11T12:55:56.0543385+00:00 xUnit.net INFORMATION === TEST EXECUTION SUMMARY ===
+2026-05-11T12:55:56.0608304+00:00 xUnit.net INFORMATION    TestEventsApi  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 20,520s

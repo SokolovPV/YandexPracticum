@@ -1,0 +1,229 @@
+[
+  {
+    "ContainingType": "EventsApi.Controllers.BookingsController",
+    "Method": "GetBooking",
+    "RelativePath": "Bookings/{bookingId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "bookingId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EventsApi.Models.ModelDTO.Booking.InfoBookingDTO",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "\u0410\u041F\u0418 \u0434\u043B\u044F \u0431\u0440\u043E\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F"
+    ]
+  },
+  {
+    "ContainingType": "EventsApi.Controllers.EventsController",
+    "Method": "GetEvents",
+    "RelativePath": "Events",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "title",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "from",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "to",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EventsApi.Models.ModelDTO.Event.PaginatedResult",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "\u0410\u041F\u0418 \u0434\u043B\u044F \u0441\u043E\u0431\u044B\u0442\u0438\u0439"
+    ]
+  },
+  {
+    "ContainingType": "EventsApi.Controllers.EventsController",
+    "Method": "AddEvent",
+    "RelativePath": "Events",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "createEventDTO",
+        "Type": "EventsApi.Models.ModelDTO.Event.InputEventDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 201
+      }
+    ],
+    "Tags": [
+      "\u0410\u041F\u0418 \u0434\u043B\u044F \u0441\u043E\u0431\u044B\u0442\u0438\u0439"
+    ]
+  },
+  {
+    "ContainingType": "EventsApi.Controllers.EventsController",
+    "Method": "GetEventById",
+    "RelativePath": "Events/{eventId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "eventId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EventsApi.Models.ModelDTO.Event.ResponseEventDTO",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 404
+      }
+    ],
+    "Tags": [
+      "\u0410\u041F\u0418 \u0434\u043B\u044F \u0441\u043E\u0431\u044B\u0442\u0438\u0439"
+    ]
+  },
+  {
+    "ContainingType": "EventsApi.Controllers.EventsController",
+    "Method": "UpdateEvent",
+    "RelativePath": "Events/{eventId}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "eventId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "updateEventDto",
+        "Type": "EventsApi.Models.ModelDTO.Event.InputEventDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 404
+      }
+    ],
+    "Tags": [
+      "\u0410\u041F\u0418 \u0434\u043B\u044F \u0441\u043E\u0431\u044B\u0442\u0438\u0439"
+    ]
+  },
+  {
+    "ContainingType": "EventsApi.Controllers.EventsController",
+    "Method": "DeleteEvent",
+    "RelativePath": "Events/{eventId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "eventId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 404
+      }
+    ],
+    "Tags": [
+      "\u0410\u041F\u0418 \u0434\u043B\u044F \u0441\u043E\u0431\u044B\u0442\u0438\u0439"
+    ]
+  },
+  {
+    "ContainingType": "EventsApi.Controllers.EventsController",
+    "Method": "AddBook",
+    "RelativePath": "Events/{eventId}/book",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "eventId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 202
+      }
+    ],
+    "Tags": [
+      "\u0410\u041F\u0418 \u0434\u043B\u044F \u0431\u0440\u043E\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F"
+    ]
+  }
+]

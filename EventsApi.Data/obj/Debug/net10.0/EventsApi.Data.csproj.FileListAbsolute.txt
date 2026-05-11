@@ -1,0 +1,12 @@
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\bin\Debug\net10.0\EventsApi.Data.deps.json
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\bin\Debug\net10.0\EventsApi.Data.dll
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\bin\Debug\net10.0\EventsApi.Data.pdb
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\obj\Debug\net10.0\EventsApi.Data.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\obj\Debug\net10.0\EventsApi.Data.AssemblyInfoInputs.cache
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\obj\Debug\net10.0\EventsApi.Data.AssemblyInfo.cs
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\obj\Debug\net10.0\EventsApi.Data.csproj.CoreCompileInputs.cache
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\obj\Debug\net10.0\EventsApi.Data.sourcelink.json
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\obj\Debug\net10.0\EventsApi.Data.dll
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\obj\Debug\net10.0\refint\EventsApi.Data.dll
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\obj\Debug\net10.0\EventsApi.Data.pdb
+C:\Users\pavel\Downloads\Yandex C#\1805\YandexPracticum_0805\YandexPracticum\EventsApi.Data\obj\Debug\net10.0\ref\EventsApi.Data.dll
