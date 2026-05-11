@@ -1,4 +1,4 @@
-namespace EventsApi.Application.Services;
+namespace EventsApi.WebApi.Application.Services;
 
 public static class ConstantValues
 {

@@ -1,6 +1,6 @@
 ﻿using EventsApi.Models.Domain;
 
-namespace EventsApi.Application.Interfaces;
+namespace EventsApi.WebApi.Application.Interfaces;
 /// <summary>
 /// Интерфейс сервиса бронирования
 /// </summary>

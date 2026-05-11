@@ -1,5 +1,5 @@
-﻿using EventsApi.Application.Interfaces;
-using EventsApi.Models.ModelDTO.Booking;
+﻿using EventsApi.Models.ModelDTO.Booking;
+using EventsApi.WebApi.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 

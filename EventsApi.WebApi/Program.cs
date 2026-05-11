@@ -1,9 +1,8 @@
 using System.Reflection;
-using EventsApi.Application.Interfaces;
-using EventsApi.Application.Services;
-using EventsApi.DataAccess.Repository;
-using EventsApi.DataAccess.Repository.Interfaces;
+using EventsApi.DataAccess;
 using EventsApi.ExceptionFilter;
+using EventsApi.WebApi.Application.Interfaces;
+using EventsApi.WebApi.Application.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventsApi

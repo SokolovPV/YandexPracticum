@@ -28,7 +28,7 @@ public class Event()
   public int AvailableSeats { get; set; }
 
   /// <summary>список бронирований</summary>
-  internal ICollection<Booking> Bookings { get; private set; } = [];
+  public ICollection<Booking> Bookings { get; private set; } = [];
 
 
 

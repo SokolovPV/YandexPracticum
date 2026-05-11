@@ -1,9 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Linq.Expressions;
-using EventsApi.DataAccess.Repository.Interfaces;
 using EventsApi.Models.Domain;
 
-namespace EventsApi.DataAccess.Repository;
+namespace EventsApi.DataAccess;
 /// <summary>
 /// Репозиторий для in-memory коллекции Booking
 /// </summary>

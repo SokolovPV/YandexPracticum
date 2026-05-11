@@ -1,8 +1,9 @@
 ﻿
-using EventsApi.Application.Interfaces;
-using EventsApi.Application.Services;
-using EventsApi.Infrastructure.Interfaces;
-using EventsApi.Infrastructure.Repository;
+using EventsApi.DataAccess;
+using EventsApi.Models.Domain;
+using EventsApi.WebApi.Application.CustomException;
+using EventsApi.WebApi.Application.Interfaces;
+using EventsApi.WebApi.Application.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

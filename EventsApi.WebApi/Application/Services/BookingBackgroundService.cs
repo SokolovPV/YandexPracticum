@@ -1,8 +1,8 @@
-using EventsApi.Application.CustomException;
-using EventsApi.Infrastructure.Interfaces;
+using EventsApi.DataAccess;
 using EventsApi.Models.Domain;
+using EventsApi.WebApi.Application.CustomException;
 
-namespace EventsApi.Application.Services;
+namespace EventsApi.WebApi.Application.Services;
 
 /// <summary>
 /// Фоновый сервис для регистрации бронирования

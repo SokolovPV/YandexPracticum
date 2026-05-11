@@ -1,6 +1,6 @@
 ﻿using EventsApi.Models.ModelDTO.Event;
 
-namespace EventsApi.Application.Interfaces;
+namespace EventsApi.WebApi.Application.Interfaces;
 /// <summary>
 /// Интерфейс сервиса событий
 /// </summary>

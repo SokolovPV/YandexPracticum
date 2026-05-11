@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
-using EventsApi.Application.CustomException;
-using EventsApi.Application.Interfaces;
-using EventsApi.Infrastructure.Interfaces;
+using EventsApi.DataAccess;
 using EventsApi.Models.Domain;
 using EventsApi.Models.ModelDTO.Event;
-namespace EventsApi.Application.Services;
+using EventsApi.WebApi.Application.CustomException;
+using EventsApi.WebApi.Application.Interfaces;
+namespace EventsApi.WebApi.Application.Services;
 /// <summary>
 /// Сервис для работы с событиями
 /// </summary>
