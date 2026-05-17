@@ -1,0 +1,17 @@
+﻿################################################################################
+# Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
+################################################################################
+/.vs
+EventsApi.Data/obj
+EventsApi.Data/bin
+
+EventsApi.Models/obj
+EventsApi.Models/bin
+
+EventsApi.WebApi/obj
+EventsApi.WebApi/bin
+
+EventsApi.Test/obj
+EventsApi.Test/bin
+*.bak
+*.lscache
