@@ -651,11 +651,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\pavel\\Downloads\\Yandex C#\\1805\\YandexPracticum_0805\\YandexPracticum\\EventsApi.Data\\EventsApi.DataAccess.csproj",
+      "projectUniqueName": "C:\\Users\\pavel\\source\\YandexPracticum\\YandexPracticum\\EventsApi.Data\\EventsApi.DataAccess.csproj",
       "projectName": "EventsApi.DataAccess",
-      "projectPath": "C:\\Users\\pavel\\Downloads\\Yandex C#\\1805\\YandexPracticum_0805\\YandexPracticum\\EventsApi.Data\\EventsApi.DataAccess.csproj",
+      "projectPath": "C:\\Users\\pavel\\source\\YandexPracticum\\YandexPracticum\\EventsApi.Data\\EventsApi.DataAccess.csproj",
       "packagesPath": "C:\\Users\\pavel\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\pavel\\Downloads\\Yandex C#\\1805\\YandexPracticum_0805\\YandexPracticum\\EventsApi.Data\\obj\\",
+      "outputPath": "C:\\Users\\pavel\\source\\YandexPracticum\\YandexPracticum\\EventsApi.Data\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -676,8 +676,8 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\pavel\\Downloads\\Yandex C#\\1805\\YandexPracticum_0805\\YandexPracticum\\EventsApi.Models\\EventsApi.Models.csproj": {
-              "projectPath": "C:\\Users\\pavel\\Downloads\\Yandex C#\\1805\\YandexPracticum_0805\\YandexPracticum\\EventsApi.Models\\EventsApi.Models.csproj"
+            "C:\\Users\\pavel\\source\\YandexPracticum\\YandexPracticum\\EventsApi.Models\\EventsApi.Models.csproj": {
+              "projectPath": "C:\\Users\\pavel\\source\\YandexPracticum\\YandexPracticum\\EventsApi.Models\\EventsApi.Models.csproj"
             }
           }
         }
