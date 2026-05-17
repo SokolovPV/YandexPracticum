@@ -13,7 +13,7 @@ public class DbBookingRepository(AppDbContext appDbContext) : IBookingRepository
     {
         await appDbContext.Bookings.AddAsync(booking, ct);
         await appDbContext.SaveChangesAsync();
-  }
+    }
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(Guid bookingId, CancellationToken ct)
     {
@@ -36,11 +36,17 @@ public class DbBookingRepository(AppDbContext appDbContext) : IBookingRepository
         if (query != null)
             return await appDbContext.Bookings.Where(query).ToListAsync();
 
-        return await appDbContext.Bookings.ToListAsync();
+        return await appDbContext.Bookings.ToListAsync(ct);
     }
     /// <inheritdoc/>
     public async Task UpdateAsync(Booking booking, CancellationToken ct)
     {
-        await appDbContext.SaveChangesAsync();
+        var entity = await appDbContext.Bookings.FirstOrDefaultAsync(b => b.Id == booking.Id, ct);
+        if (entity != null)
+        {
+            entity.Status = booking.Status;
+            entity.ProcessedAt = booking.ProcessedAt;
+            await appDbContext.SaveChangesAsync(ct);
+        }
     }
 }

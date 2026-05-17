@@ -53,21 +53,21 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
         var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
         Event? _event = null;
 
-
-        await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await _processingSemaphore.WaitAsync(cancellationToken);
-            _event = await eventRepository.GetByIdAsync(booking.EventId, cancellationToken);
 
+            booking.Confirm();
+
+
+
+            _event = await eventRepository.GetByIdAsync(booking.EventId, cancellationToken);
             if (_event is null)
             {
                 logger.LogWarning("Идентификатор мероприятия {Id} не найден.", booking.EventId);
                 throw new KeyNotExistException(booking.EventId, ConstantValues.key_not_found_exception);
             }
-
-            booking.Confirm();
         }
         catch (Exception ex)
         {
@@ -87,5 +87,6 @@ public class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger
             await bookingRepository.UpdateAsync(booking, cancellationToken);
             _processingSemaphore.Release();
         }
+        await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), cancellationToken);
     }
 }

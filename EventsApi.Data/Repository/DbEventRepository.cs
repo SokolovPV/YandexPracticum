@@ -28,7 +28,7 @@ public class DbEventRepository(AppDbContext appDbContext) : IEventRepository
             return false;
 
         appDbContext.Events.Remove(_event);
-        await appDbContext.SaveChangesAsync();
+        await appDbContext.SaveChangesAsync(ct);
         return true;
     }
     /// <inheritdoc/>
@@ -44,11 +44,12 @@ public class DbEventRepository(AppDbContext appDbContext) : IEventRepository
                                         .OrderBy(c => c.Title)
                                         .Skip((page - 1) * pageSize)
                                         .Take(pageSize)
-                                        .ToListAsync();
+                                        .ToListAsync(ct);
     }
     /// <inheritdoc/>
     public async Task UpdateAsync(Event _event, CancellationToken ct)
     {
-        await appDbContext.SaveChangesAsync();
+        appDbContext.Events.Update(_event);
+        await appDbContext.SaveChangesAsync(ct);
     }
 }

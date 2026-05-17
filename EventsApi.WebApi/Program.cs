@@ -28,7 +28,7 @@ namespace EventsApi
 			// добавляем сервисы
 			builder.Services.AddScoped<IEventService, EventService>();
 			builder.Services.AddScoped<IBookingService, BookingService>();
-			// добавляем фонговую службу бронирования
+			// добавляем фоновую службу бронирования
 			builder.Services.AddHostedService<BookingBackgroundService>();
 
 			builder.Services.AddControllers();

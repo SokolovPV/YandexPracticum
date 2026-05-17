@@ -120,11 +120,19 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
             _logger.LogError("Ошибка обновления: событие не найдено. Идентификатор ID: {eventId}", eventId);
             throw new KeyNotExistException(eventId, ConstantValues.key_not_found_exception);
         }
+        if (updateEvent.TotalSeats.HasValue && (updateEvent.TotalSeats < (_event.TotalSeats - _event.AvailableSeats))) // с учетом уже занятых мест
+        {
+            _logger.LogError(ConstantValues.totalSeats_less_availableSeats_exception);
+            throw new ValidationException(ConstantValues.totalSeats_less_availableSeats_exception);
+        }
+
 
         _event.Title = updateEvent.Title == null ? _event.Title : updateEvent.Title;
         _event.Description = updateEvent.Description == null ? _event.Description : updateEvent.Description;
         _event.EndAt = updateEvent.EndAt.HasValue ? updateEvent.EndAt.Value : _event.EndAt;
         _event.StartAt = updateEvent.StartAt.HasValue ? updateEvent.StartAt.Value : _event.StartAt;
+        _event.TotalSeats = updateEvent.TotalSeats.HasValue ? updateEvent.TotalSeats.Value : _event.TotalSeats;
+        _event.AvailableSeats = updateEvent.TotalSeats.HasValue ? (updateEvent.TotalSeats.Value - _event.TotalSeats - _event.AvailableSeats) : _event.AvailableSeats;
 
         await _repository.UpdateAsync(_event, ct);
         _logger.LogInformation("Событие обновлено. ID: {eventId}", eventId);

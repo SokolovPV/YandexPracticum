@@ -56,7 +56,7 @@ public class Event()
   /// <param name="endAt">Дата окончания события</param>
   /// <param name="totalSeats">Общее количество мест на событии</param>
   /// <param name="description">Описание события</param>
-  public static Event Create(string title, DateTimeOffset startAt, DateTimeOffset endAt, int totalSeats, string? description = null)
+  public static Event Create(string title, DateTimeOffset startAt, DateTimeOffset endAt, int totalSeats, string? description = default)
   {
     if (startAt > endAt)
       throw new ValidationException("Дата начала события не может быть позже даты окончания");
