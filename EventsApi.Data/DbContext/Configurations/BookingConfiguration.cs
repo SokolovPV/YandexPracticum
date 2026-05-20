@@ -20,10 +20,8 @@ public class BookConfiguration : IEntityTypeConfiguration<Booking>
            .IsRequired();
         builder.Property(q => q.CreatedAt)
             .HasColumnName("created_at")
-            .HasColumnType("timestamptz")
             .IsRequired();
         builder.Property(q => q.ProcessedAt)
-            .HasColumnType("timestamptz")
             .HasColumnName("processed_at");
 
         builder.HasOne(q => q.Event)

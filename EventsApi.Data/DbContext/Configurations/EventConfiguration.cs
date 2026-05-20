@@ -21,11 +21,9 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
             .HasMaxLength(1000);
         builder.Property(q => q.StartAt)
             .HasColumnName("start_at")
-            .HasColumnType("timestamptz")
             .IsRequired();
         builder.Property(q => q.EndAt)
             .HasColumnName("end_at")
-            .HasColumnType("timestamptz")
             .IsRequired();
         builder.Property(q => q.TotalSeats)
             .HasColumnName("total_seats")
