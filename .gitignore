@@ -15,3 +15,4 @@ EventsApi.Test/obj
 EventsApi.Test/bin
 *.bak
 *.lscache
+/EventsApi.WebApi/appsettings.Development.json
