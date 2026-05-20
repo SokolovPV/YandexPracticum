@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
 
 namespace EventsApi.Models.Domain;
 /// <summary>
 /// Модель мероприятия
 /// </summary>
-public class Event()
+public class Event
 {
   /// <summary>Идентификатор мероприятия</summary>
   public Guid Id { get; set; }
@@ -16,10 +17,10 @@ public class Event()
   public string? Description { get; set; }
 
   /// <summary>Дата начала мероприятия</summary>
-  public DateTimeOffset StartAt { get; set; }
+  public DateTime StartAt { get; set; }
 
   /// <summary>Дата окончания мероприятия</summary>
-  public DateTimeOffset EndAt { get; set; }
+  public DateTime EndAt { get; set; }
 
   /// <summary>общее количество мест на событии</summary>
   public int TotalSeats { get; set; }
@@ -31,13 +32,13 @@ public class Event()
   public ICollection<Booking> Bookings { get; private set; } = [];
 
 
-
+  private Event() { Title = null!; }
   private Event(
       string title,
-      DateTimeOffset startAt,
-      DateTimeOffset endAt,
+      DateTime startAt,
+      DateTime endAt,
       int totalSeats = 1,
-      string? description = default) : this()
+      string? description = default)
   {
     Id = Guid.NewGuid();
     Title = title;
@@ -56,7 +57,7 @@ public class Event()
   /// <param name="endAt">Дата окончания события</param>
   /// <param name="totalSeats">Общее количество мест на событии</param>
   /// <param name="description">Описание события</param>
-  public static Event Create(string title, DateTimeOffset startAt, DateTimeOffset endAt, int totalSeats, string? description = default)
+  public static Event Create(string? title, DateTime startAt, DateTime endAt, int totalSeats, string? description = default)
   {
     if (startAt > endAt)
       throw new ValidationException("Дата начала события не может быть позже даты окончания");
@@ -64,7 +65,7 @@ public class Event()
     if (totalSeats < 1 || totalSeats > 100)
       throw new ValidationException("Общее количество мест на событие должно быть больше 1 и меньше 100");
 
-    return new Event(title, startAt, endAt, totalSeats, description);
+    return new Event(title!.Trim(), startAt, endAt, totalSeats, description);
   }
 
   /// <summary>

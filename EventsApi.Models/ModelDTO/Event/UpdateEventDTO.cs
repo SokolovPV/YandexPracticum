@@ -10,11 +10,11 @@ public record UpdateEventDTO
     public string? Description { get; init; }
     /// <summary>Дата начала мероприятия</summary>
     [DataType(DataType.DateTime)]
-    public DateTimeOffset? StartAt { get; init; }
+    public DateTime? StartAt { get; init; }
     /// <summary>Дата окончания мероприятия</summary>
     [DataType(DataType.DateTime)]
     [CompareDates(nameof(StartAt))]
-    public DateTimeOffset? EndAt { get; init; }
+    public DateTime? EndAt { get; init; }
 
     /// <summary> Общее количество мест на событии </summary>
     public int? TotalSeats { get; init; }

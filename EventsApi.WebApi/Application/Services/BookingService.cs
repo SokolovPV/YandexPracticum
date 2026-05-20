@@ -21,7 +21,7 @@ public class BookingService(IEventRepository eventRepository, IBookingRepository
             if (_event is null)
             {
                 logger.LogError("Идентификатор мероприятия {Id} не найден.", eventId);
-                throw new KeyNotExistException(eventId, ConstantValues.key_not_found_exception);
+                throw new KeyNotExistException( eventId, ConstantValues.key_not_found_exception);
             }
             if (!_event.TryReserveSeats())
                 throw new NoAvailableSeatsException($"Для события ID={_event.Id} отстутствуют свободные места для бронирования");
