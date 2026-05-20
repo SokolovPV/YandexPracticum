@@ -1,17 +1,17 @@
 ﻿namespace EventsApi.WebApi.Application.CustomException;
 
-public class KeyNotExistException : Exception
+public class KeyNotExistException :  Exception
 {
-  public Guid Id { get; }
-  public KeyNotExistException() { }
+  public Guid eventId { get; }
 
-  public KeyNotExistException(Guid Id, string message) : base(message)
+
+  public KeyNotExistException(Guid eventId, string message) : base($"Элемент c ID: '{eventId}' не найден.")
   {
-    this.Id = Id;
+    this.eventId = eventId;
   }
 
-  public KeyNotExistException(Guid Id, string message, Exception innerException) : base(message, innerException)
+  public KeyNotExistException(Guid eventId, string message, Exception innerException) : base(message, innerException)
   {
-    this.Id = Id;
+    this.eventId = eventId;
   }
 }

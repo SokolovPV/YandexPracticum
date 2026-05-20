@@ -29,6 +29,7 @@ public class Booking
     /// </summary>
     public Event? Event { get; private set; }
 
+    private Booking() { }
     private Booking(Guid eventId)
     {
         Id = Guid.NewGuid();
@@ -51,6 +52,8 @@ public class Booking
     /// </summary>
     public void Confirm()
     {
+        if (Status == BookingStatus.Confirmed)
+            return;
         Status = BookingStatus.Confirmed;
         ProcessedAt = DateTimeOffset.UtcNow;
     }
@@ -60,6 +63,8 @@ public class Booking
     /// </summary>
     public void Reject()
     {
+        if (Status == BookingStatus.Rejected)
+            return;
         Status = BookingStatus.Rejected;
         ProcessedAt = DateTimeOffset.UtcNow;
     }

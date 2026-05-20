@@ -14,13 +14,13 @@ public record CreateEventDTO
     /// <summary>Дата начала мероприятия</summary>
     [Required(ErrorMessage = "Дата начала мероприятия обязательно для заполнения")]
     [DataType(DataType.DateTime)]
-    public DateTimeOffset? StartAt { get; init; }
+    public DateTime? StartAt { get; init; }
     
     /// <summary>Дата окончания мероприятия</summary>
     [Required(ErrorMessage = "Дата окончания мероприятия обязательна для заполнения")]
     [DataType(DataType.DateTime)]
     [CompareDates(nameof(StartAt))]
-    public DateTimeOffset? EndAt { get; init; }
+    public DateTime? EndAt { get; init; }
 
     /// <summary>общее количество мест на событии</summary>
     [Required(ErrorMessage = "Общее количество мест на событие обязательно для заполнения")]
