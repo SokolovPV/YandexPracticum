@@ -9,7 +9,7 @@ namespace EventsApi
 {
 	public class Program
 	{
-		public static void Main(string[] args)
+		public static async Task Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
 			// Логирование в консоль
@@ -44,7 +44,7 @@ namespace EventsApi
 			using (var scope = app.Services.CreateScope())
 			{
 				var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-				db.Database.EnsureCreated();
+				await db.Database.MigrateAsync();
 			}
 			app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 			if (app.Environment.IsDevelopment())

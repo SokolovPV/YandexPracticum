@@ -22,5 +22,5 @@ public record CreatedBookingDTO()
     /// <summary>
     /// дата и время создания брони
     /// </summary>
-    public DateTimeOffset CreatedAt { get; init; }
+    public DateTime CreatedAt { get; init; }
 }

@@ -407,3 +407,6 @@ curl -X 'GET' \
   "detail": "Для события ID=f1981d77-e952-420f-b9a1-13a8e2efcf8f отстутствуют свободные места для бронирования."
 }
 ```
+
+
+dotnet ef migrations add Initial --project .\EventsApi.Data\ --startup-project .\EventsApi.WebApi\
