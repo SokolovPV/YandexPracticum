@@ -16,3 +16,6 @@ EventsApi.Test/bin
 *.bak
 *.lscache
 *.Development.json
+/EventsApi.IntegrationTests/obj
+/EventsApi.UnitTest/obj
+/EventsApi.IntegrationTests/bin/Debug/net10.0
