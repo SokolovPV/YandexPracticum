@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventsApi.Models", "EventsA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventsApi.WebApi", "EventsApi.WebApi\EventsApi.WebApi.csproj", "{D70FA936-C2D5-AB2F-DD7E-D6C3E0F6B2B5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventsApi.IntegrationTests", "EventsApi.IntegrationTests\EventsApi.IntegrationTests.csproj", "{92ADEF93-84E8-43B1-AC4A-E3C0B128FFF4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{D70FA936-C2D5-AB2F-DD7E-D6C3E0F6B2B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D70FA936-C2D5-AB2F-DD7E-D6C3E0F6B2B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D70FA936-C2D5-AB2F-DD7E-D6C3E0F6B2B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92ADEF93-84E8-43B1-AC4A-E3C0B128FFF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92ADEF93-84E8-43B1-AC4A-E3C0B128FFF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92ADEF93-84E8-43B1-AC4A-E3C0B128FFF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92ADEF93-84E8-43B1-AC4A-E3C0B128FFF4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
