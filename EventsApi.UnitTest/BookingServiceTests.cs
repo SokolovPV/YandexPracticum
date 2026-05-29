@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Concurrent;
 
-namespace EventsApi.Test;
+namespace EventsApi.UnitTests;
 
 public class BookingServiceTests
 {

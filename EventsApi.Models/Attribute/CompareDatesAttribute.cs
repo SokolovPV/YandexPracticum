@@ -23,6 +23,6 @@ public class CompareDatesAttribute : ValidationAttribute
         if (startDateValue.HasValue && endDateValue.HasValue &&  endDateValue <= startDateValue)
             return new ValidationResult("Дата окончания должна быть больше даты начала.");
 
-        return ValidationResult.Success;
+        return ValidationResult.Success!;
     }
 }

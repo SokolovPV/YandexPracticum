@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using Moq;
 
-namespace EventsApi.Test
+namespace EventsApi.UnitTests
 {
     public class EventServiceTests
     {
