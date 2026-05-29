@@ -5,11 +5,13 @@ VisualStudioVersion = 18.3.11527.330
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventsApi.Data", "EventsApi.Data\EventsApi.Data.csproj", "{C5D4B4F2-B6D7-4153-B865-76AFEFB04C29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventsApi.Test", "EventsApi.Test\EventsApi.Test.csproj", "{1E6E7B9C-45C6-95A8-4F35-6D29390D3B29}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventsApi.UnitTests", "EventsApi.Test\EventsApi.UnitTests.csproj", "{1E6E7B9C-45C6-95A8-4F35-6D29390D3B29}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventsApi.Models", "EventsApi.Models\EventsApi.Models.csproj", "{78C9C736-2A2B-4DF6-B3C4-7B142838FEF9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventsApi.WebApi", "EventsApi.WebApi\EventsApi.WebApi.csproj", "{D70FA936-C2D5-AB2F-DD7E-D6C3E0F6B2B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventsApi.IntegrationTests", "EventsApi.IntegrationTests\EventsApi.IntegrationTests.csproj", "{DD2D04EC-D121-4CD8-9F0F-FE759B56F2CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{D70FA936-C2D5-AB2F-DD7E-D6C3E0F6B2B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D70FA936-C2D5-AB2F-DD7E-D6C3E0F6B2B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D70FA936-C2D5-AB2F-DD7E-D6C3E0F6B2B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD2D04EC-D121-4CD8-9F0F-FE759B56F2CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD2D04EC-D121-4CD8-9F0F-FE759B56F2CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD2D04EC-D121-4CD8-9F0F-FE759B56F2CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD2D04EC-D121-4CD8-9F0F-FE759B56F2CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

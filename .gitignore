@@ -11,8 +11,11 @@ EventsApi.Models/bin
 EventsApi.WebApi/obj
 EventsApi.WebApi/bin
 
-EventsApi.Test/obj
-EventsApi.Test/bin
+EventsApi.UnitTests/obj
+EventsApi.UnitTests/bin
+
+EventsApi.IntegrationTests/obj
+EventsApi.IntegrationTests/bin
 *.bak
 *.lscache
 *.Development.json
