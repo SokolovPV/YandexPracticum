@@ -22,19 +22,19 @@ namespace EventsApi.IntegrationTests
 			await _postgres.StartAsync();
 		}
 
-		private AppDbContext CreateContext()
+		private async Task<AppDbContext> CreateContextAsync()
 		{
 			var options = new DbContextOptionsBuilder<AppDbContext>()
 					.UseNpgsql(_postgres.GetConnectionString())
 					.Options;
 
 			var context = new AppDbContext(options);
-			context.Database.Migrate();
+			await context.Database.MigrateAsync();
 			return context;
 		}
 		private async Task ResetDatabaseAsync()
 		{
-			await using var context = CreateContext();
+			using var context = await CreateContextAsync();
 			await context.Database.ExecuteSqlRawAsync(
 					"TRUNCATE TABLE bookings, events RESTART IDENTITY CASCADE");
 		}
@@ -45,7 +45,7 @@ namespace EventsApi.IntegrationTests
 		{
 			// Arrange
 			await ResetDatabaseAsync();
-			await using var context = CreateContext();
+			using var context = await CreateContextAsync();
 
 			var bookingRepository = new DbBookingRepository(context);
 			var eventRepository = new DbEventRepository(context);
@@ -57,7 +57,7 @@ namespace EventsApi.IntegrationTests
 			await bookingRepository.AddAsync(booking, CancellationToken.None);
 
 			// Assert — читаем из реальной БД через отдельный контекст
-			await using var verifyContext = CreateContext();
+			using var verifyContext = await CreateContextAsync();
 			var saved = await verifyContext.Bookings
 					.FirstOrDefaultAsync(b => b.Id == booking.Id, CancellationToken.None);
 
@@ -69,7 +69,7 @@ namespace EventsApi.IntegrationTests
 		{
 			// Arrange
 			await ResetDatabaseAsync();
-			await using var context = CreateContext();
+			using var context = await CreateContextAsync();
 
 			var bookingRepository = new DbBookingRepository(context);
 			var booking = Booking.Create(Guid.NewGuid());
@@ -86,7 +86,7 @@ namespace EventsApi.IntegrationTests
 			// Arrange
 			await ResetDatabaseAsync();
 			var ct = CancellationToken.None;
-			await using var context = CreateContext();
+			using var context = await CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
 			var booking = Booking.Create(@event.Id);
 			await context.Events.AddAsync(@event, ct);
@@ -94,7 +94,7 @@ namespace EventsApi.IntegrationTests
 			await context.SaveChangesAsync(ct);
 
 			// Act
-			await using var verifyContext = CreateContext();
+			using var verifyContext = await CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(context);
 			var result = await bookingRepository.GetByIdAsync(booking.Id, ct);
 
@@ -109,7 +109,7 @@ namespace EventsApi.IntegrationTests
 			var nonExistingId = Guid.NewGuid();
 
 			// Act
-			await using var verifyContext = CreateContext();
+			using var verifyContext = await CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(verifyContext);
 			var result = await bookingRepository.GetByIdAsync(nonExistingId, CancellationToken.None);
 
@@ -125,7 +125,7 @@ namespace EventsApi.IntegrationTests
 			// Arrange
 			await ResetDatabaseAsync();
 			var ct = CancellationToken.None;
-			await using var context = CreateContext();
+			using var context = await CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
 			var booking = Booking.Create(@event.Id);
 			await context.Events.AddAsync(@event, ct);
@@ -133,7 +133,7 @@ namespace EventsApi.IntegrationTests
 			await context.SaveChangesAsync(ct);
 
 			// Act
-			await using var verifyContext = CreateContext();
+			using var verifyContext = await CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(context);
 			var result = await bookingRepository.DeleteAsync(booking.Id, ct);
 			var deletedBooking = await verifyContext.Bookings.FirstOrDefaultAsync(b => b.Id == booking.Id, ct);
@@ -149,7 +149,7 @@ namespace EventsApi.IntegrationTests
 			await ResetDatabaseAsync();
 			var ct = CancellationToken.None;
 			var nonExistingId = Guid.NewGuid();
-			await using var context = CreateContext();
+			using var context = await CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(context);
 
 			// Act
@@ -167,7 +167,7 @@ namespace EventsApi.IntegrationTests
 			// Arrange
 			await ResetDatabaseAsync();
 			var ct = CancellationToken.None;
-			await using var context = CreateContext();
+			using var context = await CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
 			var booking = Booking.Create(@event.Id);
 
@@ -176,7 +176,7 @@ namespace EventsApi.IntegrationTests
 			await context.SaveChangesAsync(ct);
 
 			// Act
-			await using var verifyContext = CreateContext();
+			using var verifyContext = await CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(context);
 			booking.Status = BookingStatus.Confirmed;
 			booking.ProcessedAt = DateTime.UtcNow.AddHours(1);
@@ -198,7 +198,7 @@ namespace EventsApi.IntegrationTests
 			// Arrange
 			await ResetDatabaseAsync();
 			var ct = CancellationToken.None;
-			await using var context = CreateContext();
+			using var context = await CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
 			var booking = Booking.Create(@event.Id);
 			booking.Status = BookingStatus.Rejected;
@@ -211,7 +211,7 @@ namespace EventsApi.IntegrationTests
 			await context.SaveChangesAsync(ct);
 
 			// Act
-			await using var verifyContext = CreateContext();
+			using var verifyContext = await CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(context);
 			var result = await bookingRepository.ListAsync(b => b.Status == BookingStatus.Rejected, ct);
 
