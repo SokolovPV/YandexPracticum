@@ -7,16 +7,16 @@ namespace EventsApi.IntegrationTests
 {
 	public class EventRepositoryTests : IAsyncLifetime
 	{
-		private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-			.WithImage("postgres:16-alpine")
-			.Build();
+		private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:16-alpine").Build();
+			//.WithImage()
+			//.Build();
 
-		public async Task InitializeAsync()
+		public async ValueTask InitializeAsync()
 		{
 			await _postgres.StartAsync();
 		}
 
-		public async Task DisposeAsync()
+		public async ValueTask DisposeAsync()
 		{
 			await _postgres.DisposeAsync();
 		}
