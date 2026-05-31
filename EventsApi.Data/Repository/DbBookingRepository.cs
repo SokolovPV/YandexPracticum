@@ -34,7 +34,7 @@ public class DbBookingRepository(AppDbContext appDbContext) : IBookingRepository
     public async Task<List<Booking>> ListAsync(Expression<Func<Booking, bool>> query, CancellationToken ct)
     {
         if (query != null)
-            return await appDbContext.Bookings.Where(query).ToListAsync();
+            return await appDbContext.Bookings.Where(query).ToListAsync(ct);
 
         return await appDbContext.Bookings.ToListAsync(ct);
     }
