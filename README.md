@@ -408,5 +408,22 @@ curl -X 'GET' \
 }
 ```
 
+## Добавление миграции БД
 
+### Создание миграции
+Для создания миграции необходимо выпонить команду 
+```bash
 dotnet ef migrations add Initial --project .\EventsApi.Data\ --startup-project .\EventsApi.WebApi\
+```
+- `InitialCreate` - имя миграции
+- `EventsApi.Data` - проект с БД и конфигурацией
+- `EventsApi.WebApi` - проект со строкой подключения к БД
+
+### Применение миграции к БД
+
+``` bash
+dotnet ef database update --project \EventsApi.Data\ --startup-project \EventsApi.WebApi\
+```
+
+- `EventsApi.Data` - проект с БД и конфигурацией
+- `EventsApi.WebApi` - проект со строкой подключения к БД
