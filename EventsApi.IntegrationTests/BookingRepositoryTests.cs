@@ -1,51 +1,22 @@
 ﻿using EventsApi.DataAccess;
 using EventsApi.Models.Domain;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices.Marshalling;
-using System.Text;
-using Testcontainers.PostgreSql;
 
 namespace EventsApi.IntegrationTests
 {
-	public class BookingRepositoryTests : IAsyncLifetime
+
+	public class BookingRepositoryTests : IClassFixture<PostgreSqlFixture>
 	{
-		private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:16-alpine").Build();
-		public async ValueTask DisposeAsync()
-		{
-			await _postgres.DisposeAsync();
-		}
-
-		public async ValueTask InitializeAsync()
-		{
-			await _postgres.StartAsync();
-		}
-
-		private async Task<AppDbContext> CreateContextAsync()
-		{
-			var options = new DbContextOptionsBuilder<AppDbContext>()
-					.UseNpgsql(_postgres.GetConnectionString())
-					.Options;
-
-			var context = new AppDbContext(options);
-			await context.Database.MigrateAsync();
-			return context;
-		}
-		private async Task ResetDatabaseAsync()
-		{
-			using var context = await CreateContextAsync();
-			await context.Database.ExecuteSqlRawAsync(
-					"TRUNCATE TABLE bookings, events RESTART IDENTITY CASCADE");
-		}
+		private readonly PostgreSqlFixture postgreSqlFixture;
+		public BookingRepositoryTests(PostgreSqlFixture _postgreSqlFixture) => postgreSqlFixture = _postgreSqlFixture;
 
 
 		[Fact]
 		public async Task AddAsync_SaveBookingToDatabase()
 		{
 			// Arrange
-			await ResetDatabaseAsync();
-			using var context = await CreateContextAsync();
+			await postgreSqlFixture.ResetDatabaseAsync();
+			using var context = await postgreSqlFixture.CreateContextAsync();
 
 			var bookingRepository = new DbBookingRepository(context);
 			var eventRepository = new DbEventRepository(context);
@@ -57,7 +28,7 @@ namespace EventsApi.IntegrationTests
 			await bookingRepository.AddAsync(booking, CancellationToken.None);
 
 			// Assert — читаем из реальной БД через отдельный контекст
-			using var verifyContext = await CreateContextAsync();
+			using var verifyContext = await postgreSqlFixture.CreateContextAsync();
 			var saved = await verifyContext.Bookings
 					.FirstOrDefaultAsync(b => b.Id == booking.Id, CancellationToken.None);
 
@@ -68,8 +39,8 @@ namespace EventsApi.IntegrationTests
 		public async Task AddAsync_WithNotExistEvent_ReturnsThrowDbUpdateException()
 		{
 			// Arrange
-			await ResetDatabaseAsync();
-			using var context = await CreateContextAsync();
+			await postgreSqlFixture.ResetDatabaseAsync();
+			using var context = await postgreSqlFixture.CreateContextAsync();
 
 			var bookingRepository = new DbBookingRepository(context);
 			var booking = Booking.Create(Guid.NewGuid());
@@ -84,9 +55,9 @@ namespace EventsApi.IntegrationTests
 		public async Task GetByIdAsync_ExistingBooking_ShouldReturnBooking()
 		{
 			// Arrange
-			await ResetDatabaseAsync();
+			await postgreSqlFixture.ResetDatabaseAsync();
 			var ct = CancellationToken.None;
-			using var context = await CreateContextAsync();
+			using var context = await postgreSqlFixture.CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
 			var booking = Booking.Create(@event.Id);
 			await context.Events.AddAsync(@event, ct);
@@ -94,7 +65,7 @@ namespace EventsApi.IntegrationTests
 			await context.SaveChangesAsync(ct);
 
 			// Act
-			using var verifyContext = await CreateContextAsync();
+			using var verifyContext = await postgreSqlFixture.CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(context);
 			var result = await bookingRepository.GetByIdAsync(booking.Id, ct);
 
@@ -109,7 +80,7 @@ namespace EventsApi.IntegrationTests
 			var nonExistingId = Guid.NewGuid();
 
 			// Act
-			using var verifyContext = await CreateContextAsync();
+			using var verifyContext = await postgreSqlFixture.CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(verifyContext);
 			var result = await bookingRepository.GetByIdAsync(nonExistingId, CancellationToken.None);
 
@@ -123,9 +94,9 @@ namespace EventsApi.IntegrationTests
 		public async Task DeleteAsync_RetuntSucces()
 		{
 			// Arrange
-			await ResetDatabaseAsync();
+			await postgreSqlFixture.ResetDatabaseAsync();
 			var ct = CancellationToken.None;
-			using var context = await CreateContextAsync();
+			using var context = await postgreSqlFixture.CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
 			var booking = Booking.Create(@event.Id);
 			await context.Events.AddAsync(@event, ct);
@@ -133,7 +104,7 @@ namespace EventsApi.IntegrationTests
 			await context.SaveChangesAsync(ct);
 
 			// Act
-			using var verifyContext = await CreateContextAsync();
+			using var verifyContext = await postgreSqlFixture.CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(context);
 			var result = await bookingRepository.DeleteAsync(booking.Id, ct);
 			var deletedBooking = await verifyContext.Bookings.FirstOrDefaultAsync(b => b.Id == booking.Id, ct);
@@ -146,10 +117,10 @@ namespace EventsApi.IntegrationTests
 		public async Task DeleteAsync_NonExistingBooking_ReturnFalse()
 		{
 			// Arrange
-			await ResetDatabaseAsync();
+			await postgreSqlFixture.ResetDatabaseAsync();
 			var ct = CancellationToken.None;
 			var nonExistingId = Guid.NewGuid();
-			using var context = await CreateContextAsync();
+			using var context = await postgreSqlFixture.CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(context);
 
 			// Act
@@ -165,9 +136,9 @@ namespace EventsApi.IntegrationTests
 		public async Task UpdateAsync_ExistingBooking_ShouldUpdateStatus()
 		{
 			// Arrange
-			await ResetDatabaseAsync();
+			await postgreSqlFixture.ResetDatabaseAsync();
 			var ct = CancellationToken.None;
-			using var context = await CreateContextAsync();
+			using var context = await postgreSqlFixture.CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
 			var booking = Booking.Create(@event.Id);
 
@@ -176,7 +147,7 @@ namespace EventsApi.IntegrationTests
 			await context.SaveChangesAsync(ct);
 
 			// Act
-			using var verifyContext = await CreateContextAsync();
+			using var verifyContext = await postgreSqlFixture.CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(context);
 			booking.Status = BookingStatus.Confirmed;
 			booking.ProcessedAt = DateTime.UtcNow.AddHours(1);
@@ -196,9 +167,9 @@ namespace EventsApi.IntegrationTests
 		public async Task ListAsync_WithQuery_ShouldReturnFilteredBookings()
 		{
 			// Arrange
-			await ResetDatabaseAsync();
+			await postgreSqlFixture.ResetDatabaseAsync();
 			var ct = CancellationToken.None;
-			using var context = await CreateContextAsync();
+			using var context = await postgreSqlFixture.CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
 			var booking = Booking.Create(@event.Id);
 			booking.Status = BookingStatus.Rejected;
@@ -211,7 +182,7 @@ namespace EventsApi.IntegrationTests
 			await context.SaveChangesAsync(ct);
 
 			// Act
-			using var verifyContext = await CreateContextAsync();
+			using var verifyContext = await postgreSqlFixture.CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(context);
 			var result = await bookingRepository.ListAsync(b => b.Status == BookingStatus.Rejected, ct);
 
