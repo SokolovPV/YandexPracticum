@@ -19,8 +19,21 @@ https://github.com/SokolovPV/YandexPracticum.git
 ```
 dotnet build
 ```
+3. Запуск базы данных PostgreSQL в контейнере Docker
+ 
+ перходим в директорию проекта решения и выполняем команду
 
-3. Запуск проекта с тестами
+для операционных систем семейства Linux
+```
+dotnet-compose up -d
+```
+
+для операционных систем семейства Windows
+```
+dotnet compose up -d
+```
+
+4. Запуск проекта с тестами
 
 из директории проекта решения выполняем команду
 
@@ -28,7 +41,7 @@ dotnet build
 dotnet test
 ```
 
-4. Запуск WebApi решения
+5. Запуск WebApi решения
    из директории проекта выполняем команду
 
 ```
@@ -41,7 +54,7 @@ dotnet run --project EventsApi
 
 ### Event
 
-Модель представляет событие которое хранится в in-memory хранилище
+Модель представляет событие которое хранится в БД PostreSQL
 
 #### Описание модели события
 
@@ -57,7 +70,7 @@ dotnet run --project EventsApi
 
 ### Booking
 
-Модель представляет бронирование которое хранится в in-memory хранилище
+Модель представляет бронирование которое хранится в БД PostreSQL
 
 #### Описание модели бронирования
 
@@ -413,7 +426,7 @@ curl -X 'GET' \
 ### Создание миграции
 Для создания миграции необходимо выпонить команду 
 ```bash
-dotnet ef migrations add Initial --project .\EventsApi.Data\ --startup-project .\EventsApi.WebApi\
+dotnet ef migrations add InitialCreate --project EventsApi.Data --startup-project EventsApi.WebApi
 ```
 - `InitialCreate` - имя миграции
 - `EventsApi.Data` - проект с БД и конфигурацией
@@ -422,8 +435,19 @@ dotnet ef migrations add Initial --project .\EventsApi.Data\ --startup-project .
 ### Применение миграции к БД
 
 ``` bash
-dotnet ef database update --project \EventsApi.Data\ --startup-project \EventsApi.WebApi\
+dotnet ef database update --project EventsApi.Data --startup-project EventsApi.WebApi
 ```
 
 - `EventsApi.Data` - проект с БД и конфигурацией
 - `EventsApi.WebApi` - проект со строкой подключения к БД
+
+
+### Реализованы интеграционные тесты с использованием PostgreSQL в Testcontainers.
+
+#### `!!! для запуска интеграционных тестов необходимо проверьте, что Docker запущен и контейнер действительно стартует.`
+
+Для запуска интеграционных тестов необходимо перейти в директорию проекта с тестами `EventsApi.IntegrationTests` и выполнить команду
+```
+dotnet test
+``` 
+Интеграционные тесты проверяют
