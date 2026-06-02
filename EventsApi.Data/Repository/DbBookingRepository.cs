@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventsApi.DataAccess;
 /// <summary>
-/// Репозиторий для in-memory коллекции Booking
+/// Репозиторий для коллекции Booking в БД PostreSQL
 /// </summary>
 public class DbBookingRepository(AppDbContext appDbContext) : IBookingRepository
 {
