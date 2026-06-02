@@ -68,9 +68,9 @@ namespace EventsApi.IntegrationTests
             Assert.Equal(typeof(int), availableSeatsProperty.ClrType);
             Assert.Equal("available_seats", availableSeatsProperty.GetColumnName());
 
-                // Проверка индексов
-                var indexes = entityType.GetIndexes().ToList();
-                Assert.NotEmpty(indexes);
+            // Проверка индексов
+            var indexes = entityType.GetIndexes().ToList();
+            Assert.NotEmpty(indexes);
         }
 
 
