@@ -9,6 +9,7 @@ public class BookConfiguration : IEntityTypeConfiguration<Booking>
     public void Configure(EntityTypeBuilder<Booking> builder)
     {
         builder.ToTable("bookings");
+        builder.HasIndex(u => u.Id).IsUnique();
         builder.HasKey(b => b.Id);
         builder.Property(q => q.Id)
             .HasColumnName("id")
