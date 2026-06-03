@@ -14,9 +14,10 @@ namespace EventsApi.IntegrationTests
         [Fact]
         public async Task EfCoreModelEvent_ShouldHaveCorrectConfigurationAsync()
         {
-            // Act
+            // Arrange
             await postgreSqlFixture.ResetDatabaseAsync();
             using var context = await postgreSqlFixture.CreateContextAsync();
+            //Act
             var entityType = context.Model.FindEntityType(typeof(Event));
 
             // Assert
@@ -77,9 +78,10 @@ namespace EventsApi.IntegrationTests
         [Fact]
         public async Task EfCoreModelBooking_ShouldHaveCorrectConfigurationAsync()
         {
-            // Act
+            // Arrange
             await postgreSqlFixture.ResetDatabaseAsync();
             using var context = await postgreSqlFixture.CreateContextAsync();
+            //Act
             var entityType = context.Model.FindEntityType(typeof(Booking));
 
             // Assert

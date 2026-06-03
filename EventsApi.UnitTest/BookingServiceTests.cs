@@ -557,7 +557,7 @@ public class BookingServiceTests
     [Theory]
     [InlineData(3, 15)]  // 3 места, 15 запросов
     [InlineData(1, 50)]  // 1 место, 50 запросов
-    [InlineData(70, 2000)] // 10 мест, 100 запросов
+    [InlineData(70, 2000)] // 70 мест, 2000 запросов
     public async Task CreateBookingAsync_HighLoadStressTest_NoOverselling(int seats, int requests)
     {
         // Arrange

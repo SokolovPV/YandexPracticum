@@ -87,11 +87,11 @@ namespace EventsApi.IntegrationTests
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
 			await context.AddAsync(@event, CancellationToken.None);
 			await context.SaveChangesAsync(CancellationToken.None);
-			// Assert
 			using var verifyContext = await postgreSqlFixture.CreateContextAsync();
 			var repository = new DbEventRepository(verifyContext);
+			//Act
 			var result = await repository.DeleteAsync(@event.Id, CancellationToken.None);
-
+			//Assert
 			Assert.True(result);
 		}
 
