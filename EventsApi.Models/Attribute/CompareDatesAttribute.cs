@@ -11,7 +11,7 @@ public class CompareDatesAttribute : ValidationAttribute
         PropertyName = propertyName;
     }
 
-    protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+    protected override ValidationResult IsValid(object? value, ValidationContext validationContext)
     {
         var propertyInfo = validationContext.ObjectType.GetProperty(PropertyName);
         if (propertyInfo == null)
@@ -19,8 +19,11 @@ public class CompareDatesAttribute : ValidationAttribute
 
         var startDateValue = (DateTime?)propertyInfo.GetValue(validationContext.ObjectInstance);
         var endDateValue = (DateTime?)value;
+        // Если endDateValue == null, то пропускаем валидацию
+        if (!endDateValue.HasValue)
+            return ValidationResult.Success!;
 
-        if (startDateValue.HasValue && endDateValue.HasValue &&  endDateValue <= startDateValue)
+        if (startDateValue.HasValue && endDateValue.HasValue && endDateValue <= startDateValue)
             return new ValidationResult("Дата окончания должна быть больше даты начала.");
 
         return ValidationResult.Success!;
