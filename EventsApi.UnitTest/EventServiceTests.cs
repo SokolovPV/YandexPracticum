@@ -16,7 +16,7 @@ namespace EventsApi.UnitTests
         #region тесты: создание события
 
         [Fact]
-        [Trait("Category", " создание события")]
+        [Trait("Category", "создание события")]
         public async Task CreateEvent_ReturnResponseEventDTO_Success()
         {
             // Arrange
@@ -49,7 +49,7 @@ namespace EventsApi.UnitTests
         }
 
         [Fact]
-        [Trait("Category", " создание события")]
+        [Trait("Category", "создание события")]
         public async Task CreateEvent_DateFromMoreThanDateTo_ThrowValidationException()
         {
             // Arrange
@@ -66,13 +66,15 @@ namespace EventsApi.UnitTests
             };
             repositoryMock.Setup(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()));
 
-            //Act  Assert
-            await Assert.ThrowsAsync<ValidationException>(async () => await service.CreateEventAsync(dto, ct));
+            //Act
+            var result = service.CreateEventAsync(dto, ct);
+            //Assert
+            await Assert.ThrowsAsync<ValidationException>(async () => await result);
             repositoryMock.Verify(r => r.AddAsync(It.IsAny<Event>(), ct), Times.Never);
         }
 
         [Fact]
-        [Trait("Category", " создание события")]
+        [Trait("Category", "создание события")]
         public async Task CreateEvent_TotalSeatsMoreThanRange_ThrowValidationException()
         {
             // Arrange
@@ -89,14 +91,17 @@ namespace EventsApi.UnitTests
             };
             repositoryMock.Setup(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()));
 
-            //Act  Assert
-            await Assert.ThrowsAsync<ValidationException>(async () => await service.CreateEventAsync(dto, ct));
+            // Act 
+            var result = service.CreateEventAsync(dto, ct);
+
+            // Assert
+            await Assert.ThrowsAsync<ValidationException>(async () => await result);
             repositoryMock.Verify(r => r.AddAsync(It.IsAny<Event>(), ct), Times.Never);
         }
 
 
         [Fact]
-        [Trait("Category", " создание события")]
+        [Trait("Category", "создание события")]
         public async Task CreateEvent_TotalSeatsLessThanRange_ThrowValidationException()
         {
             // Arrange
@@ -113,14 +118,16 @@ namespace EventsApi.UnitTests
             };
             repositoryMock.Setup(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()));
 
-            //Act  Assert
-            await Assert.ThrowsAsync<ValidationException>(async () => await service.CreateEventAsync(dto, ct));
+            //Act
+            var result = service.CreateEventAsync(dto, ct);
+            // Assert
+            await Assert.ThrowsAsync<ValidationException>(async () => await result);
             repositoryMock.Verify(r => r.AddAsync(It.IsAny<Event>(), ct), Times.Never);
         }
 
 
         [Fact]
-        [Trait("Category", " создание события")]
+        [Trait("Category", "создание события")]
         public async Task CreateEvent_ThrowOperationCanceledException()
         {
             // Arrange
@@ -138,8 +145,10 @@ namespace EventsApi.UnitTests
             };
             repositoryMock.Setup(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()));
 
-            // Act Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.CreateEventAsync(dto, cts.Token));
+            // Act 
+            var result = service.CreateEventAsync(dto, cts.Token);
+            // Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await result);
             repositoryMock.Verify(r => r.AddAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -302,7 +311,7 @@ namespace EventsApi.UnitTests
         [Trait("Category", "получение событий")]
         public async Task GetEvents_ReturnPaginatedResult_SecondPage()
         {
-            // Arrange (Подготовка)
+            // Arrange
             var repositoryMock = new Mock<IEventRepository>();
             var loggerMock = new Mock<ILogger<EventService>>();
             var service = new EventService(repositoryMock.Object, loggerMock.Object);
@@ -327,10 +336,10 @@ namespace EventsApi.UnitTests
                 .Setup(r => r.CountAsync(It.IsAny<Expression<Func<Event, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(fakeEvents.Count);
 
-            // Act (Действие)
+            // Act
             var result = await service.GetEventsAsync(filter, ct);
 
-            // Assert (Проверка)
+            // Assert
             Assert.NotNull(result);
             Assert.Equal(6, result.TotalItems); // Проверяем общее количество
             Assert.Equal(3, result.Events.Count); // Проверяем количество в текущей выборке
@@ -377,10 +386,10 @@ namespace EventsApi.UnitTests
                 .Setup(r => r.CountAsync(It.IsAny<Expression<Func<Event, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(fakeEvents.Count(queru));
 
-            // Act (Действие)
+            // Act
             var result = await service.GetEventsAsync(filter, ct);
 
-            // Assert (Проверка)
+            // Assert
             Assert.NotNull(result);
             Assert.Equal(1, result.TotalItems);
             Assert.All(result.Events, q => Assert.Contains(filter.title, q.Title, StringComparison.InvariantCultureIgnoreCase));
@@ -462,8 +471,11 @@ namespace EventsApi.UnitTests
 
             repositoryMock.Setup(r => r.GetByIdAsync(generatedId, It.IsAny<CancellationToken>())).ReturnsAsync((Event?)null);
 
-            // Act Assert
-            await Assert.ThrowsAsync<KeyNotExistException>(async () => await service.GetEventAsync(generatedId, ct));
+            //Act
+            var result = service.GetEventAsync(generatedId, ct);
+
+            // Assert
+            await Assert.ThrowsAsync<KeyNotExistException>(async () => await result);
 
             repositoryMock.Verify(r => r.GetByIdAsync(generatedId, It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -480,8 +492,10 @@ namespace EventsApi.UnitTests
             cts.Cancel();
             repositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(It.IsAny<Event>());
 
+            // Act
+            var result = service.GetEventAsync(It.IsAny<Guid>(), cts.Token);
             // Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.GetEventAsync(It.IsAny<Guid>(), cts.Token));
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await result);
             repositoryMock.Verify(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -509,8 +523,10 @@ namespace EventsApi.UnitTests
             };
             repositoryMock.Setup(r => r.GetByIdAsync(nonExistentId, It.IsAny<CancellationToken>())).ReturnsAsync((Event?)null);
 
-            // Act Assert
-            await Assert.ThrowsAsync<KeyNotExistException>(async () => await service.ChangeEventAsync(nonExistentId, updateDto, ct));
+            // Act 
+            var result = service.ChangeEventAsync(nonExistentId, updateDto, ct);
+            // Assert
+            await Assert.ThrowsAsync<KeyNotExistException>(async () => await result);
 
             // Проверяем, что метод Update у репозитория не вызывался
             repositoryMock.Verify(r => r.UpdateAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -540,8 +556,11 @@ namespace EventsApi.UnitTests
 
             repositoryMock.Setup(r => r.GetByIdAsync(eventId, It.IsAny<CancellationToken>())).ReturnsAsync(existedEvent);
 
+            //Act
+            var result = service.ChangeEventAsync(eventId, invalidUpdateDto, ct);
+
             // Assert
-            await Assert.ThrowsAsync<ValidationException>(async () => await service.ChangeEventAsync(eventId, invalidUpdateDto, ct));
+            await Assert.ThrowsAsync<ValidationException>(async () => await result);
 
             repositoryMock.Verify(r => r.UpdateAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()), Times.Never);
         }
@@ -571,9 +590,10 @@ namespace EventsApi.UnitTests
             };
 
             repositoryMock.Setup(r => r.GetByIdAsync(eventId, It.IsAny<CancellationToken>())).ReturnsAsync(existedEvent);
-
+            // Act
+            var result = service.ChangeEventAsync(eventId, invalidUpdateDto, ct);
             // Assert
-            await Assert.ThrowsAsync<ValidationException>(async () => await service.ChangeEventAsync(eventId, invalidUpdateDto, ct));
+            await Assert.ThrowsAsync<ValidationException>(async () => await result);
 
             repositoryMock.Verify(r => r.UpdateAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()), Times.Never);
         }
@@ -634,8 +654,10 @@ namespace EventsApi.UnitTests
                 .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(It.IsAny<Event>());
 
-            //Act  Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.ChangeEventAsync(It.IsAny<Guid>(), It.IsAny<UpdateEventDTO>(), cts.Token));
+            //Act
+            var result = service.ChangeEventAsync(It.IsAny<Guid>(), It.IsAny<UpdateEventDTO>(), cts.Token);
+            // Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await result);
             repositoryMock.Verify(r => r.UpdateAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -678,8 +700,10 @@ namespace EventsApi.UnitTests
 
             repositoryMock.Setup(r => r.DeleteAsync(eventId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
-            // Act Assert
-            await Assert.ThrowsAsync<KeyNotExistException>(async () => await service.RemoveEventAsync(eventId, ct));
+            // Act
+            var result = service.RemoveEventAsync(eventId, ct);
+            // Assert
+            await Assert.ThrowsAsync<KeyNotExistException>(async () => await result);
             repositoryMock.Verify(r => r.DeleteAsync(eventId, It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -696,8 +720,10 @@ namespace EventsApi.UnitTests
             var id = Guid.NewGuid();
             repositoryMock.Setup(r => r.DeleteAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
-            //Act Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.RemoveEventAsync(id, cts.Token));
+            //Act
+            var result = service.RemoveEventAsync(id, cts.Token);
+            // Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await result);
             repositoryMock.Verify(r => r.DeleteAsync(id, It.IsAny<CancellationToken>()), Times.Never);
         }
 

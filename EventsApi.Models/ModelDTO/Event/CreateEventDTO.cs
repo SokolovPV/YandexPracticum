@@ -6,7 +6,7 @@ public record CreateEventDTO
 {
     /// <summary>Название мероприятия</summary>
     [Required(ErrorMessage = "Название мероприятия обязательно для заполнения")]
-    public string Title { get; init; }
+    public required string Title { get; init; }
     
     /// <summary>Описание мероприятия</summary>
     public string? Description { get; init; }

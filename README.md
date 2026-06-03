@@ -450,4 +450,4 @@ dotnet ef database update --project EventsApi.Data --startup-project EventsApi.W
 ```
 dotnet test
 ``` 
-Интеграционные тесты проверяют
+Интеграционные тесты покрывают применение миграций и все методы обоих репозиториев.
