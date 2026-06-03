@@ -9,6 +9,7 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
     {
         builder.ToTable("events");
         builder.HasKey(b => b.Id);
+        builder.HasIndex(u => u.Id).IsUnique();
         builder.Property(q => q.Id)
             .HasColumnName("id")
             .ValueGeneratedNever();

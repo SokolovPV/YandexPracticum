@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventsApi.DataAccess;
 /// <summary>
-/// Репозиторий для in-memory коллекции Event
+/// Репозиторий для коллекции Event в БД PostreSQL
 /// </summary>
 public class DbEventRepository(AppDbContext appDbContext) : IEventRepository
 {

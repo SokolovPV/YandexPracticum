@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventsApi.DataAccess;
 /// <summary>
-/// Репозиторий для in-memory коллекции Booking
+/// Репозиторий для коллекции Booking в БД PostreSQL
 /// </summary>
 public class DbBookingRepository(AppDbContext appDbContext) : IBookingRepository
 {
@@ -34,7 +34,7 @@ public class DbBookingRepository(AppDbContext appDbContext) : IBookingRepository
     public async Task<List<Booking>> ListAsync(Expression<Func<Booking, bool>> query, CancellationToken ct)
     {
         if (query != null)
-            return await appDbContext.Bookings.Where(query).ToListAsync();
+            return await appDbContext.Bookings.Where(query).ToListAsync(ct);
 
         return await appDbContext.Bookings.ToListAsync(ct);
     }

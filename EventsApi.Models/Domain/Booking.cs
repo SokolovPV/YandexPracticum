@@ -19,11 +19,11 @@ public class Booking
     /// <summary>
     /// дата и время создания брони
     /// </summary>
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
     /// <summary>
     ///  дата и время обработки брони.
     /// </summary>
-    public DateTimeOffset? ProcessedAt { get; set; }
+    public DateTime? ProcessedAt { get; set; }
     /// <summary>
     ///  внешний ключ на Event
     /// </summary>
@@ -34,7 +34,7 @@ public class Booking
     {
         Id = Guid.NewGuid();
         Status = BookingStatus.Pending;
-        CreatedAt = DateTimeOffset.UtcNow;
+        CreatedAt = DateTime.UtcNow;
         EventId = eventId;
     }
 
@@ -55,7 +55,7 @@ public class Booking
         if (Status == BookingStatus.Confirmed)
             return;
         Status = BookingStatus.Confirmed;
-        ProcessedAt = DateTimeOffset.UtcNow;
+        ProcessedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -66,6 +66,6 @@ public class Booking
         if (Status == BookingStatus.Rejected)
             return;
         Status = BookingStatus.Rejected;
-        ProcessedAt = DateTimeOffset.UtcNow;
+        ProcessedAt = DateTime.UtcNow;
     }
 }
