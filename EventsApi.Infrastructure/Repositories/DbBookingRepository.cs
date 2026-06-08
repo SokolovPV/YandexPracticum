@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
+using EventsApi.Application.Interfaces;
 using EventsApi.Domain.Entities;
-using EventsApi.Domain.Interfaces;
 using EventsApi.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
