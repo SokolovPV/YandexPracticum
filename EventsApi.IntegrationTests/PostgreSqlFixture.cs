@@ -1,8 +1,5 @@
-﻿using EventsApi.DataAccess;
+﻿using EventsApi.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Testcontainers.PostgreSql;
 
 namespace EventsApi.IntegrationTests

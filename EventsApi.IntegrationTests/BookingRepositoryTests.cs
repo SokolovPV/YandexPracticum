@@ -1,5 +1,6 @@
-﻿using EventsApi.DataAccess;
-using EventsApi.Models.Domain;
+﻿using EventsApi.Domain.Entities;
+using EventsApi.Domain.Enums;
+using EventsApi.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventsApi.IntegrationTests
@@ -124,7 +125,7 @@ namespace EventsApi.IntegrationTests
 			var bookingRepository = new DbBookingRepository(context);
 
 			// Act
-			var result = await bookingRepository.DeleteAsync(nonExistingId, CancellationToken.None);
+			var result = await bookingRepository.DeleteAsync(nonExistingId, ct);
 
 			// Assert
 			Assert.False(result);
@@ -149,8 +150,7 @@ namespace EventsApi.IntegrationTests
 			// Act
 			using var verifyContext = await postgreSqlFixture.CreateContextAsync();
 			var bookingRepository = new DbBookingRepository(context);
-			booking.Status = BookingStatus.Confirmed;
-			booking.ProcessedAt = DateTime.UtcNow.AddHours(1);
+			booking.Confirm();
 			await bookingRepository.UpdateAsync(booking, ct);
 
 			// Assert
@@ -172,7 +172,7 @@ namespace EventsApi.IntegrationTests
 			using var context = await postgreSqlFixture.CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
 			var booking = Booking.Create(@event.Id);
-			booking.Status = BookingStatus.Rejected;
+			booking.Reject();
 			var bookings = Enumerable.Range(0, 5).Select(i => Booking.Create(@event.Id));
 
 			// Arrange

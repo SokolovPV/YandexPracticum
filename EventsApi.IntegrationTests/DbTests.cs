@@ -1,4 +1,5 @@
-using EventsApi.Models.Domain;
+using EventsApi.Domain.Entities;
+using EventsApi.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventsApi.IntegrationTests

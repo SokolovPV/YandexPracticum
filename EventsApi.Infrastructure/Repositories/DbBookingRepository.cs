@@ -1,8 +1,10 @@
 ﻿using System.Linq.Expressions;
-using EventsApi.Models.Domain;
+using EventsApi.Domain.Entities;
+using EventsApi.Domain.Interfaces;
+using EventsApi.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventsApi.DataAccess;
+namespace EventsApi.Infrastructure.Repositories;
 /// <summary>
 /// Репозиторий для коллекции Booking в БД PostreSQL
 /// </summary>
@@ -31,7 +33,7 @@ public class DbBookingRepository(AppDbContext appDbContext) : IBookingRepository
         return await appDbContext.Bookings.FirstOrDefaultAsync(q => q.Id == bookingId, ct);
     }
     /// <inheritdoc/>
-    public async Task<List<Booking>> ListAsync(Expression<Func<Booking, bool>> query, CancellationToken ct)
+    public async Task<List<Booking>> ListAsync(Expression<Func<Booking, bool>>? query, CancellationToken ct)
     {
         if (query != null)
             return await appDbContext.Bookings.Where(query).ToListAsync(ct);
@@ -44,8 +46,7 @@ public class DbBookingRepository(AppDbContext appDbContext) : IBookingRepository
         var entity = await appDbContext.Bookings.FirstOrDefaultAsync(b => b.Id == booking.Id, ct);
         if (entity != null)
         {
-            entity.Status = booking.Status;
-            entity.ProcessedAt = booking.ProcessedAt;
+            appDbContext.Bookings.Update(booking);
             await appDbContext.SaveChangesAsync(ct);
         }
     }

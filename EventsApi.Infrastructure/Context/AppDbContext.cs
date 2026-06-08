@@ -1,6 +1,6 @@
-using EventsApi.Models.Domain;
+using EventsApi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-namespace EventsApi.DataAccess;
+namespace EventsApi.Infrastructure.Context;
 
 public class AppDbContext : DbContext
 {

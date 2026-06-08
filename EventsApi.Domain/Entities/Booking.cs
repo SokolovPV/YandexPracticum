@@ -1,4 +1,6 @@
-﻿namespace EventsApi.Models.Domain;
+﻿using EventsApi.Domain.Enums;
+
+namespace EventsApi.Domain.Entities;
 /// <summary>
 /// Модель бронирования
 /// </summary>
@@ -7,23 +9,23 @@ public class Booking
     /// <summary>
     /// уникальный идентификатор брони
     /// </summary>
-    public Guid Id { get; set; }
+    public Guid Id { get; private set; }
     /// <summary>
     /// идентификатор события, к которому относится бронь
     /// </summary>
-    public Guid EventId { get; set; }
+    public Guid EventId { get; private set; }
     /// <summary>
     ///  текущий статус брони
     /// </summary>
-    public BookingStatus Status { get; set; }
+    public BookingStatus Status { get; private set; }
     /// <summary>
     /// дата и время создания брони
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; private set; }
     /// <summary>
     ///  дата и время обработки брони.
     /// </summary>
-    public DateTime? ProcessedAt { get; set; }
+    public DateTime? ProcessedAt { get; private set; }
     /// <summary>
     ///  внешний ключ на Event
     /// </summary>
@@ -39,7 +41,7 @@ public class Booking
     }
 
     /// <summary>
-    /// Метод создания события
+    /// Фабричный метод создания бронирования
     /// </summary>
     /// <param name="eventId">идентификатор события</param>
     public static Booking Create(Guid eventId)

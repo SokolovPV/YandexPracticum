@@ -1,4 +1,4 @@
-﻿namespace EventsApi.Models.Domain;
+﻿namespace EventsApi.Domain.Enums;
 /// <summary>
 /// Статус бронирования
 /// </summary>

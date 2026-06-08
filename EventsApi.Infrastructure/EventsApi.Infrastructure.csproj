@@ -5,15 +5,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.8" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\EventsApi.Models\EventsApi.Models.csproj" />
+    <ProjectReference Include="..\EventsApi.Domain\EventsApi.Domain.csproj" />
   </ItemGroup>
-
 </Project>

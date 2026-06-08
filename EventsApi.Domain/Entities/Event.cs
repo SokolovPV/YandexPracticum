@@ -1,7 +1,7 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
 
-namespace EventsApi.Models.Domain;
+namespace EventsApi.Domain.Entities;
 /// <summary>
 /// Модель мероприятия
 /// </summary>
@@ -57,13 +57,30 @@ public class Event
   /// <param name="endAt">Дата окончания события</param>
   /// <param name="totalSeats">Общее количество мест на событии</param>
   /// <param name="description">Описание события</param>
-  public static Event Create(string? title, DateTime startAt, DateTime endAt, int totalSeats, string? description = default)
+  public static Event Create(
+    string? title,
+    DateTime startAt,
+    DateTime endAt,
+    int totalSeats,
+    string? description = default)
   {
+    if (string.IsNullOrWhiteSpace(title))
+      throw new ValidationException("Название мероприятия не может быть пустым");
+
+    if (title.Length > 200)
+      throw new ValidationException("Название мероприятия не может превышать 200 символов");
+
     if (startAt > endAt)
       throw new ValidationException("Дата начала события не может быть позже даты окончания");
 
-    if (totalSeats < 1 || totalSeats > 100)
-      throw new ValidationException("Общее количество мест на событие должно быть больше 1 и меньше 100");
+    if (startAt < DateTime.UtcNow)
+      throw new ValidationException("Нельзя создать событие в прошлом");
+
+    if (totalSeats < 1)
+      throw new ValidationException("Количество мест должно быть больше 0");
+
+    if (totalSeats > 1000)
+      throw new ValidationException("Количество мест не может превышать 1000");
 
     return new Event(title!.Trim(), startAt, endAt, totalSeats, description);
   }

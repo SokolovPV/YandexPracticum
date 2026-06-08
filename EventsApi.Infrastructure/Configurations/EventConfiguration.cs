@@ -1,7 +1,7 @@
-using EventsApi.Models.Domain;
+using EventsApi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-namespace EventsApi.DataAccess;
+namespace EventsApi.Infrastructure.Configurations;
 
 public class EventConfiguration : IEntityTypeConfiguration<Event>
 {

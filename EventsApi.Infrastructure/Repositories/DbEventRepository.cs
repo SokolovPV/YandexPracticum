@@ -1,9 +1,10 @@
-﻿using System.Collections.Concurrent;
-using System.Linq.Expressions;
-using EventsApi.Models.Domain;
+﻿using System.Linq.Expressions;
+using EventsApi.Domain.Entities;
+using EventsApi.Domain.Interfaces;
+using EventsApi.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventsApi.DataAccess;
+namespace EventsApi.Infrastructure.Repositories;
 /// <summary>
 /// Репозиторий для коллекции Event в БД PostreSQL
 /// </summary>
@@ -15,11 +16,14 @@ public class DbEventRepository(AppDbContext appDbContext) : IEventRepository
         await appDbContext.AddAsync(_event, ct);
         await appDbContext.SaveChangesAsync(ct);
     }
+
     /// <inheritdoc/>
     public async Task<int> CountAsync(Expression<Func<Event, bool>> query, CancellationToken ct)
     {
         return await appDbContext.Events.CountAsync(query, ct);
     }
+
+
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(Guid id, CancellationToken ct)
     {
@@ -46,10 +50,13 @@ public class DbEventRepository(AppDbContext appDbContext) : IEventRepository
                                         .Take(pageSize)
                                         .ToListAsync(ct);
     }
+
+
     /// <inheritdoc/>
     public async Task UpdateAsync(Event _event, CancellationToken ct)
     {
         appDbContext.Events.Update(_event);
         await appDbContext.SaveChangesAsync(ct);
     }
+
 }

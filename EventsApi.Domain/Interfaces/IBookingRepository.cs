@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
-using EventsApi.Models.Domain;
-
-namespace EventsApi.DataAccess;
+using EventsApi.Domain.Entities;
+namespace EventsApi.Domain.Interfaces;
 
 public interface IBookingRepository
 {

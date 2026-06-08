@@ -1,5 +1,5 @@
-﻿using EventsApi.DataAccess;
-using EventsApi.Models.Domain;
+﻿using EventsApi.Domain.Entities;
+using EventsApi.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventsApi.IntegrationTests
