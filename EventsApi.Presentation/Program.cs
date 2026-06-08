@@ -12,21 +12,14 @@ namespace EventsApi
 			// Логирование в консоль
 			builder.Logging.AddConsole();
 
-			//Пподключаем базу данных
-			var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-				?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-			builder.Services.AddDbContext<AppDbContext>(options =>
-				options.UseNpgsql(connectionString));
+			builder.Services.AddInfrastructure(builder.Configuration);
+			builder.Services.AddApplication();
 
-			// добавляем репозитории
-			builder.Services.AddScoped<IEventRepository, DbEventRepository>();
-			builder.Services.AddScoped<IBookingRepository, DbBookingRepository>();
 			// добавляем сервисы
 			builder.Services.AddScoped<IEventService, EventService>();
 			builder.Services.AddScoped<IBookingService, BookingService>();
-			// добавляем фоновую службу бронирования
-			builder.Services.AddHostedService<BookingBackgroundService>();
+
 
 			builder.Services.AddControllers();
 			builder.Services.AddEndpointsApiExplorer();
