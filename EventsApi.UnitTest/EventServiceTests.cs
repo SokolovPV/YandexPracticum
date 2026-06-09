@@ -6,7 +6,7 @@ using EventsApi.Application.Services;
 using EventsApi.Application.Interfaces;
 using EventsApi.Application.DTO.Event;
 using EventsApi.Domain.Entities;
-using EventsApi.Application.Exceptions;
+using EventsApi.Domain.Exceptions;
 
 namespace EventsApi.UnitTests
 {

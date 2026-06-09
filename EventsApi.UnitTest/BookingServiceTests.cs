@@ -1,8 +1,8 @@
-using EventsApi.Application.Exceptions;
 using EventsApi.Application.Interfaces;
 using EventsApi.Application.Services;
 using EventsApi.Domain.Entities;
 using EventsApi.Domain.Enums;
+using EventsApi.Domain.Exceptions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;

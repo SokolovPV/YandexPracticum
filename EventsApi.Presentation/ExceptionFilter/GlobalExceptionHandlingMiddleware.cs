@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using EventsApi.Application.Exceptions;
+using EventsApi.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 namespace EventsApi.ExceptionFilter;
 /// <summary>

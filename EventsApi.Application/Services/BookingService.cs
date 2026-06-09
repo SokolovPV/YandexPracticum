@@ -1,6 +1,6 @@
-using EventsApi.Application.Exceptions;
 using EventsApi.Application.Interfaces;
 using EventsApi.Domain.Entities;
+using EventsApi.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 namespace EventsApi.Application.Services;
 /// <summary>

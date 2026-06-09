@@ -1,5 +1,5 @@
 ﻿using System;
-namespace EventsApi.Application.Exceptions;
+namespace EventsApi.Domain.Exceptions;
 
 public class KeyNotExistException :  Exception
 {
