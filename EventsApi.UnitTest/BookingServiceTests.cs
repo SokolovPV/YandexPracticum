@@ -84,8 +84,9 @@ public class BookingServiceTests
             .Setup(repo => repo.AddAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
             .Callback<Booking, CancellationToken>((booking, _) =>
             {
-                booking.Id = Guid.NewGuid(); // Имитация присвоения Id
-                createdBookings.Add(booking);
+                //booking.Id = Guid.NewGuid(); // Имитация присвоения Id
+                //createdBookings.Add(booking);
+                createdBookings.Add(Booking.Create(eventId));
             })
             .Returns(Task.CompletedTask);
 

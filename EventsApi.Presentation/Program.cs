@@ -1,8 +1,11 @@
 using System.Reflection;
 using EventsApi.ExceptionFilter;
 using Microsoft.EntityFrameworkCore;
+using EventsApi.Infrastructure;
+using EventsApi.Application;
+using EventsApi.Infrastructure.Context;
 
-namespace EventsApi
+namespace EventsApi.Presentation
 {
 	public class Program
 	{
@@ -12,23 +15,9 @@ namespace EventsApi
 			// Логирование в консоль
 			builder.Logging.AddConsole();
 
-
-			builder.Services.AddInfrastructure(builder.Configuration);
-			builder.Services.AddApplication();
-
-			// добавляем сервисы
-			builder.Services.AddScoped<IEventService, EventService>();
-			builder.Services.AddScoped<IBookingService, BookingService>();
-
-
-			builder.Services.AddControllers();
-			builder.Services.AddEndpointsApiExplorer();
-			builder.Services.AddSwaggerGen(options =>
-			{
-				var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-				var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-				options.IncludeXmlComments(xmlPath);
-			});
+			builder.Services.AddInfrastructureServices(builder.Configuration);
+			builder.Services.AddApplicationServices();
+			builder.Services.AddPresentationServices();
 
 			var app = builder.Build();
 			using (var scope = app.Services.CreateScope())
@@ -49,7 +38,6 @@ namespace EventsApi
 			}
 
 			app.MapControllers();
-
 			app.Run();
 		}
 	}

@@ -13,7 +13,7 @@ public static class DependencyInjection
     /// <summary>
     /// Метод добавления сервис>jd
     /// </summary>
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         //Пподключаем базу данных
         var connectionString = configuration.GetConnectionString("DefaultConnection")
@@ -27,7 +27,6 @@ public static class DependencyInjection
         services.AddScoped<IBookingRepository, DbBookingRepository>();
         // добавляем фоновую службу бронирования
         services.AddHostedService<BookingBackgroundService>();
-
 
         return services;
     }

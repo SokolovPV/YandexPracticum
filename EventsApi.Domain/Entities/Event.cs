@@ -64,18 +64,17 @@ public class Event
     int totalSeats,
     string? description = default)
   {
+    if (startAt < DateTime.UtcNow.AddSeconds(-5))
+      throw new ValidationException("Нельзя создать событие в прошлом");
+
+    if (startAt > endAt)
+      throw new ValidationException("Дата начала события не может быть позже даты окончания");
+
     if (string.IsNullOrWhiteSpace(title))
       throw new ValidationException("Название мероприятия не может быть пустым");
 
     if (title.Length > 200)
       throw new ValidationException("Название мероприятия не может превышать 200 символов");
-
-    if (startAt > endAt)
-      throw new ValidationException("Дата начала события не может быть позже даты окончания");
-
-    if (startAt < DateTime.UtcNow)
-      throw new ValidationException("Нельзя создать событие в прошлом");
-
     if (totalSeats < 1)
       throw new ValidationException("Количество мест должно быть больше 0");
 

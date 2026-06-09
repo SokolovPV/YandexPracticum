@@ -6,11 +6,9 @@ namespace EventsApi.Application;
 
 public static class DependencyInjection
 {
-    /// <summary>
-    /// Метод добавления сервис>jd
-    /// </summary>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+         // добавляем службы
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IBookingService, BookingService>();
         return services;
