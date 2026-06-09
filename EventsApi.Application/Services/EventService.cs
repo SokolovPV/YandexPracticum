@@ -27,8 +27,8 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
         var _event = Event.Create(
             title: createEventDTO.Title,
             description: createEventDTO.Description,
-            startAt: createEventDTO.StartAt.Value,
-            endAt: createEventDTO.EndAt.Value,
+            startAt: createEventDTO.StartAt!.Value,
+            endAt: createEventDTO.EndAt!.Value,
             totalSeats: createEventDTO.TotalSeats);
         await _repository.AddAsync(_event, ct);
         _logger.LogInformation("Событие создано. Идентификатор события: {EventId}", _event.Id);
