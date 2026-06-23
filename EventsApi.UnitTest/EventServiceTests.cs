@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
-using EventsApi.DataAccess;
-using EventsApi.Models.Domain;
-using EventsApi.Models.ModelDTO.Event;
-using EventsApi.WebApi.Application.CustomException;
-using EventsApi.WebApi.Application.Services;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using Moq;
+using EventsApi.Application.Services;
+using EventsApi.Application.Interfaces;
+using EventsApi.Application.DTO.Event;
+using EventsApi.Domain.Entities;
+using EventsApi.Domain.Exceptions;
 
 namespace EventsApi.UnitTests
 {

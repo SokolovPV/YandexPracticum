@@ -1,7 +1,8 @@
-using EventsApi.Models.Domain;
-using EventsApi.WebApi.Application.CustomException;
-using EventsApi.WebApi.Application.Services;
-using EventsApi.DataAccess;
+using EventsApi.Application.Interfaces;
+using EventsApi.Application.Services;
+using EventsApi.Domain.Entities;
+using EventsApi.Domain.Enums;
+using EventsApi.Domain.Exceptions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -83,8 +84,9 @@ public class BookingServiceTests
             .Setup(repo => repo.AddAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
             .Callback<Booking, CancellationToken>((booking, _) =>
             {
-                booking.Id = Guid.NewGuid(); // Имитация присвоения Id
-                createdBookings.Add(booking);
+                //booking.Id = Guid.NewGuid(); // Имитация присвоения Id
+                //createdBookings.Add(booking);
+                createdBookings.Add(Booking.Create(eventId));
             })
             .Returns(Task.CompletedTask);
 

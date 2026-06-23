@@ -16,7 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EventsApi.Data\EventsApi.Data.csproj" />
+    <ProjectReference Include="..\EventsApi.Domain\EventsApi.Domain.csproj" />    
+    <ProjectReference Include="..\EventsApi.Infrastructure\EventsApi.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
