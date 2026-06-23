@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using EventsApi.Application.DTO.Booking;
+﻿using EventsApi.Application.DTO.Booking;
 using EventsApi.Application.DTO.Event;
 using EventsApi.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+
 namespace EventsApi.Controllers;
 /// <summary>
 /// Контроллер для работы с мероприятиями
