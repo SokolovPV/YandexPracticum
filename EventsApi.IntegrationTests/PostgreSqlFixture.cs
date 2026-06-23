@@ -9,7 +9,7 @@ namespace EventsApi.IntegrationTests
 		private readonly PostgreSqlContainer _postgresContainer;
 
 		public string ConnectionString => _postgresContainer.GetConnectionString();
-		public AppDbContext DbContext { get; private set; }
+		public AppDbContext DbContext { get; private set; } = null!;
 
 		public PostgreSqlFixture()
 		{
