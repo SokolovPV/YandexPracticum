@@ -15,6 +15,14 @@ public class Booking
     /// </summary>
     public Guid EventId { get; private set; }
     /// <summary>
+    /// Идентификатор пользователя, который создал бронь
+    /// </summary>
+    public Guid UserId { get; init; }
+    /// <summary>
+    /// внешний ключ на пользователя, создавшего бронь
+    /// </summary>
+    public User? User { get; init; }
+    /// <summary>
     ///  текущий статус брони
     /// </summary>
     public BookingStatus Status { get; private set; }
@@ -32,9 +40,10 @@ public class Booking
     public Event? Event { get; private set; }
 
     private Booking() { }
-    private Booking(Guid eventId)
+    private Booking(Guid eventId, Guid userId)
     {
         Id = Guid.NewGuid();
+        UserId = userId;
         Status = BookingStatus.Pending;
         CreatedAt = DateTime.UtcNow;
         EventId = eventId;
@@ -44,9 +53,10 @@ public class Booking
     /// Фабричный метод создания бронирования
     /// </summary>
     /// <param name="eventId">идентификатор события</param>
-    public static Booking Create(Guid eventId)
+    /// <param name="userId">идентификатор пользователя</param>
+    public static Booking Create(Guid eventId, Guid userId)
     {
-        return new Booking(eventId);
+        return new Booking(eventId, userId);
     }
 
     /// <summary>

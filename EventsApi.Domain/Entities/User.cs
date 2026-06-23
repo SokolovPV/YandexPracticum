@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using EventsApi.Domain.Enums;
+using EventsApi.Domain.Exceptions;
 
 namespace EventsApi.Domain.Entities
 {
@@ -39,10 +41,10 @@ namespace EventsApi.Domain.Entities
         public static User Create(string login, string passwordHash, RoleType role)
         {
             if (string.IsNullOrEmpty(login))
-                throw new ValidationException(nameof(User), Guid.Empty.ToString(), "Логин пользователя не задан.");
+                throw new CustomValidationException("Логин пользователя не задан.", nameof(User), Guid.Empty.ToString());
 
             if (string.IsNullOrEmpty(passwordHash))
-                throw new ValidationException(nameof(User), Guid.Empty.ToString(), "Пароль пользователя не задан.");
+                throw new CustomValidationException("Пароль пользователя не задан.", nameof(User), Guid.Empty.ToString());
 
             return new User(login, passwordHash, role);
         }
