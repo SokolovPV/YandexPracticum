@@ -509,5 +509,5 @@ dotnet ef migrations add InitialCreate --project EventsApi.Infrastructure --star
 dotnet ef database update --project EventsApi.Infrastructure --startup-project EventsApi.Presentation
 ```
 
-- `EventsApi.Data` - проект с БД и конфигурацией
-- `EventsApi.WebApi` - проект со строкой подключения к БД
+- `EventsApi.Infrastructure` - проект с БД и конфигурацией
+- `EventsApi.Presentation` - проект со строкой подключения к БД
