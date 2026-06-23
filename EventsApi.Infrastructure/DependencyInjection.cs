@@ -25,8 +25,7 @@ public static class DependencyInjection
         // добавляем репозитории
         services.AddScoped<IEventRepository, DbEventRepository>();
         services.AddScoped<IBookingRepository, DbBookingRepository>();
-        // добавляем фоновую службу бронирования
-        services.AddHostedService<BookingBackgroundService>();
+
 
         return services;
     }
