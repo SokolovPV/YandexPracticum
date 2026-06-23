@@ -1,0 +1,18 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace EventsApi.Application.DTO.User;
+/// <summary>Модель данных для создания пользователя </summary>
+public record CreateUserRequest
+{
+    /// <summary>Имя входа пользователя</summary>
+    [Required(ErrorMessage = "Имя входа пользователя обязательно для заполнения")]
+    public required string Login { get; init; }
+
+    /// <summary>Пароль пользователя </summary>
+    [Required(ErrorMessage = "Пароль обязателен для заполнения.")]
+    public required string Password { get; set; }
+
+    /// <summary>Роль пользователя</summary>
+    [RoleValidation]
+    public string? Role { get; set; }
+}
