@@ -1,5 +1,3 @@
-using System.ComponentModel.Design.Serialization;
-
 namespace EventsApi.Domain.Exceptions;
 
 /// <summary>
