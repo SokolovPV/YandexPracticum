@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using EventsApi.Application.Attribute;
 
 namespace EventsApi.Application.DTO.User;
 /// <summary>Модель данных для создания пользователя </summary>
