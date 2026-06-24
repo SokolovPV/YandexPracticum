@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using EventsApi.Application.Attribute;
+using EventsApi.Domain.Enums;
 
 namespace EventsApi.Application.DTO.User;
 /// <summary>Модель данных для создания пользователя </summary>
@@ -15,5 +16,5 @@ public record CreateUserRequest
 
     /// <summary>Роль пользователя</summary>
     [RoleValidation]
-    public string? Role { get; set; }
+    public RoleType Role { get; set; }
 }

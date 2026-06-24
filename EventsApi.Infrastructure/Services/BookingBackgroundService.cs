@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace EventsApi.Application.Services;
+namespace EventsApi.Infrastructure.Services;
 
 /// <summary>
 /// Фоновый сервис для регистрации бронирования

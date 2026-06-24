@@ -11,7 +11,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EventsApi.Domain\EventsApi.Domain.csproj" />
     <ProjectReference Include="..\EventsApi.Application\EventsApi.Application.csproj" />
+    <ProjectReference Include="..\EventsApi.Domain\EventsApi.Domain.csproj" />
   </ItemGroup>
 </Project>

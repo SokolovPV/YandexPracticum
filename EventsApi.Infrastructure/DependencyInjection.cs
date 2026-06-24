@@ -2,6 +2,7 @@ using EventsApi.Application.Interfaces;
 using EventsApi.Application.Services;
 using EventsApi.Infrastructure.Context;
 using EventsApi.Infrastructure.Repositories;
+using EventsApi.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,8 +26,13 @@ public static class DependencyInjection
         // добавляем репозитории
         services.AddScoped<IEventRepository, DbEventRepository>();
         services.AddScoped<IBookingRepository, DbBookingRepository>();
+		    services.AddScoped<IUserRepository, UserRepository>();
 
+		    // регистрируем фоновую службу
+		    services.AddHostedService<BookingBackgroundService>();
 
-        return services;
+		    services.AddScoped<IPasswordHasher, CustomPasswordHasher>();
+
+		    return services;
     }
 }

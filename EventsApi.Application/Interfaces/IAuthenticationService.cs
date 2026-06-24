@@ -12,7 +12,7 @@ public interface IAuthenticationService
     /// <param name="login">Имя входа (логин)</param>
     /// <param name="password">Пароль</param>
     /// <param name="role">Роль</param>
-    Task<bool> RegisterUserAsync(string login, string password, RoleType role);
+    Task<bool> RegisterUserAsync(string login, string password, RoleType role, CancellationToken ct);
 
     /// <summary>
     /// Вход пользователя
@@ -20,5 +20,5 @@ public interface IAuthenticationService
     /// <param name="login">Имя входа (логин)</param>
     /// <param name="password">Пароль</param>
     /// <returns>Токен</returns>
-    Task<string?> LoginUserAsync(string login, string password);
+    Task<string?> LoginUserAsync(string login, string password, CancellationToken ct);
 }
