@@ -1,6 +1,4 @@
 ﻿using EventsApi.Application.Interfaces;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace EventsApi.Infrastructure.Services
 {
@@ -8,14 +6,12 @@ namespace EventsApi.Infrastructure.Services
 	{
 		public string HashPassword(string password)
 		{
-			var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
-			return Convert.ToHexString(bytes);
+			return BCrypt.Net.BCrypt.HashPassword(password);
 		}
 
 		public bool VerifyHashedPassword(string hashedPassword, string providedPassword)
 		{
-			string computedHash = HashPassword(providedPassword);
-			return computedHash == hashedPassword; // Сравниваем строки
+			return BCrypt.Net.BCrypt.Verify(providedPassword, hashedPassword);
 		}
 	}
 }
