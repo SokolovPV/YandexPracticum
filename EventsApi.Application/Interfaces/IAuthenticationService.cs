@@ -20,5 +20,5 @@ public interface IAuthenticationService
     /// <param name="login">Имя входа (логин)</param>
     /// <param name="password">Пароль</param>
     /// <returns>Токен</returns>
-    Task<string?> LoginUserAsync(string login, string password, CancellationToken ct);
+    Task<string?> LoginAsync(string login, string password, CancellationToken ct);
 }
