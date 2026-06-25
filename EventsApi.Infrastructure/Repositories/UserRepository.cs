@@ -13,7 +13,12 @@ namespace EventsApi.Infrastructure.Repositories
 			await appDbContext.SaveChangesAsync(ct);
 		}
 
-		public async Task<bool> ExistsAsync(string login, CancellationToken ct)
+        public async Task<User?> GetUserByLoginAsync(string login, CancellationToken ct)
+        {
+            return await appDbContext.Users.FirstOrDefaultAsync(u => u.Login == login, ct);
+        }
+
+        public async Task<bool> ExistsAsync(string login, CancellationToken ct)
 		{
 			return await appDbContext.Users.AnyAsync(u => u.Login == login, ct);
 		}
