@@ -12,21 +12,21 @@ public class JwtTokenSettings
     /// <summary>
     /// секрет
     /// </summary>
-    public string Secret { get; set; } = string.Empty;
+    public required string Secret { get; set; }
 
     /// <summary>
     /// кто выдал токен
     /// </summary>
-    public string Issuer { get; set; } = string.Empty;
+    public required string Issuer { get; set; }
 
     /// <summary>
     /// для кого предназначен данный токен
     /// </summary>
-    public string Audience { get; set; } = string.Empty;
+    public required string Audience { get; set; }
 
     /// <summary>
     /// время жизни токена в минутах
     /// </summary>
-    public int Lifetime { get; set; }
+    public int Lifetime { get; set; } = 2; 
 }
 

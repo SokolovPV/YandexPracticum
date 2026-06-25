@@ -1,16 +1,23 @@
 using EventsApi.Application.Interfaces;
+using EventsApi.Application.Options;
 using EventsApi.Domain.Entities;
 using EventsApi.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 namespace EventsApi.Application.Services;
 /// <summary>
 /// Сервис для работы с бронированием
 /// </summary>
-public class BookingService(IEventRepository eventRepository, IBookingRepository bookingRepository, ILogger<BookingService> logger) : IBookingService
+public class BookingService(
+    IEventRepository eventRepository,
+    IBookingRepository bookingRepository,
+    IOptions<BookingSettings> bookingSettings,
+    ILogger<BookingService> logger) : IBookingService
 {
     private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+    private readonly BookingSettings _bookingSettings = bookingSettings.Value;
     /// <inheritdoc/>
-    public async Task<Booking> CreateBookingAsync(Guid eventId, CancellationToken ct)
+    public async Task<Booking> CreateBookingAsync(Guid eventId, Guid userId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         logger.LogInformation("Создание новой брони для события: {Event}", eventId);
@@ -21,12 +28,22 @@ public class BookingService(IEventRepository eventRepository, IBookingRepository
             if (_event is null)
             {
                 logger.LogError("Идентификатор мероприятия {Id} не найден.", eventId);
-                throw new KeyNotExistException( eventId, ConstantValues.key_not_found_exception);
+                throw new KeyNotExistException(eventId, ConstantValues.key_not_found_exception);
             }
             if (!_event.TryReserveSeats())
-                throw new NoAvailableSeatsException($"Для события ID={_event.Id} отстутствуют свободные места для бронирования");
+                throw new NoAvailableSeatsException(_event.Id);
 
-            var newBooking = Booking.Create(eventId);
+            if (_event.StartAt < DateTime.UtcNow)
+            {
+                logger.LogError("Событие уже началось и недоступно для бронирования");
+                throw new EventAlreadyStartedException(eventId.ToString(), DateTime.UtcNow);
+            }
+
+            var userBookings = await bookingRepository.ListAsync(q => q.UserId == userId, ct);
+            if (userBookings.Count > _bookingSettings.MaxUserBookings)
+                throw new BookingLimitExceededException(eventId.ToString(), userId.ToString(), userBookings.Count, _bookingSettings.MaxUserBookings);
+
+            var newBooking = Booking.Create(eventId, userId);
             await bookingRepository.AddAsync(newBooking, ct);
             await eventRepository.UpdateAsync(_event, ct);
             logger.LogInformation("Бронирование создано. ID: {Id} ", newBooking.Id);

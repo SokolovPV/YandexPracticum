@@ -1,18 +1,73 @@
 using System.Reflection;
+using System.Text;
+using EventsApi.Domain.Exceptions;
+using EventsApi.Infrastructure.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 namespace EventsApi.Presentation;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddPresentationServices(this IServiceCollection services)
+    public static IServiceCollection AddPresentationServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllers();
         services.AddEndpointsApiExplorer();
+
+        var jwtOptions = configuration.GetSection(nameof(JwtTokenSettings)).Get<JwtTokenSettings>()
+          ?? throw new CustomValidationException("JWT configuration is missing");
+
+        services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(jwtOptions.SchemeName, options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    RoleClaimType = "role",
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtOptions.Audience,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret ?? string.Empty)),
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("CustomJwtPolicy", policy =>
+                policy.AddAuthenticationSchemes(jwtOptions.SchemeName)
+                    .RequireAuthenticatedUser());
+        });
+
+
         services.AddSwaggerGen(options =>
         {
             var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
+
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "Введите JWT токен в формате: Bearer {ваш_токен}",
+                Name = "Authorization",
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                Type = SecuritySchemeType.Http,
+                In = ParameterLocation.Header,
+            });
+
+            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+            });
+
         });
         return services;
     }

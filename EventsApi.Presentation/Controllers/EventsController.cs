@@ -1,13 +1,17 @@
 ﻿using EventsApi.Application.DTO.Booking;
 using EventsApi.Application.DTO.Event;
 using EventsApi.Application.Interfaces;
+using EventsApi.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace EventsApi.Controllers;
 /// <summary>
 /// Контроллер для работы с мероприятиями
 /// </summary>
+[Authorize(Policy = "CustomJwtPolicy")]
 [ApiController]
 [Route("[controller]")]
 [Produces("application/json")]
@@ -19,6 +23,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// </summary>
   /// <param name="filter">фильтр значений</param>
   /// <param name="ct">токен отмены</param>
+  [AllowAnonymous]
   [HttpGet]
   [Tags("АПИ для событий")]
   [ProducesResponseType(typeof(PaginatedResult), StatusCodes.Status200OK)]
@@ -33,6 +38,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// </summary>
   /// <param name="eventId">Параметр идентификатор мероприятия</param>
   /// <param name="ct">токен отмены</param>
+  [AllowAnonymous]
   [HttpGet("{eventId:Guid}")]
   [Tags("АПИ для событий")]
   [ProducesResponseType(typeof(EventInfoDTO), StatusCodes.Status200OK)]
@@ -50,6 +56,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// <param name="createEventDTO">Новое мероприятие</param>
   /// <param name="ct">токен отмены</param>
   [HttpPost]
+  [Authorize(Roles = nameof(RoleType.Admin))]
   [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status201Created)]
   public async Task<IActionResult> AddEvent([FromBody] CreateEventDTO createEventDTO, CancellationToken ct)
@@ -66,6 +73,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// <param name="updateEventDto">данные для обновления</param>
   /// <param name="ct">токен отмены</param>
   [HttpPut("{eventId:Guid}")]
+  [Authorize(Roles = nameof(RoleType.Admin))]
   [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -82,6 +90,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// <param name="eventId">Параметр идентификатор мероприятия</param>
   /// <param name="ct">токен отмены</param>
   [HttpDelete("{eventId:Guid}")]
+  [Authorize(Roles = nameof(RoleType.Admin))]
   [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -99,10 +108,16 @@ public class EventsController(IEventService eventService, IBookingService bookin
   [Tags("АПИ для бронирования")]
   [ProducesResponseType(StatusCodes.Status202Accepted)]
   [ProducesResponseType(StatusCodes.Status409Conflict)]
-  public async Task<IActionResult> AddBook([Required] Guid eventId, CancellationToken ct)
+  public async Task<IActionResult> AddBookingAsync([Required] Guid eventId, CancellationToken ct)
   {
-    logger.LogDebug("Обработка запроса POST {methodName}", nameof(AddBook));
-    var booking = await bookingService.CreateBookingAsync(eventId, ct);
+    logger.LogDebug("Обработка запроса POST {methodName}", nameof(AddBookingAsync));
+    var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub);
+    if (string.IsNullOrEmpty(userIdClaim?.Value) || !Guid.TryParse(userIdClaim.Value, out var userId))
+    {
+      return Unauthorized("Идентификатор пользователя не верен.");
+    }
+
+    var booking = await bookingService.CreateBookingAsync(eventId, userId, ct);
     var responseDto = new CreatedBookingDTO
     {
       Id = booking.Id,

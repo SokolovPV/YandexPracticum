@@ -33,11 +33,11 @@ public class AuthController(IAuthenticationService authService ,ILogger<AuthCont
 	/// </summary>
 	[HttpPost("/auth/login")]
 	[Tags("АПИ для работы с пользователями")]
-	public async Task<IActionResult> Login([FromBody] LoginDataRequest request, CancellationToken ct)
+	public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
 	{
 		logger.LogDebug("Обработка запроса POST {methodName}. Аутентификация пользователя: {login}", nameof(Login), request.Login);
 
-		var token = await authService.LoginUserAsync(request.Login, request.Password,  ct);
+		var token = await authService.LoginAsync(request.Login, request.Password,  ct);
 		if (token == null)
 			return NotFound(new { message = "Неверные авторизационные данные." });
 

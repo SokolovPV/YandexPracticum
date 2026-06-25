@@ -1,8 +1,8 @@
 using System.Linq.Expressions;
 using EventsApi.Application.Interfaces;
-using EventsApi.Application.Services;
 using EventsApi.Domain.Entities;
 using EventsApi.Domain.Enums;
+using EventsApi.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;

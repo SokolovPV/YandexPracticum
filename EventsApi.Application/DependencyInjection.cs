@@ -1,18 +1,22 @@
 using EventsApi.Application.Interfaces;
+using EventsApi.Application.Options;
 using EventsApi.Application.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EventsApi.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
-         // добавляем службы
+        services.Configure<BookingSettings>(configuration.GetSection(nameof(BookingSettings)));
+
+        // добавляем службы
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
 
-		    return services;
+        return services;
     }
 }

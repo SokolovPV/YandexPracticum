@@ -7,7 +7,7 @@ namespace EventsApi.Application.Services;
 /// <summary>
 /// Сервис для работы с пользователями
 /// </summary>
-public class AuthenticationService(IPasswordHasher passwordHasher, ITokenGenerator tokenGenerator, IUserRepository userRepository, ILogger<AuthenticationService> logger) : IAuthenticationService
+public class AuthenticationService(IPasswordHasher passwordHasher, ITokenGenerator tokenGenerator, IUserRepository userRepository) : IAuthenticationService
 {
     public async Task<string?> LoginAsync(string login, string password, CancellationToken ct)
     {
