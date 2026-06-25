@@ -59,7 +59,7 @@ public class BookingBackgroundServiceTests
     {
         // Arrange
         //var @event = 
-        var booking = Booking.Create(Guid.NewGuid());
+        var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid());
         var pendingBookings = new List<Booking> { booking };
 
         _bookingRepositoryMock
@@ -105,7 +105,7 @@ public class BookingBackgroundServiceTests
         // Arrange
         var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), 2);
         @event.AvailableSeats -= 1; //бронирем место
-        var booking = Booking.Create(@event.Id);
+        var booking = Booking.Create(@event.Id, Guid.NewGuid());
         var pendingBookings = new List<Booking> { booking };
 
         _bookingRepositoryMock
