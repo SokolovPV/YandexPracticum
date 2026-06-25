@@ -17,5 +17,12 @@ namespace EventsApi.Application.Interfaces
 		/// <param name="login">логин пользователя</param>
 		Task<bool> ExistsAsync(string login, CancellationToken ct);
 
+
+		/// <summary>
+		/// Метод получения пользователя по логину
+		/// </summary>
+		/// <param name="user">модель пользователя</param>
+		/// <returns></returns>
+		Task<User?> GetUserByLoginAsync(string login, CancellationToken ct);
 	}
 }
