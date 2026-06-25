@@ -1,6 +1,6 @@
 using EventsApi.Application.Interfaces;
-using EventsApi.Application.Services;
 using EventsApi.Infrastructure.Context;
+using EventsApi.Infrastructure.Options;
 using EventsApi.Infrastructure.Repositories;
 using EventsApi.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +12,7 @@ namespace EventsApi.Infrastructure;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Метод добавления сервис>jd
+    /// Метод добавления инфраструктурных сервисов
     /// </summary>
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
@@ -22,17 +22,20 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
+        services.Configure<JwtTokenSettings>(configuration.GetSection(nameof(JwtTokenSettings)));
 
         // добавляем репозитории
         services.AddScoped<IEventRepository, DbEventRepository>();
         services.AddScoped<IBookingRepository, DbBookingRepository>();
-		    services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
-		    // регистрируем фоновую службу
-		    services.AddHostedService<BookingBackgroundService>();
+        // регистрируем фоновую службу
+        services.AddHostedService<BookingBackgroundService>();
 
-		    services.AddScoped<IPasswordHasher, CustomPasswordHasher>();
+        // регистрируем службы
+        services.AddScoped<IPasswordHasher, CustomPasswordHasher>();
+        services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
 
-		    return services;
+        return services;
     }
 }
