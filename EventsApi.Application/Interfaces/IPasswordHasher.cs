@@ -14,6 +14,6 @@ namespace EventsApi.Application.Interfaces
 		/// </summary>
 		/// <param name="hashedPassword">хэш-пароля</param>
 		/// <param name="providedPassword">пароль пользователя</param>
-		bool VerifyHashedPassword(string hashedPassword, string providedPassword);
+		bool VerifyHashedPassword(string providedPassword, string hashedPassword);
 	}
 }

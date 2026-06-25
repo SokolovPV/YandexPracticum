@@ -9,7 +9,7 @@ namespace EventsApi.Infrastructure.Services
 			return BCrypt.Net.BCrypt.HashPassword(password);
 		}
 
-		public bool VerifyHashedPassword(string hashedPassword, string providedPassword)
+		public bool VerifyHashedPassword(string providedPassword, string hashedPassword)
 		{
 			return BCrypt.Net.BCrypt.Verify(providedPassword, hashedPassword);
 		}
