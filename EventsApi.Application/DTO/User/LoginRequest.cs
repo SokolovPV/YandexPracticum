@@ -5,7 +5,7 @@ namespace EventsApi.Application.DTO.User
 	/// <summary>
 	/// Данные для аутентификации пользователя
 	/// </summary>
-	public class LoginDataRequest
+	public class LoginRequest
 	{
 		/// <summary>
 		/// Логин пользователя
