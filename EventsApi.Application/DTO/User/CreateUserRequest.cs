@@ -14,7 +14,7 @@ public record CreateUserRequest
     [Required(ErrorMessage = "Пароль обязателен для заполнения.")]
     public required string Password { get; set; }
 
-    /// <summary>Роль пользователя</summary>
+    /// <summary>Роль пользователя: 0 - Роль простого пользователя, 1 - Роль администратора</summary>
     [RoleValidation]
-    public RoleType Role { get; set; }
+    public RoleType Role { get; set; } = RoleType.User;
 }
