@@ -27,7 +27,6 @@ public static class DependencyInjection
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    RoleClaimType = "role",
                     ValidateIssuer = true,
                     ValidIssuer = jwtOptions.Issuer,
                     ValidateAudience = true,
@@ -49,9 +48,16 @@ public static class DependencyInjection
 
         services.AddSwaggerGen(options =>
         {
-            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            options.IncludeXmlComments(xmlPath);
+            // var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            // options.IncludeXmlComments(xmlPath);
+            // Получаем все XML-файлы из базовой директории приложения
+            List<string> xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml", SearchOption.TopDirectoryOnly).ToList();
+            foreach (string xmlFile in xmlFiles)
+            {
+                // Подключаем каждый найденный XML-файл
+                options.IncludeXmlComments(xmlFile, includeControllerXmlComments: true);
+            }
 
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
