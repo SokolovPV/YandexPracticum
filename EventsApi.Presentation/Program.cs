@@ -37,6 +37,10 @@ namespace EventsApi.Presentation
 				app.UseSwaggerUI();
 			}
 
+
+			app.UseAuthentication();
+			app.UseAuthorization();
+
 			app.MapControllers();
 			app.Run();
 		}
