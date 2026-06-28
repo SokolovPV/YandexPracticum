@@ -17,7 +17,7 @@ public class AuthController(IAuthenticationService authService ,ILogger<AuthCont
     /// <summary>
     /// метод регистрации поьзователя
     /// </summary>
-    [HttpGet("/auth/register")]
+    [HttpPost("/auth/register")]
     [Tags("АПИ для работы с пользователями")]
     public async Task<IActionResult> Register([FromBody] CreateUserRequest createUserRequest, CancellationToken ct)
     {
