@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventsApi.Infrastructure.Repositories
 {
-	internal class UserRepository(AppDbContext appDbContext) : IUserRepository
+	public class UserRepository(AppDbContext appDbContext) : IUserRepository
 	{
 		public async Task AddAsync(User user, CancellationToken ct)
 		{

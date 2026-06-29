@@ -15,6 +15,7 @@ namespace EventsApi.UnitTests;
 public class BookingServiceTests
 {
     private readonly Mock<IBookingRepository> _bookingRepositoryMock;
+    private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<IEventRepository> _eventRepositoryMock;
     private readonly Mock<ILogger<BookingService>> _loggerMock;
     private readonly Mock<IOptions<BookingSettings>> _bookingSettingsMock;
@@ -23,7 +24,7 @@ public class BookingServiceTests
     public BookingServiceTests()
     {
         _bookingRepositoryMock = new Mock<IBookingRepository>();
-        _eventRepositoryMock = new Mock<IEventRepository>();
+        _userRepositoryMock = new Mock<IUserRepository>();
         _eventRepositoryMock = new Mock<IEventRepository>();
         _bookingSettingsMock = new Mock<IOptions<BookingSettings>>();
         _loggerMock = new Mock<ILogger<BookingService>>();
@@ -31,6 +32,7 @@ public class BookingServiceTests
         _bookingService = new BookingService(
             _eventRepositoryMock.Object,
             _bookingRepositoryMock.Object,
+            _userRepositoryMock.Object,
             _bookingSettingsMock.Object,
             _loggerMock.Object);
     }
@@ -42,7 +44,7 @@ public class BookingServiceTests
     {
         // Arrange       
         var initialSeats = 10;
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), initialSeats);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), initialSeats);
         var eventId = @event.Id;
         _eventRepositoryMock
             .Setup(repo => repo.GetByIdAsync(eventId, It.IsAny<CancellationToken>()))
@@ -78,7 +80,7 @@ public class BookingServiceTests
     {
         // Arrange
         var availableSeats = 3;
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), availableSeats);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), availableSeats);
         var eventId = @event.Id;
         var createdBookings = new List<Booking>();
 
@@ -153,7 +155,7 @@ public class BookingServiceTests
     public async Task CreateBookingAsync_ExhaustSeatsThenTryAgain_ThrowsException()
     {
         // Arrange
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), 1);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), 1);
         var eventId = @event.Id;
 
 
@@ -423,7 +425,7 @@ public class BookingServiceTests
     public async Task FullBookingLifecycle_CreateRejectThenCreateAgain_Success()
     {
         // Arrange
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), 1);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), 1);
         var eventId = @event.Id;
         var booking = Booking.Create(eventId, Guid.NewGuid());
         var bookingId = booking.Id;
@@ -474,7 +476,7 @@ public class BookingServiceTests
         const int concurrentRequests = 20;
 
         // Создаем реальный объект события для отслеживания состояния
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), totalSeats);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), totalSeats);
         var eventId = @event.Id;
 
         // Счетчики для отслеживания результатов

@@ -77,7 +77,7 @@ public class BookingService(
             }
 
             var userBookings = await bookingRepository.ListAsync(q => q.UserId == userId, ct);
-            if (userBookings.Count > _bookingSettings.MaxUserBookings)
+            if (userBookings  is not null && userBookings.Count > _bookingSettings.MaxUserBookings)
                 throw new BookingLimitExceededException(eventId.ToString(), userId.ToString(), userBookings.Count, _bookingSettings.MaxUserBookings);
 
             var newBooking = Booking.Create(eventId, userId);

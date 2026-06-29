@@ -21,9 +21,13 @@ namespace EventsApi.IntegrationTests
 
 			var bookingRepository = new DbBookingRepository(context);
 			var eventRepository = new DbEventRepository(context);
+			var userRepository = new UserRepository(context);
+
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
 			await eventRepository.AddAsync(@event, CancellationToken.None);
-			var booking = Booking.Create(@event.Id, Guid.NewGuid());
+			var user = User.Create("test", "TESTES", RoleType.User);
+			await userRepository.AddAsync(user, CancellationToken.None);
+			var booking = Booking.Create(@event.Id, user.Id);
 
 			//Act
 			await bookingRepository.AddAsync(booking, CancellationToken.None);
@@ -60,8 +64,10 @@ namespace EventsApi.IntegrationTests
 			var ct = CancellationToken.None;
 			using var context = await postgreSqlFixture.CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
-			var booking = Booking.Create(@event.Id, Guid.NewGuid());
+			var user = User.Create("test", "TESESTESSE", RoleType.User);
+			var booking = Booking.Create(@event.Id, user.Id);
 			await context.Events.AddAsync(@event, ct);
+			await context.Users.AddAsync(user, ct);
 			await context.Bookings.AddAsync(booking, ct);
 			await context.SaveChangesAsync(ct);
 
@@ -99,8 +105,10 @@ namespace EventsApi.IntegrationTests
 			var ct = CancellationToken.None;
 			using var context = await postgreSqlFixture.CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
-			var booking = Booking.Create(@event.Id, Guid.NewGuid());
+			var user = User.Create("test", "TETESTESTES", RoleType.User);
+			var booking = Booking.Create(@event.Id, user.Id);
 			await context.Events.AddAsync(@event, ct);
+			await context.Users.AddAsync(user, ct);
 			await context.Bookings.AddAsync(booking, ct);
 			await context.SaveChangesAsync(ct);
 
@@ -141,9 +149,11 @@ namespace EventsApi.IntegrationTests
 			var ct = CancellationToken.None;
 			using var context = await postgreSqlFixture.CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
-			var booking = Booking.Create(@event.Id, Guid.NewGuid());
+			var user = User.Create("Test", "QQQQQQQQQQQQ", RoleType.User);
+			var booking = Booking.Create(@event.Id, user.Id);
 
 			await context.Events.AddAsync(@event, ct);
+			await context.Users.AddAsync(user, ct);
 			await context.Bookings.AddAsync(booking, ct);
 			await context.SaveChangesAsync(ct);
 
@@ -171,12 +181,15 @@ namespace EventsApi.IntegrationTests
 			var ct = CancellationToken.None;
 			using var context = await postgreSqlFixture.CreateContextAsync();
 			var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(1), 5);
-			var booking = Booking.Create(@event.Id, Guid.NewGuid());
+			var user = User.Create("Test", "TEST", RoleType.User);
+			var booking = Booking.Create(@event.Id, user.Id);
+
 			booking.Reject();
-			var bookings = Enumerable.Range(0, 5).Select(i => Booking.Create(@event.Id, Guid.NewGuid()));
+			var bookings = Enumerable.Range(0, 5).Select(i => Booking.Create(@event.Id,  user.Id));
 
 			// Arrange
 			await context.Events.AddAsync(@event, ct);
+			await context.Users.AddAsync(user, ct);
 			await context.Bookings.AddAsync(booking, ct);
 			await context.Bookings.AddRangeAsync(bookings, ct);
 			await context.SaveChangesAsync(ct);
