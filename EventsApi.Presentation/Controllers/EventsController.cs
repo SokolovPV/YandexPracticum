@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace EventsApi.Controllers;
 /// <summary>
@@ -105,17 +106,16 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// Метод для создания бронирования
   /// </summary>
   [HttpPost("{eventId:guid}/book")]
+  [Authorize(Roles = nameof(RoleType.User))]
   [Tags("АПИ для бронирования")]
   [ProducesResponseType(StatusCodes.Status202Accepted)]
   [ProducesResponseType(StatusCodes.Status409Conflict)]
   public async Task<IActionResult> AddBookingAsync([Required] Guid eventId, CancellationToken ct)
   {
     logger.LogDebug("Обработка запроса POST {methodName}", nameof(AddBookingAsync));
-    var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub);
+    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
     if (string.IsNullOrEmpty(userIdClaim?.Value) || !Guid.TryParse(userIdClaim.Value, out var userId))
-    {
       return Unauthorized("Идентификатор пользователя не верен.");
-    }
 
     var booking = await bookingService.CreateBookingAsync(eventId, userId, ct);
     var responseDto = new CreatedBookingDTO

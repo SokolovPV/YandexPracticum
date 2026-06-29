@@ -60,6 +60,10 @@ public class GlobalExceptionHandlingMiddleware
         {
             ValidationException ve => StatusCodes.Status400BadRequest,
             KeyNotExistException kne => StatusCodes.Status404NotFound,
+            EntityNotFoundException efe => StatusCodes.Status404NotFound,
+            EventAlreadyStartedException ease => StatusCodes.Status400BadRequest,
+            BookingLimitExceededException ble => StatusCodes.Status409Conflict,
+            AccessDeniedException ade => StatusCodes.Status403Forbidden,
             NoAvailableSeatsException nac => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
         };
