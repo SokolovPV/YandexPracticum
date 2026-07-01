@@ -51,7 +51,139 @@
 ![схема направления зависимостей проектов](https://pictures.s3.yandex.net/resources/image_1779201047.png)
 
 
-# Необходимые компоненты
+---
+
+## Ролевая модель и разграничение прав
+
+Сервис бронирования использует **JWT-аутентификацию **
+
+
+### Роли пользователей
+
+| Роль | Описание | Права доступа |
+|------|----------|---------------|
+| `User` | Обычный пользователь | • Обычный пользователь может только бронировать события и отменять собственные брони. |
+| `Admin` | Администратор | • Администратор управляет событиями — создаёт, редактирует, удаляет их и может отменять любые брони |
+
+### Разграничение прав доступа к API
+
+#### Публичные endpoints (без аутентификации)
+
+```http
+GET  /Events              # Список событий (с фильтрацией и пагинацией)
+GET  /Events/{eventId}    # Информация о событии по идентификатору
+POST /auth/register       # Регистрация нового пользователя
+POST /auth/login          # Аутентификация и получение JWT-токена
+```
+
+#### Endpoints, требующие аутентификации
+
+```http
+POST    /Events/                      # Метод для создания события
+PUT     /Events/{eventId}             # Метод обновления даных события
+DELETE  /Events/{eventId}             # Метод удаляет событие по идентификатору
+POST    /Events/{eventId}/book        # Метод для создания бронирования
+GET     /Bookings/{bookingId}         # Получение информации по бронированию
+DELETE  /Bookings/{bookingId}         # Отмена брони (только владелец или Admin)
+```
+
+**Ограничения для роли User:**
+- запрет бронирования события, которое уже началось (`400 EventAlreadyStartedException`)
+- запрет превышения лимита активных броней (по умолчанию 10) → `409 BookingLimitExceededException`
+- запрет отмены чужой брони → `403 AccessDeniedException`
+
+### Инструкция по получению JWT-токена через Swagger
+
+1. **Регистрация пользователя**
+
+   Откройте Swagger UI: [https://localhost:5091/swagger/index.html](https://localhost:5001/swagger/index.html)
+
+   Endpoint `POST /auth/register`:
+
+   ```json
+   {
+     "login": "user",
+     "password": "testpassword!!!",
+     "role": 0
+   }
+   ```
+
+   **Доступные роли:** 0 -`"User"` или 1 -`"Admin"`
+
+   **Успешный ответ:** `204 No Content`
+
+2. **Получение JWT-токена**
+
+   Endpoint `POST /auth/login`:
+
+   ```json
+   {
+     "login": "user",
+     "password": "testpassword!!!"
+   }
+   ```
+
+   **Успешный ответ:**
+   ```json
+    {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJjYjc0Mjk2YS05OTYzLTQwMzYtODg4Ny1iM2I4YWYyNWJlMGUiLCJyb2xlIjoiVXNlciIsImp0aSI6IjQwMjkzZDc3LWNiNDctNDc3Yi04NDFmLTA4MTE5OTNmOWQzNyIsIm5iZiI6MTc4MjkxMzY0NiwiZXhwIjoxNzgyOTE3MjQ2LCJpYXQiOjE3ODI5MTM2NDYsImlzcyI6IkV2ZW50c0FwaUlzc3VlciIsImF1ZCI6IkV2ZW50c0FwaUF1ZGllbmNlIn0.tXoyTePqpt5EgYvaMu3z0TBtY5bELjq4KGA-3zFcvGo"
+    }
+   ```
+3. **Авторизация в Swagger**
+   - Нажмите кнопку **Authorize** в правом верхнем углу Swagger UI
+   - Полученное значение `token` необходимо из метода `POST /auth/login` необходимо вставить в поле поле **Value**
+   - Нажмите **Authorize**, затем **Close**
+
+
+### Структура JWT-токена
+
+Токен содержит следующие claims:
+
+| Claim | Значение | Описание |
+|-------|----------|----------|
+| `sub` (`Name`) | Логин пользователя | Используется для идентификации пользователя при бронировании |
+| `role` | `User` или `Admin` | Для проверки роли в методах контроллера `[Authorize(Roles = "Admin")]` |
+| `jti` | GUID | Уникальный идентификатор токена |
+| `iat` | Unix timestamp | Время выдачи токена |
+
+### Настройка секрета JWT в конфигурации
+
+#### Конфигурация для разработки (`appsettings.Development.json`)
+
+```json
+{
+  "JwtTokenSettings": {
+    "SchemeName": "EventsApiScheme",
+    "Secret": "!234567890Qwertyuiop[Asdfghjkl;'",
+    "Issuer": "EventsApiIssuer",
+    "Audience": "EventsApiAudience",
+    "Lifetime": 60
+  }
+}
+```
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `SchemeName` | string | Название схемы аутентификации |
+| `Secret` | string | **Секретный ключ для подписи JWT** (минимум 32 символа для HMAC SHA-256) |
+| `Issuer` | string | Издатель токена (проверяется при валидации) |
+| `Audience` | string | Целевая аудитория токена (проверяется при валидации) |
+| `Lifetime` | int | Время жизни токена в **минутах** |
+
+---
+
+### Рекомендации использовать безопасное значение в продакшене
+1. **Используйте User Secrets (для локального тестирования):**
+   ```bash
+   dotnet user-secrets set "JwtSettings:Secret" "ProdSecretKey+!@#!!!"
+   ```
+
+2. **Используйте переменные окружения :**
+   ```bash
+   export JwtSettings_Secret="ProdSecretKey+!@#!!!"
+
+
+# Необходимые компоненты для приложения
 Проект разрабатывается на VS Code в ОС Linux с использованием ASP .NET Core 10
 
 ## Требования
