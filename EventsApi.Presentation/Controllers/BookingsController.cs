@@ -40,7 +40,7 @@ public class BookingsController(IBookingService bookingService, ILogger<Bookings
     /// Удаление бронирования
     /// </summary>
     [HttpDelete("{bookingId:guid}")]
-    [Tags("API для бронирования")]
+    [Tags("АПИ для бронирования")]
     public async Task<IActionResult> CancelBooking([Required] Guid bookingId, CancellationToken ct)
     {
         logger.LogDebug("Обработка запроса DELETE {methodName}. Удаление бронирования: {bookingId}", nameof(CancelBooking), bookingId);
