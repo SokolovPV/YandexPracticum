@@ -18,10 +18,10 @@ public class JwtTokenGenerator(IOptions<JwtTokenSettings> options) : ITokenGener
         var lifeTime = now.AddMinutes(jwtTokenSettings.Lifetime);
         var claims = new[]
         {
-            // идентификатор пользователя
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+             // идентификатор пользователя
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             // роль
-            new Claim("role", user.Role.ToString()),
+            new Claim(ClaimTypes.Role, user.Role.ToString()),
             // ID токена
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };

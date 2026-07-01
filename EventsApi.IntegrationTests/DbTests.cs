@@ -118,12 +118,14 @@ namespace EventsApi.IntegrationTests
 
             // Проверка внешних ключей
             var foreignKeys = entityType.GetForeignKeys().ToList();
-            Assert.Single(foreignKeys);
-
+   
             Assert.Contains(foreignKeys, fk =>
                 fk.PrincipalEntityType.ClrType == typeof(Event) &&
                 fk.Properties.Any(p => p.Name == "EventId"));
 
+            Assert.Contains(foreignKeys, fk =>
+                fk.PrincipalEntityType.ClrType == typeof(User) &&
+                fk.Properties.Any(p => p.Name == "UserId"));
 
             // Проверка индексов
             var indexes = entityType.GetIndexes().ToList();

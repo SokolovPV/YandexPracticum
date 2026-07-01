@@ -1,14 +1,14 @@
 using EventsApi.Application.Interfaces;
 using EventsApi.Domain.Entities;
 using EventsApi.Domain.Enums;
-using Microsoft.Extensions.Logging;
 
 namespace EventsApi.Application.Services;
 /// <summary>
 /// Сервис для работы с пользователями
 /// </summary>
-public class AuthenticationService(IPasswordHasher passwordHasher, ITokenGenerator tokenGenerator, IUserRepository userRepository, ILogger<AuthenticationService> logger) : IAuthenticationService
+public class AuthenticationService(IPasswordHasher passwordHasher, ITokenGenerator tokenGenerator, IUserRepository userRepository) : IAuthenticationService
 {
+    /// <inheritdoc/>
     public async Task<string?> LoginAsync(string login, string password, CancellationToken ct)
     {
         var user = await userRepository.GetUserByLoginAsync(login, ct);
@@ -21,7 +21,7 @@ public class AuthenticationService(IPasswordHasher passwordHasher, ITokenGenerat
             : tokenGenerator.GenerateToken(user, ct);
     }
 
-
+    /// <inheritdoc/>
     public async Task<bool> RegisterUserAsync(string login, string password, RoleType role, CancellationToken ct)
     {
         if (await userRepository.ExistsAsync(login, ct))

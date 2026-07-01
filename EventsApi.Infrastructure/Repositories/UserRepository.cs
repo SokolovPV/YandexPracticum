@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventsApi.Infrastructure.Repositories
 {
-	internal class UserRepository(AppDbContext appDbContext) : IUserRepository
+	public class UserRepository(AppDbContext appDbContext) : IUserRepository
 	{
 		public async Task AddAsync(User user, CancellationToken ct)
 		{
@@ -22,5 +22,10 @@ namespace EventsApi.Infrastructure.Repositories
 		{
 			return await appDbContext.Users.AnyAsync(u => u.Login == login, ct);
 		}
-	}
+
+        public async Task<User?> GetUserByIdAsync(Guid userId, CancellationToken ct)
+        {
+            return await appDbContext.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
+        }
+    }
 }

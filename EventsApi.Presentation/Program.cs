@@ -16,8 +16,8 @@ namespace EventsApi.Presentation
 			builder.Logging.AddConsole();
 
 			builder.Services.AddInfrastructureServices(builder.Configuration);
-			builder.Services.AddApplicationServices();
-			builder.Services.AddPresentationServices();
+			builder.Services.AddApplicationServices(builder.Configuration);
+			builder.Services.AddPresentationServices(builder.Configuration);
 
 			var app = builder.Build();
 			using (var scope = app.Services.CreateScope())
@@ -36,6 +36,10 @@ namespace EventsApi.Presentation
 				app.UseSwagger();
 				app.UseSwaggerUI();
 			}
+
+
+			app.UseAuthentication();
+			app.UseAuthorization();
 
 			app.MapControllers();
 			app.Run();

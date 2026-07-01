@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EventsApi.Application\EventsApi.Application.csproj" />
+    <ProjectReference Include="..\EventsApi.Infrastructure\EventsApi.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

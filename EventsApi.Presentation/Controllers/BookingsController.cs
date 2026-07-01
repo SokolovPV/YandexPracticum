@@ -2,6 +2,8 @@
 using EventsApi.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace EventsApi.Controllers;
 
@@ -30,5 +32,25 @@ public class BookingsController(IBookingService bookingService, ILogger<Bookings
         );
 
         return Ok(infoBookingDTO);
+    }
+
+    /// <summary>
+    /// Удаление бронирования
+    /// </summary>
+    [HttpDelete("{bookingId:guid}")]
+    [Tags("API для бронирования")]
+    public async Task<IActionResult> CancelBooking([Required] Guid bookingId, CancellationToken ct)
+    {
+        logger.LogDebug("Обработка запроса DELETE {methodName}. Удаление бронирования: {bookingId}", nameof(CancelBooking), bookingId);
+
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userIdClaim?.Value) || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+        {
+            return Unauthorized("Не удалось определить идентификатор пользователя.");
+        }
+
+        await bookingService.CancelBookingAsync(bookingId, userId, ct);
+        return NoContent();
     }
 }
