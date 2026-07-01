@@ -1,5 +1,7 @@
 namespace EventsApi.Domain.Exceptions;
-
+/// <summary>
+/// >Исключении, которое вызывается при отсутствии свободных мест
+/// </summary>
 public class NoAvailableSeatsException : Exception
 {
     public Guid eventId { get; }

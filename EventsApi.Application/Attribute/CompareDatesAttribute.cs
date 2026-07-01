@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 namespace EventsApi.Application.Attribute;
 
+/// <summary>
+/// Атрибут валидации для проверки "Дата окончания должна быть больше даты начала"
+/// </summary>
 [AttributeUsage(AttributeTargets.Property)]
 public class CompareDatesAttribute : ValidationAttribute
 {

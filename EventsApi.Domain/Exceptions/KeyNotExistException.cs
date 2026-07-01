@@ -1,5 +1,7 @@
 ﻿namespace EventsApi.Domain.Exceptions;
-
+/// <summary>
+/// Исключение, когда идентификатор не найден 
+/// </summary>
 public class KeyNotExistException :  Exception
 {
   public Guid eventId { get; }
