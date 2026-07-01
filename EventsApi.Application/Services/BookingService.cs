@@ -23,6 +23,8 @@ public class BookingService(
     public async Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+         logger.LogInformation("Отмена брони: {BookingId}", bookingId);
+        await _semaphore.WaitAsync(ct);
         try
         {
             var user = await userRepository.GetUserByIdAsync(userId, ct);

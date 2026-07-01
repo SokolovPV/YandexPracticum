@@ -1,13 +1,14 @@
 ﻿using EventsApi.Application.DTO.Booking;
 using EventsApi.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace EventsApi.Controllers;
 
 [ApiController]
+[Authorize(Policy = "CustomJwtPolicy")]
 [Route("[controller]")]
 [Produces("application/json")]
 public class BookingsController(IBookingService bookingService, ILogger<BookingsController> logger) : ControllerBase
@@ -26,6 +27,7 @@ public class BookingsController(IBookingService bookingService, ILogger<Bookings
         var infoBookingDTO = new InfoBookingDTO(
             Id: booking.Id,
             EventID: booking.EventId,
+            UserID: booking.UserId,
             Status: booking.Status.ToString(),
             CreatedAt: booking.CreatedAt,
             ProcessedAt: booking.ProcessedAt
