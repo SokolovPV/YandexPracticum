@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Moq.Contrib.ExpressionBuilders.Logging;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 
@@ -28,7 +29,7 @@ public class BookingServiceTests
         _userRepositoryMock = new Mock<IUserRepository>();
         _eventRepositoryMock = new Mock<IEventRepository>();
         _loggerMock = new Mock<ILogger<BookingService>>();
-        
+
         _settings = new BookingSettings { MaxUserBookings = 2 };
         var optionsMock = new Mock<IOptions<BookingSettings>>();
         optionsMock.Setup(x => x.Value).Returns(_settings);
@@ -271,7 +272,7 @@ public class BookingServiceTests
             Booking.Create(eventId, userId),
             Booking.Create(eventId, userId)
         };
-    
+
 
         _eventRepositoryMock.Setup(x => x.GetByIdAsync(eventId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(futureEvent);
@@ -317,7 +318,138 @@ public class BookingServiceTests
 
     #endregion
 
+    #region Отмена бронировани
+    [Fact]
+    public async Task CancelBookingAsync_WhenUserCancelsOwnBooking_ShouldReturnTrue()
+    {
+        // Arrange
+        var bookingId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var cancellationToken = CancellationToken.None;
+        var @event = Event.Create("Title", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(1), 10);
+        var eventId = @event.Id;
+        var user = User.Create("user", "secret!!!", RoleType.User);
+        var booking = Booking.Create(eventId, userId);
 
+        _userRepositoryMock
+            .Setup(x => x.GetUserByIdAsync(userId, cancellationToken))
+            .ReturnsAsync(user);
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByIdAsync(bookingId, cancellationToken))
+            .ReturnsAsync(booking);
+
+        _eventRepositoryMock
+            .Setup(x => x.GetByIdAsync(eventId, cancellationToken))
+            .ReturnsAsync(@event);
+
+        _bookingRepositoryMock
+            .Setup(x => x.UpdateAsync(booking, cancellationToken))
+            .Returns(Task.CompletedTask);
+
+        _eventRepositoryMock
+            .Setup(x => x.UpdateAsync(@event, cancellationToken))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _bookingService.CancelBookingAsync(bookingId, userId, cancellationToken);
+
+        // Assert
+        Assert.True(result);
+        Assert.Equal(BookingStatus.Cancelled, booking.Status);
+        Assert.Equal(10, @event.AvailableSeats); // ReleaseSeats возвращаем 1 бронирование
+        _bookingRepositoryMock.Verify(x => x.UpdateAsync(booking, cancellationToken), Times.Once);
+        _eventRepositoryMock.Verify(x => x.UpdateAsync(@event, cancellationToken), Times.Once);
+        _loggerMock.Verify(Log.With.LogLevel(LogLevel.Information)
+         .And.LogMessage(msg => msg.Contains($"Бронирование ID: {bookingId} успешно отменено.")),
+         Times.AtMostOnce());
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_WhenUserCancelsOtherUserBooking_ShouldThrowAccessDeniedException()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var cancellationToken = CancellationToken.None;
+
+        var @event = Event.Create("Title", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(1), 10);
+        var eventId = @event.Id;
+
+        var user = User.Create("user", "secret!!!", RoleType.User);
+        var userId = user.Id;
+        var booking = Booking.Create(eventId, otherUserId);
+        var bookingId = booking.Id;
+
+        _userRepositoryMock
+            .Setup(x => x.GetUserByIdAsync(userId, cancellationToken))
+            .ReturnsAsync(user);
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByIdAsync(bookingId, cancellationToken))
+            .ReturnsAsync(booking);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<AccessDeniedException>(() =>
+            _bookingService.CancelBookingAsync(bookingId, userId, cancellationToken));
+
+        Assert.Equal(user.Id.ToString(), exception.UserId);
+        Assert.Equal(nameof(_bookingService.CancelBookingAsync), exception.ActionName);
+
+        _bookingRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()), Times.Never);
+        _eventRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()), Times.Never);
+        _loggerMock.Verify(Log.With.LogLevel(LogLevel.Information)
+        .And.LogMessage(msg => msg.Contains($"Бронирование ID: {bookingId} успешно отменено.")),
+        Times.Never);
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_WhenAdminCancelsOtherUserBooking_ShouldReturnTrue()
+    {
+        // Arrange
+        var @event = Event.Create("Title", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(1), 10);
+        var eventId = @event.Id;
+        var cancellationToken = CancellationToken.None;
+        var admin = User.Create("user", "secret!!!", RoleType.Admin);
+        var otherUserId = Guid.NewGuid();
+        var booking = Booking.Create(eventId, otherUserId);
+        var bookingId = booking.Id;
+
+        _userRepositoryMock
+            .Setup(x => x.GetUserByIdAsync(admin.Id, cancellationToken))
+            .ReturnsAsync(admin);
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByIdAsync(bookingId, cancellationToken))
+            .ReturnsAsync(booking);
+
+        _eventRepositoryMock
+            .Setup(x => x.GetByIdAsync(eventId, cancellationToken))
+            .ReturnsAsync(@event);
+
+        _bookingRepositoryMock
+            .Setup(x => x.UpdateAsync(booking, cancellationToken))
+            .Returns(Task.CompletedTask);
+
+        _eventRepositoryMock
+            .Setup(x => x.UpdateAsync(@event, cancellationToken))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _bookingService.CancelBookingAsync(bookingId, admin.Id, cancellationToken);
+
+        // Assert
+        Assert.True(result);
+        Assert.Equal(BookingStatus.Cancelled, booking.Status);
+        Assert.Equal(10, @event.AvailableSeats);
+        _bookingRepositoryMock.Verify(x => x.UpdateAsync(booking, cancellationToken), Times.Once);
+        _eventRepositoryMock.Verify(x => x.UpdateAsync(@event, cancellationToken), Times.Once);
+        _loggerMock.Verify(Log.With.LogLevel(LogLevel.Information)
+         .And.LogMessage(msg => msg.Contains($"Бронирование ID: {bookingId} успешно отменено.")),
+         Times.AtMostOnce());
+    }
+
+
+    #endregion
 
     #region Тесты на смену статуса брони
 

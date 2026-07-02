@@ -80,12 +80,14 @@ public class Booking
         Status = BookingStatus.Rejected;
         ProcessedAt = DateTime.UtcNow;
     }
-    
+
     /// <summary>
     /// Отменяем бронирование
     /// </summary>
     public void Cancel()
     {
+        if (Status == BookingStatus.Cancelled)
+            return;
         Status = BookingStatus.Cancelled;
         ProcessedAt = DateTime.UtcNow;
     }

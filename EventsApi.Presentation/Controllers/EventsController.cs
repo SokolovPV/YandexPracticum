@@ -106,7 +106,6 @@ public class EventsController(IEventService eventService, IBookingService bookin
   /// Метод для создания бронирования
   /// </summary>
   [HttpPost("{eventId:guid}/book")]
-  [Authorize(Roles = nameof(RoleType.User))]
   [Tags("АПИ для бронирования")]
   [ProducesResponseType(StatusCodes.Status202Accepted)]
   [ProducesResponseType(StatusCodes.Status409Conflict)]
