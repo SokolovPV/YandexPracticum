@@ -78,7 +78,8 @@ public class BookingService(
                 throw new EventAlreadyStartedException(eventId.ToString(), DateTime.UtcNow);
             }
 
-            var userBookings = await bookingRepository.ListAsync(q => q.UserId == userId, ct);
+            var userBookings = await bookingRepository.ListAsync(q => q.UserId == userId 
+                                    && q.Status != BookingStatus.Rejected && q.Status != BookingStatus.Cancelled, ct);
             if (userBookings != null && userBookings.Count >= _bookingSettings.MaxUserBookings)
                 throw new BookingLimitExceededException(eventId.ToString(), userId.ToString(), userBookings.Count, _bookingSettings.MaxUserBookings);
 
