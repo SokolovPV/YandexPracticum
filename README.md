@@ -182,6 +182,20 @@ DELETE  /Bookings/{bookingId}         # Отмена брони (только в
    ```bash
    export JwtSettings_Secret="ProdSecretKey+!@#!!!"
 
+### Хеширование паролей
+Для реализации хеширования строки и проверки соответствия пароля хешу используется библиотека  BCrypt.Net.BCrypt
+
+```c#
+		public string HashPassword(string password)
+		{
+			return BCrypt.Net.BCrypt.HashPassword(password);
+		}
+		
+		public bool VerifyHashedPassword(string providedPassword, string hashedPassword)
+		{
+			return BCrypt.Net.BCrypt.Verify(providedPassword, hashedPassword);
+		}
+```
 
 # Необходимые компоненты для приложения
 Проект разрабатывается на VS Code в ОС Linux с использованием ASP .NET Core 10
