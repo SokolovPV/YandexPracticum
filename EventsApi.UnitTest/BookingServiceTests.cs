@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 
 namespace EventsApi.UnitTests;
 
@@ -18,22 +19,25 @@ public class BookingServiceTests
     private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<IEventRepository> _eventRepositoryMock;
     private readonly Mock<ILogger<BookingService>> _loggerMock;
-    private readonly Mock<IOptions<BookingSettings>> _bookingSettingsMock;
     private readonly BookingService _bookingService;
+    private readonly BookingSettings _settings;
 
     public BookingServiceTests()
     {
         _bookingRepositoryMock = new Mock<IBookingRepository>();
         _userRepositoryMock = new Mock<IUserRepository>();
         _eventRepositoryMock = new Mock<IEventRepository>();
-        _bookingSettingsMock = new Mock<IOptions<BookingSettings>>();
         _loggerMock = new Mock<ILogger<BookingService>>();
+        
+        _settings = new BookingSettings { MaxUserBookings = 2 };
+        var optionsMock = new Mock<IOptions<BookingSettings>>();
+        optionsMock.Setup(x => x.Value).Returns(_settings);
 
         _bookingService = new BookingService(
             _eventRepositoryMock.Object,
             _bookingRepositoryMock.Object,
             _userRepositoryMock.Object,
-            _bookingSettingsMock.Object,
+            optionsMock.Object,
             _loggerMock.Object);
     }
 
@@ -235,6 +239,81 @@ public class BookingServiceTests
         @event.AvailableSeats.Should().Be(0,
             "количество мест не должно измениться при неудачной попытке бронирования");
     }
+
+    [Fact]
+    public async Task CreateBookingAsync_EventAlreadyStarted_ThrowsEventAlreadyStartedException()
+    {
+        // Arrange
+        var eventId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var pastEvent = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), 5);
+        await Task.Delay(100, CancellationToken.None); // Задержка для имитации прошедшего события
+
+        _eventRepositoryMock.Setup(x => x.GetByIdAsync(eventId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pastEvent);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<EventAlreadyStartedException>(() =>
+            _bookingService.CreateBookingAsync(eventId, userId, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_UserReachedLimit_ThrowsBookingLimitExceededException()
+    {
+        // Arrange
+        var eventId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var futureEvent = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), 5);
+
+        // Имитируем наличие уже существующих броней, лимит = 2
+        var existingBookings = new List<Booking>
+        {
+            Booking.Create(eventId, userId),
+            Booking.Create(eventId, userId)
+        };
+    
+
+        _eventRepositoryMock.Setup(x => x.GetByIdAsync(eventId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(futureEvent);
+
+        _bookingRepositoryMock.Setup(x => x.ListAsync(It.IsAny<Expression<Func<Booking, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingBookings);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<BookingLimitExceededException>(() =>
+            _bookingService.CreateBookingAsync(eventId, userId, CancellationToken.None));
+    }
+
+
+    [Fact]
+    public async Task CreateBookingAsync_LimitsAreUserSpecific_DoesNotAffectOtherUsers()
+    {
+        // Arrange
+        var eventId = Guid.NewGuid();
+        var userWithLimit = Guid.NewGuid();
+        var userWithoutLimit = Guid.NewGuid();
+
+
+        var futureEvent = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), 5);
+
+        // Для первого пользователя создаем лимит
+        var userBookings = new List<Booking> { Booking.Create(eventId, userWithLimit), Booking.Create(eventId, userWithLimit) };
+
+        _eventRepositoryMock.Setup(x => x.GetByIdAsync(eventId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(futureEvent);
+
+        // Настраиваем репозиторий так, что для другого пользователя броней нет
+        _bookingRepositoryMock.Setup(x => x.ListAsync(It.IsAny<Expression<Func<Booking, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(await Task.FromResult(new List<Booking>()));
+
+        // Act
+        var result = await _bookingService.CreateBookingAsync(eventId, userWithoutLimit, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        _bookingRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
 
     #endregion
 
