@@ -28,7 +28,7 @@
 # Infrastructure (EventsApi.Infrastructure)
 Проект, содержит реализации, которые зависят от внешних технологий:
 
-- реализации интерфейсов репозиториев с использованием DbContext (реализект интерфейсы слоя Application);
+- реализации интерфейсов репозиториев с использованием DbContext (реализует интерфейсы слоя Application);
 - DbContext — AppDbContext;
 - конфигурации сущностей: EventConfiguration, BookingConfiguration;
 - миграции БД;
@@ -51,7 +51,153 @@
 ![схема направления зависимостей проектов](https://pictures.s3.yandex.net/resources/image_1779201047.png)
 
 
-# Необходимые компоненты
+---
+
+## Ролевая модель и разграничение прав
+
+Сервис бронирования использует **JWT-аутентификацию **
+
+
+### Роли пользователей
+
+| Роль | Описание | Права доступа |
+|------|----------|---------------|
+| `User` | Обычный пользователь | • Обычный пользователь может только бронировать события и отменять собственные брони. |
+| `Admin` | Администратор | • Администратор управляет событиями — создаёт, редактирует, удаляет их и может отменять любые брони |
+
+### Разграничение прав доступа к API
+
+#### Публичные endpoints (без аутентификации)
+
+```http
+GET  /Events              # Список событий (с фильтрацией и пагинацией)
+GET  /Events/{eventId}    # Информация о событии по идентификатору
+POST /auth/register       # Регистрация нового пользователя
+POST /auth/login          # Аутентификация и получение JWT-токена
+```
+
+#### Endpoints, требующие аутентификации
+
+```http
+POST    /Events/                      # Метод для создания события
+PUT     /Events/{eventId}             # Метод обновления даных события
+DELETE  /Events/{eventId}             # Метод удаляет событие по идентификатору
+POST    /Events/{eventId}/book        # Метод для создания бронирования
+GET     /Bookings/{bookingId}         # Получение информации по бронированию
+DELETE  /Bookings/{bookingId}         # Отмена брони (только владелец или Admin)
+```
+
+**Ограничения для роли User:**
+- запрет бронирования события, которое уже началось (`400 EventAlreadyStartedException`)
+- запрет превышения лимита активных броней (по умолчанию 10) → `409 BookingLimitExceededException`
+- запрет отмены чужой брони → `403 AccessDeniedException`
+
+### Инструкция по получению JWT-токена через Swagger
+
+1. **Регистрация пользователя**
+
+   Откройте Swagger UI: [https://localhost:5091/swagger/index.html](https://localhost:5001/swagger/index.html)
+
+   Endpoint `POST /auth/register`:
+
+   ```json
+   {
+     "login": "user",
+     "password": "testpassword!!!",
+     "role": 0
+   }
+   ```
+
+   **Доступные роли:** 0 -`"User"` или 1 -`"Admin"`
+
+   **Успешный ответ:** `204 No Content`
+
+2. **Получение JWT-токена**
+
+   Endpoint `POST /auth/login`:
+
+   ```json
+   {
+     "login": "user",
+     "password": "testpassword!!!"
+   }
+   ```
+
+   **Успешный ответ:**
+   ```json
+    {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJjYjc0Mjk2YS05OTYzLTQwMzYtODg4Ny1iM2I4YWYyNWJlMGUiLCJyb2xlIjoiVXNlciIsImp0aSI6IjQwMjkzZDc3LWNiNDctNDc3Yi04NDFmLTA4MTE5OTNmOWQzNyIsIm5iZiI6MTc4MjkxMzY0NiwiZXhwIjoxNzgyOTE3MjQ2LCJpYXQiOjE3ODI5MTM2NDYsImlzcyI6IkV2ZW50c0FwaUlzc3VlciIsImF1ZCI6IkV2ZW50c0FwaUF1ZGllbmNlIn0.tXoyTePqpt5EgYvaMu3z0TBtY5bELjq4KGA-3zFcvGo"
+    }
+   ```
+3. **Авторизация в Swagger**
+   - Нажмите кнопку **Authorize** в правом верхнем углу Swagger UI
+   - Полученное значение `token` необходимо из метода `POST /auth/login` необходимо вставить в поле поле **Value**
+   - Нажмите **Authorize**, затем **Close**
+
+
+### Структура JWT-токена
+
+Токен содержит следующие claims:
+
+| Claim | Значение | Описание |
+|-------|----------|----------|
+| `sub` (`Name`) | Логин пользователя | Используется для идентификации пользователя при бронировании |
+| `role` | `User` или `Admin` | Для проверки роли в методах контроллера `[Authorize(Roles = "Admin")]` |
+| `jti` | GUID | Уникальный идентификатор токена |
+| `iat` | Unix timestamp | Время выдачи токена |
+
+### Настройка секрета JWT в конфигурации
+
+#### Конфигурация для разработки (`appsettings.Development.json`)
+
+```json
+{
+  "JwtTokenSettings": {
+    "SchemeName": "EventsApiScheme",
+    "Secret": "!234567890Qwertyuiop[Asdfghjkl;'",
+    "Issuer": "EventsApiIssuer",
+    "Audience": "EventsApiAudience",
+    "Lifetime": 60
+  }
+}
+```
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `SchemeName` | string | Название схемы аутентификации |
+| `Secret` | string | **Секретный ключ для подписи JWT** (минимум 32 символа для HMAC SHA-256) |
+| `Issuer` | string | Издатель токена (проверяется при валидации) |
+| `Audience` | string | Целевая аудитория токена (проверяется при валидации) |
+| `Lifetime` | int | Время жизни токена в **минутах** |
+
+---
+
+### Рекомендации использовать безопасное значение в продакшене
+1. **Используйте User Secrets (для локального тестирования):**
+   ```bash
+   dotnet user-secrets set "JwtSettings:Secret" "ProdSecretKey+!@#!!!"
+   ```
+
+2. **Используйте переменные окружения :**
+   ```bash
+   export JwtSettings_Secret="ProdSecretKey+!@#!!!"
+
+### Хеширование паролей
+Для реализации хеширования строки и проверки соответствия пароля хешу используется библиотека  BCrypt.Net.BCrypt
+
+```c#
+		public string HashPassword(string password)
+		{
+			return BCrypt.Net.BCrypt.HashPassword(password);
+		}
+		
+		public bool VerifyHashedPassword(string providedPassword, string hashedPassword)
+		{
+			return BCrypt.Net.BCrypt.Verify(providedPassword, hashedPassword);
+		}
+```
+
+# Необходимые компоненты для приложения
 Проект разрабатывается на VS Code в ОС Linux с использованием ASP .NET Core 10
 
 ## Требования
@@ -121,7 +267,28 @@ dotnet run --project EventsApi.Presentation
 
 #### Для использования API переходим в браузере по адресу http://localhost:5091/swagger/index.html
 
-## Модели данных
+## Описание моделей данных
+
+### User
+
+Модель пользователя системы
+
+#### Описание модели пользователя
+
+| Поле          | Тип                | Обязательное | Описание                   |
+| ------------- | ------------------ | ------------ | -------------------------- |
+| `Id`          | `Guid`             | Да           | Идентификатор пользователя |
+| `Login`       | `string`           | Да           | Имя пользователя          | 
+| `PasswordHash`| `string`           | Да           | Хэш пароля пользователя    |
+| `Role`        | `RoleType`         | Да           | Роль пользователя          |
+
+#### Роли пользователя RoleType
+
+| Поле        | Описание                         |
+| ----------- | -------------------------------- |
+| `User`      | Роль простого пользователя       |
+| `Admin`     | Роль администратора              |
+
 
 ### Event
 
@@ -149,6 +316,7 @@ dotnet run --project EventsApi.Presentation
 | ------------- | ------------------ | ------------ | ----------------------------------------------------------------- |
 | `Id`          | `Guid`             | Да           | Идентификатор бронирования                                        |
 | `EventId`     | `string`           | Да           | Идентификатор события, к которому относится бронирование          |
+| `UserId`      | `Guid`             | Да           | Идентификатор пользователя,кто забронировал мероприятие           |
 | `Status`      | `BookingStatus`    | Да           | Текущий статус бронирования (при создании по умолчанию = Pending) |
 | `CreatedAt`   | `DateTime`         | Да           | Дата создания бронирования                                        |
 | `ProcessedAt` | `DateTime \| null` | Нет          | Дата обработки бронирования                                       |
@@ -159,7 +327,68 @@ dotnet run --project EventsApi.Presentation
 | ----------- | -------------------------------- |
 | `Pending`   | Бронь создана, ожидает обработки |
 | `Confirmed` | Бронь подтверждена               |
-| `Rejected`  | Бронь отклонена                  |
+| `Rejected`  | Бронь отклонена ситемой          |
+| `Cancelled` | Бронь отклонена пользователем    |
+
+## Методы для работы с пользователями
+
+<details>
+<summary>Создание нового пользователя</summary>
+
+- **Метод:** `POST`
+- **URL:** `/auth/register`
+- **Параметры запроса:**
+  - `login` (обязательно) - имя пользователя 
+  - `password` (обязательно) - пароль пользователя 
+  - `role` (обязательно) - роль пользователя (0 - простой пользователь, 1 - администратор)
+
+- **Пример запроса:**
+
+```bash
+curl -X 'POST' \
+  'http://localhost:5091/auth/register' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "login": "ivan_ivanov",
+  "password": "Aqswdefr",
+  "role": "1"
+}'
+```
+- **Пример ответа**
+
+```json
+```
+
+</details>
+
+<details>
+<summary>Получение токена доступа пользователя</summary>
+
+- **Метод:** `POST`
+- **URL:** `/auth/login`
+- **Параметры запроса:**
+  - `login` (обязательно) - имя пользователя 
+  - `password` (обязательно) - пароль пользователя 
+
+ **Пример запроса:**
+
+```bash
+curl -X 'POST' \
+  'http://localhost:5091/auth/login' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "login": "ivan_ivanov",
+  "password": "Aqswdefr"
+}'
+```
+- **Пример ответа**
+
+```json
+```
+
+</details>
 
 ## Методы для Cобытий
 

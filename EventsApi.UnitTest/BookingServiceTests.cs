@@ -1,31 +1,44 @@
 using EventsApi.Application.Interfaces;
+using EventsApi.Application.Options;
 using EventsApi.Application.Services;
 using EventsApi.Domain.Entities;
 using EventsApi.Domain.Enums;
 using EventsApi.Domain.Exceptions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
+using Moq.Contrib.ExpressionBuilders.Logging;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 
 namespace EventsApi.UnitTests;
 
 public class BookingServiceTests
 {
     private readonly Mock<IBookingRepository> _bookingRepositoryMock;
+    private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<IEventRepository> _eventRepositoryMock;
     private readonly Mock<ILogger<BookingService>> _loggerMock;
     private readonly BookingService _bookingService;
+    private readonly BookingSettings _settings;
 
     public BookingServiceTests()
     {
         _bookingRepositoryMock = new Mock<IBookingRepository>();
+        _userRepositoryMock = new Mock<IUserRepository>();
         _eventRepositoryMock = new Mock<IEventRepository>();
         _loggerMock = new Mock<ILogger<BookingService>>();
+
+        _settings = new BookingSettings { MaxUserBookings = 2 };
+        var optionsMock = new Mock<IOptions<BookingSettings>>();
+        optionsMock.Setup(x => x.Value).Returns(_settings);
 
         _bookingService = new BookingService(
             _eventRepositoryMock.Object,
             _bookingRepositoryMock.Object,
+            _userRepositoryMock.Object,
+            optionsMock.Object,
             _loggerMock.Object);
     }
 
@@ -36,7 +49,7 @@ public class BookingServiceTests
     {
         // Arrange       
         var initialSeats = 10;
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), initialSeats);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), initialSeats);
         var eventId = @event.Id;
         _eventRepositoryMock
             .Setup(repo => repo.GetByIdAsync(eventId, It.IsAny<CancellationToken>()))
@@ -47,7 +60,7 @@ public class BookingServiceTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await _bookingService.CreateBookingAsync(eventId, CancellationToken.None);
+        await _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         @event.AvailableSeats.Should().Be(initialSeats - 1,
@@ -72,7 +85,7 @@ public class BookingServiceTests
     {
         // Arrange
         var availableSeats = 3;
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), availableSeats);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), availableSeats);
         var eventId = @event.Id;
         var createdBookings = new List<Booking>();
 
@@ -86,13 +99,13 @@ public class BookingServiceTests
             {
                 //booking.Id = Guid.NewGuid(); // Имитация присвоения Id
                 //createdBookings.Add(booking);
-                createdBookings.Add(Booking.Create(eventId));
+                createdBookings.Add(Booking.Create(eventId, Guid.NewGuid()));
             })
             .Returns(Task.CompletedTask);
 
         // Act
         var bookingTasks = Enumerable.Range(0, availableSeats)
-            .Select(i => _bookingService.CreateBookingAsync(eventId, CancellationToken.None));
+            .Select(i => _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None));
 
         var results = await Task.WhenAll(bookingTasks);
 
@@ -131,7 +144,7 @@ public class BookingServiceTests
             .ReturnsAsync(@event);
 
         // Act
-        var action = () => _bookingService.CreateBookingAsync(eventId, CancellationToken.None);
+        var action = () => _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         await action.Should().ThrowAsync<NoAvailableSeatsException>()
@@ -147,7 +160,7 @@ public class BookingServiceTests
     public async Task CreateBookingAsync_ExhaustSeatsThenTryAgain_ThrowsException()
     {
         // Arrange
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), 1);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), 1);
         var eventId = @event.Id;
 
 
@@ -160,13 +173,13 @@ public class BookingServiceTests
             .Returns(Task.CompletedTask);
 
         // Act - первое бронирование успешно
-        await _bookingService.CreateBookingAsync(eventId, CancellationToken.None);
+        await _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None);
 
         // Обновляем событие для имитации занятого места
         @event.AvailableSeats = 0;
 
         // Act - второе бронирование должно упасть в ошибку
-        var action = () => _bookingService.CreateBookingAsync(eventId, CancellationToken.None);
+        var action = () => _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         await action.Should().ThrowAsync<NoAvailableSeatsException>(
@@ -189,7 +202,7 @@ public class BookingServiceTests
             .ReturnsAsync((Event?)null);
 
         // Act
-        var action = () => _bookingService.CreateBookingAsync(nonExistentEventId, CancellationToken.None);
+        var action = () => _bookingService.CreateBookingAsync(nonExistentEventId, Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         await action.Should().ThrowAsync<KeyNotExistException>()
@@ -218,7 +231,7 @@ public class BookingServiceTests
             .ReturnsAsync(@event);
 
         // Act
-        var action = () => _bookingService.CreateBookingAsync(eventId, CancellationToken.None);
+        var action = () => _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         await action.Should().ThrowAsync<NoAvailableSeatsException>()
@@ -228,9 +241,215 @@ public class BookingServiceTests
             "количество мест не должно измениться при неудачной попытке бронирования");
     }
 
+    [Fact]
+    public async Task CreateBookingAsync_EventAlreadyStarted_ThrowsEventAlreadyStartedException()
+    {
+        // Arrange
+        var eventId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var pastEvent = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), 5);
+        await Task.Delay(100, CancellationToken.None); // Задержка для имитации прошедшего события
+
+        _eventRepositoryMock.Setup(x => x.GetByIdAsync(eventId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(pastEvent);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<EventAlreadyStartedException>(() =>
+            _bookingService.CreateBookingAsync(eventId, userId, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_UserReachedLimit_ThrowsBookingLimitExceededException()
+    {
+        // Arrange
+        var eventId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var futureEvent = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), 5);
+
+        // Имитируем наличие уже существующих броней, лимит = 2
+        var existingBookings = new List<Booking>
+        {
+            Booking.Create(eventId, userId),
+            Booking.Create(eventId, userId)
+        };
+
+
+        _eventRepositoryMock.Setup(x => x.GetByIdAsync(eventId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(futureEvent);
+
+        _bookingRepositoryMock.Setup(x => x.ListAsync(It.IsAny<Expression<Func<Booking, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingBookings);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<BookingLimitExceededException>(() =>
+            _bookingService.CreateBookingAsync(eventId, userId, CancellationToken.None));
+    }
+
+
+    [Fact]
+    public async Task CreateBookingAsync_LimitsAreUserSpecific_DoesNotAffectOtherUsers()
+    {
+        // Arrange
+        var eventId = Guid.NewGuid();
+        var userWithLimit = Guid.NewGuid();
+        var userWithoutLimit = Guid.NewGuid();
+
+
+        var futureEvent = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), 5);
+
+        // Для первого пользователя создаем лимит
+        var userBookings = new List<Booking> { Booking.Create(eventId, userWithLimit), Booking.Create(eventId, userWithLimit) };
+
+        _eventRepositoryMock.Setup(x => x.GetByIdAsync(eventId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(futureEvent);
+
+        // Настраиваем репозиторий так, что для другого пользователя броней нет
+        _bookingRepositoryMock.Setup(x => x.ListAsync(It.IsAny<Expression<Func<Booking, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(await Task.FromResult(new List<Booking>()));
+
+        // Act
+        var result = await _bookingService.CreateBookingAsync(eventId, userWithoutLimit, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        _bookingRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+
     #endregion
 
+    #region Отмена бронировани
+    [Fact]
+    public async Task CancelBookingAsync_WhenUserCancelsOwnBooking_ShouldReturnTrue()
+    {
+        // Arrange
+        var bookingId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var cancellationToken = CancellationToken.None;
+        var @event = Event.Create("Title", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(1), 10);
+        var eventId = @event.Id;
+        var user = User.Create("user", "secret!!!", RoleType.User);
+        var booking = Booking.Create(eventId, userId);
 
+        _userRepositoryMock
+            .Setup(x => x.GetUserByIdAsync(userId, cancellationToken))
+            .ReturnsAsync(user);
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByIdAsync(bookingId, cancellationToken))
+            .ReturnsAsync(booking);
+
+        _eventRepositoryMock
+            .Setup(x => x.GetByIdAsync(eventId, cancellationToken))
+            .ReturnsAsync(@event);
+
+        _bookingRepositoryMock
+            .Setup(x => x.UpdateAsync(booking, cancellationToken))
+            .Returns(Task.CompletedTask);
+
+        _eventRepositoryMock
+            .Setup(x => x.UpdateAsync(@event, cancellationToken))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _bookingService.CancelBookingAsync(bookingId, userId, cancellationToken);
+
+        // Assert
+        Assert.True(result);
+        Assert.Equal(BookingStatus.Cancelled, booking.Status);
+        Assert.Equal(10, @event.AvailableSeats); // ReleaseSeats возвращаем 1 бронирование
+        _bookingRepositoryMock.Verify(x => x.UpdateAsync(booking, cancellationToken), Times.Once);
+        _eventRepositoryMock.Verify(x => x.UpdateAsync(@event, cancellationToken), Times.Once);
+        _loggerMock.Verify(Log.With.LogLevel(LogLevel.Information)
+         .And.LogMessage(msg => msg.Contains($"Бронирование ID: {bookingId} успешно отменено.")),
+         Times.AtMostOnce());
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_WhenUserCancelsOtherUserBooking_ShouldThrowAccessDeniedException()
+    {
+        // Arrange
+        var otherUserId = Guid.NewGuid();
+        var cancellationToken = CancellationToken.None;
+
+        var @event = Event.Create("Title", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(1), 10);
+        var eventId = @event.Id;
+
+        var user = User.Create("user", "secret!!!", RoleType.User);
+        var userId = user.Id;
+        var booking = Booking.Create(eventId, otherUserId);
+        var bookingId = booking.Id;
+
+        _userRepositoryMock
+            .Setup(x => x.GetUserByIdAsync(userId, cancellationToken))
+            .ReturnsAsync(user);
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByIdAsync(bookingId, cancellationToken))
+            .ReturnsAsync(booking);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<AccessDeniedException>(() =>
+            _bookingService.CancelBookingAsync(bookingId, userId, cancellationToken));
+
+        Assert.Equal(user.Id.ToString(), exception.UserId);
+        Assert.Equal(nameof(_bookingService.CancelBookingAsync), exception.ActionName);
+
+        _bookingRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()), Times.Never);
+        _eventRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Event>(), It.IsAny<CancellationToken>()), Times.Never);
+        _loggerMock.Verify(Log.With.LogLevel(LogLevel.Information)
+        .And.LogMessage(msg => msg.Contains($"Бронирование ID: {bookingId} успешно отменено.")),
+        Times.Never);
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_WhenAdminCancelsOtherUserBooking_ShouldReturnTrue()
+    {
+        // Arrange
+        var @event = Event.Create("Title", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(1), 10);
+        var eventId = @event.Id;
+        var cancellationToken = CancellationToken.None;
+        var admin = User.Create("user", "secret!!!", RoleType.Admin);
+        var otherUserId = Guid.NewGuid();
+        var booking = Booking.Create(eventId, otherUserId);
+        var bookingId = booking.Id;
+
+        _userRepositoryMock
+            .Setup(x => x.GetUserByIdAsync(admin.Id, cancellationToken))
+            .ReturnsAsync(admin);
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByIdAsync(bookingId, cancellationToken))
+            .ReturnsAsync(booking);
+
+        _eventRepositoryMock
+            .Setup(x => x.GetByIdAsync(eventId, cancellationToken))
+            .ReturnsAsync(@event);
+
+        _bookingRepositoryMock
+            .Setup(x => x.UpdateAsync(booking, cancellationToken))
+            .Returns(Task.CompletedTask);
+
+        _eventRepositoryMock
+            .Setup(x => x.UpdateAsync(@event, cancellationToken))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _bookingService.CancelBookingAsync(bookingId, admin.Id, cancellationToken);
+
+        // Assert
+        Assert.True(result);
+        Assert.Equal(BookingStatus.Cancelled, booking.Status);
+        Assert.Equal(10, @event.AvailableSeats);
+        _bookingRepositoryMock.Verify(x => x.UpdateAsync(booking, cancellationToken), Times.Once);
+        _eventRepositoryMock.Verify(x => x.UpdateAsync(@event, cancellationToken), Times.Once);
+        _loggerMock.Verify(Log.With.LogLevel(LogLevel.Information)
+         .And.LogMessage(msg => msg.Contains($"Бронирование ID: {bookingId} успешно отменено.")),
+         Times.AtMostOnce());
+    }
+
+
+    #endregion
 
     #region Тесты на смену статуса брони
 
@@ -239,7 +458,7 @@ public class BookingServiceTests
     {
         // Arrange
         var eventId = Guid.NewGuid();
-        var booking = Booking.Create(eventId);
+        var booking = Booking.Create(eventId, Guid.NewGuid());
         var beforeConfirm = DateTime.UtcNow;
 
         // Act
@@ -262,7 +481,7 @@ public class BookingServiceTests
     {
         // Arrange
         var eventId = Guid.NewGuid();
-        var booking = Booking.Create(eventId);
+        var booking = Booking.Create(eventId, Guid.NewGuid());
         booking.Confirm();
         var firstProcessedAt = booking.ProcessedAt;
 
@@ -281,7 +500,7 @@ public class BookingServiceTests
     {
         // Arrange
         var eventId = Guid.NewGuid();
-        var booking = Booking.Create(eventId);
+        var booking = Booking.Create(eventId, Guid.NewGuid());
         var beforeReject = DateTime.UtcNow;
 
         // Act
@@ -304,7 +523,7 @@ public class BookingServiceTests
     {
         // Arrange
         var eventId = Guid.NewGuid();
-        var booking = Booking.Create(eventId);
+        var booking = Booking.Create(eventId, Guid.NewGuid());
         booking.Reject();
         var firstProcessedAt = booking.ProcessedAt;
 
@@ -377,7 +596,7 @@ public class BookingServiceTests
     {
         // Arrange
         var eventId = Guid.NewGuid();
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), 1);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), 1);
         @event.AvailableSeats -= 1; // Все места занят
         _eventRepositoryMock
             .Setup(repo => repo.GetByIdAsync(eventId, It.IsAny<CancellationToken>()))
@@ -388,7 +607,7 @@ public class BookingServiceTests
             .Returns(Task.CompletedTask);
 
         // Сначала убеждаемся, что бронирование невозможно
-        var firstAttempt = () => _bookingService.CreateBookingAsync(eventId, CancellationToken.None);
+        var firstAttempt = () => _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None);
         await firstAttempt.Should().ThrowAsync<NoAvailableSeatsException>();
 
         // Освобождаем место (имитация отмены)
@@ -396,7 +615,7 @@ public class BookingServiceTests
         @event.AvailableSeats.Should().Be(1, "должно появиться одно свободное место");
 
         // Act - пробуем забронировать снова
-        await _bookingService.CreateBookingAsync(eventId, CancellationToken.None);
+        await _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         @event.AvailableSeats.Should().Be(0,
@@ -417,9 +636,9 @@ public class BookingServiceTests
     public async Task FullBookingLifecycle_CreateRejectThenCreateAgain_Success()
     {
         // Arrange
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), 1);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), 1);
         var eventId = @event.Id;
-        var booking = Booking.Create(eventId);
+        var booking = Booking.Create(eventId, Guid.NewGuid());
         var bookingId = booking.Id;
 
         _eventRepositoryMock
@@ -435,7 +654,7 @@ public class BookingServiceTests
             .ReturnsAsync(booking);
 
         // Шаг 1: Создаем бронь
-        await _bookingService.CreateBookingAsync(eventId, CancellationToken.None);
+        await _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None);
         @event.AvailableSeats.Should().Be(0, "все места заняты");
 
         // Шаг 2: Отклоняем бронь
@@ -445,7 +664,7 @@ public class BookingServiceTests
         booking.Status.Should().Be(BookingStatus.Rejected, "бронь отклонена");
 
         // Шаг 3: Создаем новую бронь на освободившееся место
-        await _bookingService.CreateBookingAsync(eventId, CancellationToken.None);
+        await _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None);
         @event.AvailableSeats.Should().Be(0, "место снова занято новой бронью");
 
         // Verify
@@ -468,7 +687,7 @@ public class BookingServiceTests
         const int concurrentRequests = 20;
 
         // Создаем реальный объект события для отслеживания состояния
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), totalSeats);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), totalSeats);
         var eventId = @event.Id;
 
         // Счетчики для отслеживания результатов
@@ -494,7 +713,7 @@ public class BookingServiceTests
         {
             try
             {
-                var booking = await _bookingService.CreateBookingAsync(eventId, CancellationToken.None);
+                var booking = await _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None);
                 bookingIds.Add(booking.Id);
                 return (success: true, exception: (Exception?)null);
             }
@@ -563,7 +782,7 @@ public class BookingServiceTests
     public async Task CreateBookingAsync_HighLoadStressTest_NoOverselling(int seats, int requests)
     {
         // Arrange
-        var @event = Event.Create("Test Event", DateTime.UtcNow, DateTime.UtcNow.AddDays(7), seats);
+        var @event = Event.Create("Test Event", DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddDays(7), seats);
         var eventId = @event.Id;
         var bookingCounter = 0;
         var bookingLock = new object();
@@ -586,7 +805,7 @@ public class BookingServiceTests
             await eventLock.WaitAsync();
             try
             {
-                await _bookingService.CreateBookingAsync(eventId, CancellationToken.None);
+                await _bookingService.CreateBookingAsync(eventId, Guid.NewGuid(), CancellationToken.None);
                 bookingCounter++;
                 return true;
             }

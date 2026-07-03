@@ -13,7 +13,7 @@ public class DbEventRepository(AppDbContext appDbContext) : IEventRepository
     /// <inheritdoc/>
     public async Task AddAsync(Event _event, CancellationToken ct)
     {
-        await appDbContext.AddAsync(_event, ct);
+        await appDbContext.Events.AddAsync(_event, ct);
         await appDbContext.SaveChangesAsync(ct);
     }
 

@@ -118,11 +118,60 @@ namespace EventsApi.IntegrationTests
 
             // Проверка внешних ключей
             var foreignKeys = entityType.GetForeignKeys().ToList();
-            Assert.Single(foreignKeys);
 
             Assert.Contains(foreignKeys, fk =>
                 fk.PrincipalEntityType.ClrType == typeof(Event) &&
                 fk.Properties.Any(p => p.Name == "EventId"));
+
+            Assert.Contains(foreignKeys, fk =>
+                fk.PrincipalEntityType.ClrType == typeof(User) &&
+                fk.Properties.Any(p => p.Name == "UserId"));
+
+            // Проверка индексов
+            var indexes = entityType.GetIndexes().ToList();
+            Assert.NotEmpty(indexes);
+        }
+
+        [Fact]
+        public async Task EfCoreModelUser_ShouldHaveCorrectConfigurationAsync()
+        {
+            // Arrange
+            await postgreSqlFixture.ResetDatabaseAsync();
+            using var context = await postgreSqlFixture.CreateContextAsync();
+            //Act
+            var entityType = context.Model.FindEntityType(typeof(User));
+
+            // Assert
+            Assert.NotNull(entityType);
+            Assert.Equal("users", entityType.GetTableName());
+
+            // Проверка первичного ключа
+            var primaryKey = entityType.FindPrimaryKey();
+            Assert.NotNull(primaryKey);
+            Assert.Single(primaryKey.Properties);
+            Assert.Equal("Id", primaryKey.Properties[0].Name);
+
+            // Проверка свойств
+            var idProperty = entityType.FindProperty("Id");
+            Assert.False(idProperty!.IsNullable);
+            Assert.Equal(typeof(Guid), idProperty.ClrType);
+
+            var loginProperty = entityType.FindProperty("Login");
+            Assert.False(loginProperty!.IsNullable);
+            Assert.Equal(typeof(string), loginProperty.ClrType);
+            Assert.Equal("login", loginProperty.GetColumnName());
+
+            var passwordHashProperty = entityType.FindProperty("PasswordHash");
+            Assert.False(loginProperty!.IsNullable);
+            Assert.Equal(typeof(string), passwordHashProperty.ClrType);
+            Assert.Equal("password_hash", passwordHashProperty.GetColumnName());
+
+
+            var roleProperty = entityType.FindProperty("Role");
+            Assert.False(roleProperty!.IsNullable);
+            Assert.Equal(typeof(RoleType), roleProperty.ClrType);
+            Assert.Equal("role", roleProperty.GetColumnName());
+
 
 
             // Проверка индексов
