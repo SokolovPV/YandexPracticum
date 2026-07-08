@@ -1,12 +1,11 @@
-using System.Reflection;
 using System.Text;
-using EventsApi.Domain.Exceptions;
-using EventsApi.Infrastructure.Options;
+using EventFlow.Users.Domain.Exceptions;
+using EventFlow.Users.Infrastructure.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
-namespace EventsApi.Presentation;
+namespace EventFlow.Users.Presentation;
 
 public static class DependencyInjection
 {

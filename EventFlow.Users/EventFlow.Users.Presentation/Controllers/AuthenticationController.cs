@@ -1,9 +1,9 @@
-using EventsApi.Application.DTO.User;
-using EventsApi.Application.Interfaces;
+using EventFlow.Users.Application.DTO;
+using EventFlow.Users.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventsApi.Controllers;
+namespace EventFlow.Users.Presentation.Controllers;
 
 /// <summary>
 /// Контроллер для аутентификации пользователей
