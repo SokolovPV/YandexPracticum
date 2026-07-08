@@ -8,6 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
+    <PackageReference Include="Microsoft.OpenApi" Version="3.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EventFlow.Booking.Application\EventFlow.Booking.Application.csproj" />
+    <ProjectReference Include="..\EventFlow.Booking.Infrastructure\EventFlow.Booking.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
