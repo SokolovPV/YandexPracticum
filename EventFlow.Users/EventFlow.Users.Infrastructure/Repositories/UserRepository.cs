@@ -1,5 +1,6 @@
 ﻿using EventFlow.Users.Application.Interfaces;
 using EventFlow.Users.Domain.Entities;
+using EventFlow.Users.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Users.Infrastructure.Repositories
