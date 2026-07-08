@@ -5,5 +5,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.8" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EventFlow.Users.Application\EventFlow.Users.Application.csproj" />
+    <ProjectReference Include="..\EventFlow.Users.Domain\EventFlow.Users.Domain.csproj" />
+  </ItemGroup>
 </Project>
