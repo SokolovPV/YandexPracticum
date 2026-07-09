@@ -1,4 +1,78 @@
 services:
+  # kafka1:
+  #   image: apache/kafka:4.3.0
+  #   container_name: eventflow-kafka
+  #   depends_on:
+  #     zookeeper:
+  #       condition: service_healthy
+  #   ports:
+  #     # Внешний listener для подключения с хоста (например, из dotnet run локально).
+  #     - "9092:9092"
+  #   environment:
+  #     KAFKA_BROKER_ID: 1
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #     # Два listener'а: INTERNAL — для сервисов внутри сети Docker, EXTERNAL — для хоста.
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+  #     KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+  #     KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+  #     interval: 10s
+  #     timeout: 10s
+  #     retries: 15
+
+
+  kafka:
+    image: apache/kafka:latest
+    container_name: broker
+    hostname: broker
+    ports:
+      - "9092:9092"
+    environment:
+      # Уникальный ID узла
+      KAFKA_NODE_ID: 1
+      # Роль: одновременно брокер и контроллер (для одного узла)
+      KAFKA_PROCESS_ROLES: broker,controller
+      # Имя слушателя для контроллера
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # Сопоставление имен слушателей с протоколами
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      # Где и на каких портах слушает Kafka внутри контейнера
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093
+      # Какой адрес сообщать клиентам (ваш хост)
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      # Список контроллеров для кворума (в нашем случае только один)
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      # Настройки для одного брокера (важно для корректной работы) [citation:1][citation:4]
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      # Автоматическое создание топиков (удобно для разработки)
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - ./kafka-data:/var/lib/kafka/data
+
+  # --- Веб-интерфейс AKHQ для управления Kafka ---
+  akhq:
+    image: tchiotludo/akhq:latest
+    container_name: akhq
+    ports:
+      - "8080:8080"
+    environment:
+      # Конфигурация AKHQ передается через переменную окружения [citation:2][citation:9]
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            my-kafka-cluster:
+              properties:
+                # Адрес брокера для подключения изнутри Docker-сети
+                bootstrap.servers: "broker:29092"
+    depends_on:
+      - kafka
+        
   # USERS DB
   postgres_users:
     image: postgres:16-alpine
