@@ -15,5 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\EventFlow.Users.Application\EventFlow.Users.Application.csproj" />
     <ProjectReference Include="..\EventFlow.Users.Domain\EventFlow.Users.Domain.csproj" />
+    <ProjectReference Include="..\EventFlow.Shared\EventFlow.Settings\EventFlow.Settings.csproj" />
   </ItemGroup>
 </Project>
