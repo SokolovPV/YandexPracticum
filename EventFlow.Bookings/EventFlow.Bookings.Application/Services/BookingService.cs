@@ -1,16 +1,18 @@
 
 using EventFlow.Bookings.Application.Interfaces;
+using EventFlow.Bookings.Application.Options;
 using EventFlow.Bookings.Domain.Entities;
+using EventFlow.Bookings.Domain.Enums;
 using EventFlow.Bookings.Domain.Exceptions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace EventFlow.Bookings.Application.Services;
 /// <summary>
 /// Сервис для работы с бронированием
 /// </summary>
 public class BookingService(
-    IEventRepository eventRepository,
     IBookingRepository bookingRepository,
-    IUserRepository userRepository,
     IOptions<BookingSettings> bookingSettings,
     ILogger<BookingService> logger) : IBookingService
 {
@@ -25,12 +27,9 @@ public class BookingService(
         await _semaphore.WaitAsync(ct);
         try
         {
-            var user = await userRepository.GetUserByIdAsync(userId, ct);
-            if (user is null)
-                throw new EntityNotFoundException(nameof(User), userId.ToString());
             var booking = await bookingRepository.GetByIdAsync(bookingId, ct);
             if (booking is null)
-                throw new EntityNotFoundException(nameof(Booking), bookingId.ToString());
+                throw new KeyNotExistException(bookingId.ToString(), nameof(Booking));
             if (booking.Status == BookingStatus.Cancelled)
                 throw new InvalidOperationException($"Бронирование '{bookingId}' уже отменено ранее");
             if (booking.UserId != userId && user.Role != RoleType.Admin)
