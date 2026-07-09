@@ -1,10 +1,10 @@
 ﻿using System.Linq.Expressions;
-using EventsApi.Application.Interfaces;
-using EventsApi.Domain.Entities;
-using EventsApi.Infrastructure.Context;
+using EventFlow.Events.Application.Interfaces;
+using EventFlow.Events.Domain.Entities;
+using EventFlow.Events.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventsApi.Infrastructure.Repositories;
+namespace EventFlow.Events.Infrastructure.Repositories;
 /// <summary>
 /// Репозиторий для коллекции Event в БД PostreSQL
 /// </summary>

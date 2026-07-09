@@ -1,10 +1,10 @@
 ﻿using System.Linq.Expressions;
-using EventsApi.Application.Interfaces;
-using EventsApi.Domain.Entities;
-using EventsApi.Infrastructure.Context;
+using EventFlow.Bookings.Application.Interfaces;
+using EventFlow.Bookings.Domain.Entities;
+using EventFlow.Bookings.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventsApi.Infrastructure.Repositories;
+namespace EventFlow.Bookings.Infrastructure.Repositories;
 /// <summary>
 /// Репозиторий для коллекции Booking в БД PostreSQL
 /// </summary>

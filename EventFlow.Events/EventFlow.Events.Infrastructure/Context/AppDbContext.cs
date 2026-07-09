@@ -1,14 +1,13 @@
-using EventsApi.Domain.Entities;
+using EventFlow.Events.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-namespace EventsApi.Infrastructure.Context;
+
+namespace EventFlow.Events.Infrastructure.Context;
 
 public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public DbSet<Event> Events => Set<Event>();
-    public DbSet<Booking> Bookings => Set<Booking>();
-    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -4,6 +4,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EventFlow.Bookings.Application\EventFlow.Bookings.Application.csproj" />
     <ProjectReference Include="..\EventFlow.Bookings.Domain\EventFlow.Bookings.Domain.csproj" />
-    <ProjectReference Include="..\EventFlow.Shared\EventFlow.Settings\EventFlow.Settings.csproj" />
+    <ProjectReference Include="..\..\EventFlow.Shared/EventFlow.Settings/EventFlow.Settings.csproj" />
   </ItemGroup>
 
   <ItemGroup>

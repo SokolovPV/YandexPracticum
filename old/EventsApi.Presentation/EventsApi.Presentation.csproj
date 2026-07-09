@@ -21,6 +21,5 @@
 
   <ItemGroup>
     <ProjectReference Include="../EventsApi.Infrastructure/EventsApi.Infrastructure.csproj" />
-    <ProjectReference Include="../EventsApi.Application/EventsApi.Application.csproj" />
   </ItemGroup>
 </Project>

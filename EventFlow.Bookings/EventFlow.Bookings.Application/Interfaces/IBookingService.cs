@@ -1,6 +1,7 @@
-﻿using EventsApi.Domain.Entities;
+﻿
+using EventFlow.Bookings.Domain.Entities;
 
-namespace EventsApi.Application.Interfaces;
+namespace EventFlow.Bookings.Application.Interfaces;
 /// <summary>
 /// Интерфейс сервиса бронирования
 /// </summary>

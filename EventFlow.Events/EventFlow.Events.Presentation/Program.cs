@@ -1,41 +1,41 @@
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+namespace EventFlow.Events.Presentation
 {
-    app.MapOpenApi();
-}
+	public class Program
+	{
+		public static async Task Main(string[] args)
+		{
+			var builder = WebApplication.CreateBuilder(args);
+			// Логирование в консоль
+			builder.Logging.AddConsole();
 
-app.UseHttpsRedirection();
+			// builder.Services.AddInfrastructureServices(builder.Configuration);
+			// builder.Services.AddApplicationServices();
+			// builder.Services.AddPresentationServices(builder.Configuration);
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+			var app = builder.Build();
+			using (var scope = app.Services.CreateScope())
+			{
+				var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+				await db.Database.MigrateAsync();
+			}
+			app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+			if (app.Environment.IsDevelopment())
+			{
+				builder.Host.UseDefaultServiceProvider(options =>
+				{
+					options.ValidateOnBuild = true;
+					options.ValidateScopes = true;
+				});
+				app.UseSwagger();
+				app.UseSwaggerUI();
+			}
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
 
-app.Run();
+			app.UseAuthentication();
+			app.UseAuthorization();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+			app.MapControllers();
+			app.Run();
+		}
+	}
 }

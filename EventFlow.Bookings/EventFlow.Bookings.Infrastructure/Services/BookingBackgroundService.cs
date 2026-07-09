@@ -1,12 +1,8 @@
 
-using EventsApi.Application.Interfaces;
-using EventsApi.Domain.Entities;
-using EventsApi.Domain.Enums;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace EventsApi.Infrastructure.Services;
+namespace EventFlow.Bookings.Infrastructure.Services;
 
 /// <summary>
 /// Фоновый сервис для регистрации бронирования

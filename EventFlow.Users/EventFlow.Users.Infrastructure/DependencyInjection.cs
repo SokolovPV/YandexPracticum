@@ -1,3 +1,4 @@
+using EventFlow.Settings;
 using EventFlow.Users.Application.Interfaces;
 using EventFlow.Users.Infrastructure.Context;
 using EventFlow.Users.Infrastructure.Repositories;

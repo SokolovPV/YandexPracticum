@@ -1,7 +1,7 @@
-using EventsApi.Domain.Entities;
+using EventFlow.Events.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-namespace EventsApi.Infrastructure.Configurations;
+namespace EventFlow.Events.Infrastructure.Configurations;
 
 public class EventConfiguration : IEntityTypeConfiguration<Event>
 {
@@ -32,10 +32,5 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
         builder.Property(q => q.AvailableSeats)
             .HasColumnName("available_seats")
             .IsRequired();
-        
-        builder.HasMany(q=>q.Bookings)
-        .WithOne(q=>q.Event)
-        .HasForeignKey(q=>q.EventId)
-        .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -1,11 +1,9 @@
-using EventsApi.Application.Interfaces;
-using EventsApi.Application.Options;
-using EventsApi.Domain.Entities;
-using EventsApi.Domain.Enums;
-using EventsApi.Domain.Exceptions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-namespace EventsApi.Application.Services;
+
+using EventFlow.Bookings.Application.Interfaces;
+using EventFlow.Bookings.Domain.Entities;
+using EventFlow.Bookings.Domain.Exceptions;
+
+namespace EventFlow.Bookings.Application.Services;
 /// <summary>
 /// Сервис для работы с бронированием
 /// </summary>
@@ -101,7 +99,7 @@ public class BookingService(
         logger.LogInformation("Получение бронирования : {bookingId}", bookingId);
         var booking = await bookingRepository.GetByIdAsync(bookingId, ct);
         if (booking is null)
-            throw new KeyNotExistException(bookingId, ConstantValues.key_not_found_exception);
+            throw new KeyNotExistException(bookingId.ToString(), nameof(Booking));
         return booking;
     }
 }
