@@ -1,26 +1,62 @@
-# PostgreSQL для EventApi — совпадает с ConnectionStrings:DefaultConnection в appsettings.json
-# Запуск из корня репозитория: docker compose up -d
-# Остановка: docker compose down
-# Данные сохраняются в именованном томе eventapi_pgdata
-
 services:
-  postgres:
+  # USERS DB
+  postgres_users:
     image: postgres:16-alpine
-    container_name: eventapi-postgres
+    container_name: eventflow-user-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: eventapi
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${USERS_DB}
     ports:
-      - "5432:5432"
+      - "${USERS_PORT}:5432"
     volumes:
-      - eventapi_pgdata:/var/lib/postgresql/data
+      - pg_users_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d eventapi"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${USERS_DB}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
+  # EVENTS DB
+  postgres_events:
+    image: postgres:16-alpine
+    container_name: eventflow-events-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${EVENTS_DB}
+    ports:
+      - "${EVENTS_PORT}:5432"
+    volumes:
+      - pg_events_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${EVENTS_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # BOOKING DB
+  postgres_booking:
+    image: postgres:16-alpine
+    container_name: ventflow-booking-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${BOOKING_DB}
+    ports:
+      - "${BOOKING_PORT}:5432"
+    volumes:
+      - pg_booking_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${BOOKING_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      
 volumes:
-  eventapi_pgdata:
+  pg_users_data:
+  pg_events_data:
+  pg_booking_data:
