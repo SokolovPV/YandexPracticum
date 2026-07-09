@@ -1,4 +1,4 @@
-using EventFlow.Users.Domain.Enums;
+using EventFlow.Entities.Enums;
 
 namespace EventFlow.Users.Application.Interfaces;
 /// <summary>

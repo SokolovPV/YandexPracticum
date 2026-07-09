@@ -60,7 +60,6 @@ public class GlobalExceptionHandlingMiddleware
         {
             ValidationException ve => StatusCodes.Status400BadRequest,
             KeyNotExistException kne => StatusCodes.Status404NotFound,
-            EntityNotFoundException efe => StatusCodes.Status404NotFound,
             EventAlreadyStartedException ease => StatusCodes.Status400BadRequest,
             BookingLimitExceededException ble => StatusCodes.Status409Conflict,
             AccessDeniedException ade => StatusCodes.Status403Forbidden,
@@ -72,7 +71,6 @@ public class GlobalExceptionHandlingMiddleware
       {
           ValidationException ve => "Validation Failed",
           KeyNotExistException kne => "Invalid Identifier",
-          NoAvailableSeatsException nac => "No available seats",
           _ => "Unknown Error"
       };
 }

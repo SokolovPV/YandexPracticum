@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace EventFlow.Users.Domain.Enums;
+namespace EventFlow.Entities.Enums;
 public enum RoleType
 {
     /// <summary>

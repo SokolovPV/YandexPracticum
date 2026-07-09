@@ -7,7 +7,7 @@ namespace EventFlow.Bookings.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
       // добавляем службы
         services.AddScoped<IBookingService, BookingService>();

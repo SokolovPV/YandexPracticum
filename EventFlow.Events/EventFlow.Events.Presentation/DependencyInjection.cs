@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
-namespace EventFlow.Users.Presentation;
+namespace EventFlow.Events.Presentation;
 
 public static class DependencyInjection
 {

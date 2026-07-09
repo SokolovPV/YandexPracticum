@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using EventFlow.Entities.Enums;
 using EventFlow.Users.Application.Attribute;
-using EventFlow.Users.Domain.Enums;
 
 namespace EventFlow.Users.Application.DTO;
 /// <summary>Модель данных для создания пользователя </summary>

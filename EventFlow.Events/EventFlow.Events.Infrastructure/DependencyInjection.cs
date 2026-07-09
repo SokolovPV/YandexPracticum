@@ -1,13 +1,12 @@
-using EventsApi.Application.Interfaces;
-using EventsApi.Infrastructure.Context;
-using EventsApi.Infrastructure.Options;
-using EventsApi.Infrastructure.Repositories;
-using EventsApi.Infrastructure.Services;
+using EventFlow.Events.Application.Interfaces;
+using EventFlow.Events.Infrastructure.Context;
+using EventFlow.Events.Infrastructure.Repositories;
+using EventFlow.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EventsApi.Infrastructure;
+namespace EventFlow.Events.Infrastructure;
 
 public static class DependencyInjection
 {
@@ -16,9 +15,8 @@ public static class DependencyInjection
     /// </summary>
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        //Пподключаем базу данных
         var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
@@ -26,15 +24,8 @@ public static class DependencyInjection
 
         // добавляем репозитории
         services.AddScoped<IEventRepository, DbEventRepository>();
-        services.AddScoped<IBookingRepository, DbBookingRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
 
-        // регистрируем фоновую службу
-        services.AddHostedService<BookingBackgroundService>();
-
-        // регистрируем службы
-        services.AddScoped<IPasswordHasher, CustomPasswordHasher>();
-        services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
+       
 
         return services;
     }

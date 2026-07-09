@@ -1,4 +1,5 @@
 using EventFlow.Bookings.Infrastructure.Context;
+using EventFlow.Bookings.Presentation.ExceptionFilter;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Bookings.Presentation

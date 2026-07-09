@@ -1,5 +1,5 @@
-using EventFlow.Users.Domain.Enums;
-using EventFlow.Users.Domain.Exceptions;
+using EventFlow.Entities.Enums;
+using EventFlow.Entities.Exceptions;
 
 namespace EventFlow.Users.Domain.Entities
 {

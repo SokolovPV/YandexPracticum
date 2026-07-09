@@ -1,10 +1,9 @@
-﻿using EventFlow.Events.Application.DTO;
+﻿using EventFlow.Entities.Enums;
+using EventFlow.Events.Application.DTO;
 using EventFlow.Events.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace EventFlow.Events.Presentation.Controllers;
 /// <summary>
@@ -99,35 +98,4 @@ public class EventsController(IEventService eventService, ILogger<EventsControll
     await eventService.RemoveEventAsync(eventId, ct);
     return Ok();
   }
-
-  // /// <summary>
-  // /// Метод для создания бронирования
-  // /// </summary>
-  // [HttpPost("{eventId:guid}/book")]
-  // [Tags("АПИ для бронирования")]
-  // [ProducesResponseType(StatusCodes.Status202Accepted)]
-  // [ProducesResponseType(StatusCodes.Status409Conflict)]
-  // public async Task<IActionResult> AddBookingAsync([Required] Guid eventId, CancellationToken ct)
-  // {
-  //   logger.LogDebug("Обработка запроса POST {methodName}", nameof(AddBookingAsync));
-  //   var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-  //   if (string.IsNullOrEmpty(userIdClaim?.Value) || !Guid.TryParse(userIdClaim.Value, out var userId))
-  //     return Unauthorized("Идентификатор пользователя не верен.");
-
-  //   var booking = await bookingService.CreateBookingAsync(eventId, userId, ct);
-  //   var responseDto = new CreatedBookingDTO
-  //   {
-  //     Id = booking.Id,
-  //     Status = booking.Status.ToString(),
-  //     CreatedAt = booking.CreatedAt,
-  //     EventID = booking.EventId
-  //   };
-
-  //   return AcceptedAtAction(
-  //       actionName: "GetBooking",
-  //       controllerName: "Bookings",
-  //       routeValues: new { bookingId = booking.Id },
-  //       value: responseDto
-  //   );
-  // }
 }

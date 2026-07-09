@@ -1,7 +1,7 @@
 
+using EventFlow.Entities.Enums;
 using EventFlow.Users.Application.Interfaces;
 using EventFlow.Users.Domain.Entities;
-using EventFlow.Users.Domain.Enums;
 
 namespace EventFlow.Users.Application.Services;
 /// <summary>

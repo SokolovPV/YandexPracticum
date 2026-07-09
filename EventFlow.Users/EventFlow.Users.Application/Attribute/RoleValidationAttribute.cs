@@ -1,5 +1,5 @@
+using EventFlow.Entities.Enums;
 using System.ComponentModel.DataAnnotations;
-using EventFlow.Users.Domain.Enums;
 namespace EventFlow.Users.Application.Attribute;
 
 [AttributeUsage(AttributeTargets.Property)]

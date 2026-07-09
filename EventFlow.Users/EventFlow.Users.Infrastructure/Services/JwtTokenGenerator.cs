@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using EventFlow.Users.Application.Interfaces;
 using EventFlow.Users.Domain.Entities;
-using EventFlow.Users.Infrastructure.Options;
+using EventFlow.Settings;
 
 namespace EventFlow.Users.Infrastructure.Services;
 

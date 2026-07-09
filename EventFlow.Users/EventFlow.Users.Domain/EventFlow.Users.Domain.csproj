@@ -9,5 +9,11 @@
   <PropertyGroup>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\EventFlow.Shared\EventFlow.Entities\EventFlow.Entities.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Exceptions\" />
+  </ItemGroup>
 
 </Project>

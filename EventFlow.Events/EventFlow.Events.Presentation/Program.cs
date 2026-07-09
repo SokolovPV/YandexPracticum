@@ -1,3 +1,7 @@
+using EventFlow.Events.Application;
+using EventFlow.Events.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+
 namespace EventFlow.Events.Presentation
 {
 	public class Program
@@ -8,9 +12,9 @@ namespace EventFlow.Events.Presentation
 			// Логирование в консоль
 			builder.Logging.AddConsole();
 
-			// builder.Services.AddInfrastructureServices(builder.Configuration);
-			// builder.Services.AddApplicationServices();
-			// builder.Services.AddPresentationServices(builder.Configuration);
+			builder.Services.AddInfrastructureServices(builder.Configuration);
+			builder.Services.AddApplicationServices();
+			builder.Services.AddPresentationServices(builder.Configuration);
 
 			var app = builder.Build();
 			using (var scope = app.Services.CreateScope())

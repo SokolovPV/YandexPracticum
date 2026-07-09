@@ -1,4 +1,4 @@
-namespace EventFlow.Users.Domain.Exceptions;
+namespace EventFlow.Entities.Exceptions;
 
 /// <summary>
 /// Исключение для ошибок валидации 
