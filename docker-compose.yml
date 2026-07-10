@@ -27,8 +27,8 @@ services:
 
   kafka:
     image: apache/kafka:latest
-    container_name: broker
-    hostname: broker
+    container_name: eventflow_kafka
+    hostname: eventflow
     ports:
       - "9092:9092"
     environment:
@@ -43,9 +43,9 @@ services:
       # Где и на каких портах слушает Kafka внутри контейнера
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093
       # Какой адрес сообщать клиентам (ваш хост)
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://eventflow:29092,PLAINTEXT_HOST://localhost:9092
       # Список контроллеров для кворума (в нашем случае только один)
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@eventflow:29093
       # Настройки для одного брокера (важно для корректной работы) [citation:1][citation:4]
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
@@ -69,7 +69,7 @@ services:
             my-kafka-cluster:
               properties:
                 # Адрес брокера для подключения изнутри Docker-сети
-                bootstrap.servers: "broker:29092"
+                bootstrap.servers: "eventflow:29092"
     depends_on:
       - kafka
         
@@ -114,7 +114,7 @@ services:
   # BOOKING DB
   postgres_booking:
     image: postgres:16-alpine
-    container_name: ventflow-booking-postgres
+    container_name: eventflow-booking-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER}

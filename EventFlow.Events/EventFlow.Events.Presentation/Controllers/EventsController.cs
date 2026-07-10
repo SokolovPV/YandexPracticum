@@ -1,4 +1,5 @@
-﻿using EventFlow.Entities.Enums;
+﻿using EventFlow.Entities.Constant;
+using EventFlow.Entities.Enums;
 using EventFlow.Events.Application.DTO;
 using EventFlow.Events.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +10,7 @@ namespace EventFlow.Events.Presentation.Controllers;
 /// <summary>
 /// Контроллер для работы с мероприятиями
 /// </summary>
-[Authorize(Policy = "CustomJwtPolicy")]
+[Authorize(Policy = StringConstant.JwtPolicyName)]
 [ApiController]
 [Route("[controller]")]
 [Produces("application/json")]
@@ -75,7 +76,7 @@ public class EventsController(IEventService eventService, ILogger<EventsControll
   [Tags("АПИ для событий")]
   [ProducesResponseType(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status404NotFound)]
-  public async Task<IActionResult> UpdateEvent([Required] Guid eventId, [FromBody] UpdateEventDTO? updateEventDto, CancellationToken ct)
+  public async Task<IActionResult> UpdateEvent([Required] Guid eventId, [FromBody, Required] UpdateEventDTO updateEventDto, CancellationToken ct)
   {
     logger.LogDebug("Обработка запроса PUT {methodName} c id: {id}", nameof(UpdateEvent), eventId);
     await eventService.ChangeEventAsync(eventId, updateEventDto, ct);

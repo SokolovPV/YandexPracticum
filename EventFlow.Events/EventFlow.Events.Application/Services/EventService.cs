@@ -1,10 +1,11 @@
-﻿using EventFlow.Events.Application.DTO;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
+using EventFlow.Entities.Constant;
+using EventFlow.Events.Application.DTO;
 using EventFlow.Events.Application.Interfaces;
 using EventFlow.Events.Domain.Entities;
 using EventFlow.Events.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
-using System.ComponentModel.DataAnnotations;
-using System.Linq.Expressions;
 namespace EventFlow.Events.Application.Services;
 /// <summary>
 /// Сервис для работы с событиями
@@ -20,9 +21,9 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
 
         if (createEventDTO.StartAt.HasValue && createEventDTO.EndAt.HasValue &&
             createEventDTO.StartAt > createEventDTO.EndAt)
-            throw new ValidationException(ConstantValues.dateFrom_more_dateTo_exception);
+            throw new ValidationException(StringConstant.dateFrom_more_dateTo_exception);
         if (createEventDTO.TotalSeats > 100 || createEventDTO.TotalSeats < 1)
-            throw new ValidationException(ConstantValues.totalSeats_more_range_exception);
+            throw new ValidationException(StringConstant.totalSeats_more_range_exception);
 
         var _event = Event.Create(
             title: createEventDTO.Title,
@@ -104,14 +105,14 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
         if (updateEvent.StartAt.HasValue && updateEvent.EndAt.HasValue &&
             updateEvent.StartAt > updateEvent.EndAt)
         {
-            _logger.LogError(ConstantValues.dateFrom_more_dateTo_exception);
-            throw new ValidationException(ConstantValues.dateFrom_more_dateTo_exception);// false;
+            _logger.LogError(StringConstant.dateFrom_more_dateTo_exception);
+            throw new ValidationException(StringConstant.dateFrom_more_dateTo_exception);// false;
         }
 
         if (updateEvent.TotalSeats.HasValue && (updateEvent.TotalSeats > 100 || updateEvent.TotalSeats < 1))
         {
-            _logger.LogError(ConstantValues.totalSeats_more_range_exception);
-            throw new ValidationException(ConstantValues.totalSeats_more_range_exception);
+            _logger.LogError(StringConstant.totalSeats_more_range_exception);
+            throw new ValidationException(StringConstant.totalSeats_more_range_exception);
         }
 
         var _event = await _repository.GetByIdAsync(eventId, ct);
@@ -122,8 +123,8 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
         }
         if (updateEvent.TotalSeats.HasValue && (updateEvent.TotalSeats < (_event.TotalSeats - _event.AvailableSeats))) // с учетом уже занятых мест
         {
-            _logger.LogError(ConstantValues.totalSeats_less_availableSeats_exception);
-            throw new ValidationException(ConstantValues.totalSeats_less_availableSeats_exception);
+            _logger.LogError(StringConstant.totalSeats_less_availableSeats_exception);
+            throw new ValidationException(StringConstant.totalSeats_less_availableSeats_exception);
         }
 
 

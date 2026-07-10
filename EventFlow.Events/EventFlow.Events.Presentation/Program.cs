@@ -1,5 +1,7 @@
 using EventFlow.Events.Application;
 using EventFlow.Events.Infrastructure;
+using EventFlow.Events.Infrastructure.Context;
+using EventFlow.Events.Presentation.ExceptionFilter;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Events.Presentation

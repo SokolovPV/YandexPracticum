@@ -1,4 +1,5 @@
 using System.Text;
+using EventFlow.Entities.Constant;
 using EventFlow.Entities.Exceptions;
 using EventFlow.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -39,7 +40,7 @@ public static class DependencyInjection
 
         services.AddAuthorization(options =>
         {
-            options.AddPolicy("CustomJwtPolicy", policy =>
+            options.AddPolicy(StringConstant.JwtPolicyName, policy =>
                 policy.AddAuthenticationSchemes(jwtOptions.SchemeName)
                     .RequireAuthenticatedUser());
         });
