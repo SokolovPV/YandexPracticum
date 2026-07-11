@@ -1,5 +1,7 @@
 using EventFlow.Bookings.Infrastructure.Context;
 using EventFlow.Bookings.Presentation.ExceptionFilter;
+using EventFlow.Bookings.Application;
+using EventFlow.Bookings.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Bookings.Presentation
@@ -11,7 +13,9 @@ namespace EventFlow.Bookings.Presentation
 			var builder = WebApplication.CreateBuilder(args);
 			// Логирование в консоль
 			builder.Logging.AddConsole();
-		
+			builder.Services.AddInfrastructureServices(builder.Configuration);
+			builder.Services.AddApplicationServices();
+			builder.Services.AddPresentationServices(builder.Configuration);
 
 			var app = builder.Build();
 			using (var scope = app.Services.CreateScope())

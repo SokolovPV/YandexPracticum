@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\EventFlow.Shared\EventFlow.Entities\EventFlow.Entities.csproj" />
     <ProjectReference Include="..\EventFlow.Bookings.Application\EventFlow.Bookings.Application.csproj" />
     <ProjectReference Include="..\EventFlow.Bookings.Infrastructure\EventFlow.Bookings.Infrastructure.csproj" />
   </ItemGroup>

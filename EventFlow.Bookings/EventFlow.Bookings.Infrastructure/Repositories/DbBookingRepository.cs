@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using EventFlow.Bookings.Application.Interfaces;
 using EventFlow.Bookings.Domain.Entities;
+using EventFlow.Bookings.Domain.Enums;
 using EventFlow.Bookings.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ public class DbBookingRepository(AppDbContext appDbContext) : IBookingRepository
         await appDbContext.Bookings.AddAsync(booking, ct);
         await appDbContext.SaveChangesAsync();
     }
+
     /// <inheritdoc/>
     public async Task<bool> DeleteAsync(Guid bookingId, CancellationToken ct)
     {
@@ -49,5 +51,35 @@ public class DbBookingRepository(AppDbContext appDbContext) : IBookingRepository
             appDbContext.Bookings.Update(booking);
             await appDbContext.SaveChangesAsync(ct);
         }
+    }
+
+    public async Task<bool> ConfirmAsync(Guid bookingId, CancellationToken ct)
+    {
+        var booking = await appDbContext.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId, ct);
+        if (booking == null)
+            return false;
+
+        if (booking.Status != BookingStatus.Pending)
+            return false;
+
+        booking.Confirm();
+        await appDbContext.SaveChangesAsync(ct);
+
+        return true;
+    }
+
+    public async Task<bool> RejectAsync(Guid bookingId, CancellationToken ct)
+    {
+        var booking = await appDbContext.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId, ct);
+        if (booking == null)
+            return false;
+
+        if (booking.Status != BookingStatus.Pending)
+            return false;
+
+        booking.Reject();
+        await appDbContext.SaveChangesAsync(ct);
+
+        return true;
     }
 }

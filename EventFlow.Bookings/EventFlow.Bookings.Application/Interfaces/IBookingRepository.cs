@@ -40,4 +40,18 @@ public interface IBookingRepository
     /// <param name="query">Предикат для фильтрации событий</param>
     /// <param name="ct">Токен отмены</param>
     Task<List<Booking>> ListAsync(Expression<Func<Booking, bool>> query, CancellationToken ct);
+
+    /// <summary>
+    /// Подтверждение бронирования
+    /// </summary>
+    /// <param name="bookingId">ID бронирования</param>
+    /// <param name="ct">Токен отмены</param>
+    Task<bool> ConfirmAsync(Guid bookingId, CancellationToken ct);
+
+    /// <summary>
+    /// Отмена бронирования
+    /// </summary>
+    /// <param name="bookingId">ID бронирования</param>
+    /// <param name="ct">Токен отмены</param>
+    Task<bool> RejectAsync(Guid bookingId, CancellationToken ct);
 }

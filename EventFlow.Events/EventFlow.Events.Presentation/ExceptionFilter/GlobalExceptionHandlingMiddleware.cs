@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using EventFlow.Events.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 namespace EventFlow.Events.Presentation.ExceptionFilter;
 /// <summary>
@@ -58,12 +59,8 @@ public class GlobalExceptionHandlingMiddleware
         => ex switch
         {
             ValidationException ve => StatusCodes.Status400BadRequest,
-            // KeyNotExistException kne => StatusCodes.Status404NotFound,
-            // EntityNotFoundException efe => StatusCodes.Status404NotFound,
-            // EventAlreadyStartedException ease => StatusCodes.Status400BadRequest,
-            // BookingLimitExceededException ble => StatusCodes.Status409Conflict,
-            // AccessDeniedException ade => StatusCodes.Status403Forbidden,
-            // NoAvailableSeatsException nac => StatusCodes.Status409Conflict,
+            KeyNotExistException kne => StatusCodes.Status404NotFound,
+             NoAvailableSeatsException nac => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
         };
 
@@ -71,8 +68,8 @@ public class GlobalExceptionHandlingMiddleware
       => ex switch
       {
           ValidationException ve => "Validation Failed",
-        //   KeyNotExistException kne => "Invalid Identifier",
-        //   NoAvailableSeatsException nac => "No available seats",
+          KeyNotExistException kne => "Invalid Identifier",
+          NoAvailableSeatsException nac => "No available seats",
           _ => "Unknown Error"
       };
 }

@@ -10,6 +10,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\EventFlow.Shared\EventFlow.Entities\EventFlow.Entities.csproj" />
     <ProjectReference Include="..\EventFlow.Bookings.Domain\EventFlow.Bookings.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>

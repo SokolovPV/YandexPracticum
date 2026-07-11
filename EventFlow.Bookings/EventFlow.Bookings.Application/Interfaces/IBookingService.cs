@@ -1,5 +1,6 @@
 ﻿
 using EventFlow.Bookings.Domain.Entities;
+using EventFlow.Entities.Enums;
 
 namespace EventFlow.Bookings.Application.Interfaces;
 /// <summary>
@@ -28,7 +29,15 @@ public interface IBookingService
     /// </summary>
     /// <param name="bookingId">идентификатор бронирования</param>
     /// <param name="userId">идентификатор пользователя</param>
+    /// <param name="role">роль пользователя</param>
     /// <param name="ct">токен отмены</param>
     /// <returns></returns>
-    Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, CancellationToken ct);
+    Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, RoleType role, CancellationToken ct);
+
+    /// <summary>
+    /// Подтверждение бронирования
+    /// </summary>
+    /// <param name="booking">Бронирование</param>
+    /// <param name="ct">Токен отмены</param>
+    Task ProcessBookingAsync(Booking booking, CancellationToken ct);
 }

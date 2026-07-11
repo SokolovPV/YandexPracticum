@@ -1,6 +1,7 @@
 using EventFlow.Bookings.Application.Interfaces;
 using EventFlow.Bookings.Infrastructure.Context;
 using EventFlow.Bookings.Infrastructure.Repositories;
+using EventFlow.Bookings.Infrastructure.Services;
 using EventFlow.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,12 +21,10 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
-        services.Configure<JwtTokenSettings>(configuration.GetSection(nameof(JwtTokenSettings)));
 
         // добавляем репозитории
         services.AddScoped<IBookingRepository, DbBookingRepository>();
-
-       
+        services.AddHostedService<BookingBackgroundService>();      
 
         return services;
     }

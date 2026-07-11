@@ -1,5 +1,7 @@
 ﻿using EventFlow.Bookings.Application.DTO;
 using EventFlow.Bookings.Application.Interfaces;
+using EventFlow.Entities.Constant;
+using EventFlow.Entities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -8,7 +10,7 @@ using System.Security.Claims;
 namespace EventFlow.Bookings.Presentation.Controllers;
 
 [ApiController]
-[Authorize(Policy = "CustomJwtPolicy")]
+[Authorize(Policy = StringConstant.JwtPolicyName)]
 [Route("[controller]")]
 [Produces("application/json")]
 public class BookingsController(IBookingService bookingService, ILogger<BookingsController> logger) : ControllerBase
@@ -46,13 +48,17 @@ public class BookingsController(IBookingService bookingService, ILogger<Bookings
         logger.LogDebug("Обработка запроса DELETE {methodName}. Удаление бронирования: {bookingId}", nameof(CancelBooking), bookingId);
 
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-
+        var userRoleClaim = User.FindFirst("role");
         if (string.IsNullOrEmpty(userIdClaim?.Value) || !Guid.TryParse(userIdClaim.Value, out Guid userId))
         {
             return Unauthorized("Не удалось определить идентификатор пользователя.");
         }
+        if (string.IsNullOrEmpty(userRoleClaim?.Value) || !Enum.TryParse<RoleType>(userRoleClaim.Value, true, out var userRole))
+        {
+            return Unauthorized("Не удалось определить идентификатор пользователя.");
+        }
 
-        await bookingService.CancelBookingAsync(bookingId, userId, ct);
+        await bookingService.CancelBookingAsync(bookingId, userId, userRole, ct);
         return NoContent();
     }
 
