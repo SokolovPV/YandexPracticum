@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        services.Configure<KafkaOptions>(configuration.GetSection(nameof(KafkaOptions)));
         // добавляем репозитории
         services.AddScoped<IBookingRepository, DbBookingRepository>();
         services.AddHostedService<BookingBackgroundService>();      

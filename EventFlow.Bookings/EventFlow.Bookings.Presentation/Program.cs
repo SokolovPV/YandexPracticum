@@ -14,7 +14,7 @@ namespace EventFlow.Bookings.Presentation
 			// Логирование в консоль
 			builder.Logging.AddConsole();
 			builder.Services.AddInfrastructureServices(builder.Configuration);
-			builder.Services.AddApplicationServices();
+			builder.Services.AddApplicationServices(builder.Configuration);
 			builder.Services.AddPresentationServices(builder.Configuration);
 
 			var app = builder.Build();

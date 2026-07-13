@@ -1,4 +1,4 @@
-namespace EventFlow.Entities.Contracts;
+namespace EventFlow.Entities.Brokers;
 
 /// <summary>
 /// Контракт события подтвержденного бронирования

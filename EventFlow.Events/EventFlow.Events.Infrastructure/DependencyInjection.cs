@@ -1,6 +1,7 @@
 using EventFlow.Events.Application.Interfaces;
 using EventFlow.Events.Infrastructure.Context;
 using EventFlow.Events.Infrastructure.Repositories;
+using EventFlow.Events.Infrastructure.Services;
 using EventFlow.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,8 +21,10 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
 
-        //services.Configure<JwtTokenSettings>(configuration.GetSection(nameof(JwtTokenSettings)));
+        services.Configure<KafkaOptions>(configuration.GetSection(nameof(KafkaOptions)));
         services.AddScoped<IEventRepository, DbEventRepository>();
+
+        services.AddHostedService<KafkaTopicInitializer>();
         return services;
     }
 }
