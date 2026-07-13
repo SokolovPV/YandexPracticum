@@ -1,9 +1,11 @@
 
+using System.Text.Json;
 using EventFlow.Bookings.Application.Interfaces;
 using EventFlow.Bookings.Application.Options;
 using EventFlow.Bookings.Domain.Entities;
 using EventFlow.Bookings.Domain.Enums;
 using EventFlow.Bookings.Domain.Exceptions;
+using EventFlow.Entities.Brokers;
 using EventFlow.Entities.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,6 +16,7 @@ namespace EventFlow.Bookings.Application.Services;
 /// </summary>
 public class BookingService(
     IBookingRepository bookingRepository,
+    IBookingConfirmedProducer bookingConfirmedProducer,
     IOptions<BookingSettings> bookingSettings,
     ILogger<BookingService> logger) : IBookingService
 {
@@ -108,6 +111,19 @@ public class BookingService(
                 return;
             }
             logger.LogInformation("Бронь {Id} подтверждена", booking.Id);
+
+            var confirmedMessage = new BookingConfirmed(
+                           Guid.NewGuid(),
+                           booking.Id,
+                           booking.EventId,
+                           booking.UserId,
+                           DateTime.UtcNow);
+
+            await bookingConfirmedProducer.PublishAsync(
+                TopicNames.BookingConfirmed,
+                booking.EventId.ToString(),
+                JsonSerializer.Serialize(confirmedMessage),
+                ct);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
