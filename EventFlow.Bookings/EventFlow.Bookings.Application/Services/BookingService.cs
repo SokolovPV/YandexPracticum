@@ -17,11 +17,11 @@ namespace EventFlow.Bookings.Application.Services;
 public class BookingService(
     IBookingRepository bookingRepository,
     IBookingConfirmedProducer bookingConfirmedProducer,
-    IOptions<BookingSettings> bookingSettings,
+    IOptions<BookingOptions> bookingSettings,
     ILogger<BookingService> logger) : IBookingService
 {
     private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-    private readonly BookingSettings _bookingSettings = bookingSettings.Value;
+    private readonly BookingOptions _bookingSettings = bookingSettings.Value;
 
     /// <inheritdoc/>
     public async Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, RoleType role, CancellationToken ct)
@@ -77,7 +77,7 @@ public class BookingService(
             var userBookings = await bookingRepository.ListAsync(q => q.UserId == userId
                                     && q.Status != BookingStatus.Rejected && q.Status != BookingStatus.Cancelled, ct);
             if (userBookings != null && userBookings.Count >= _bookingSettings.MaxUserBookings)
-                throw new BookingLimitExceededException(eventId.ToString(), userId.ToString(), userBookings.Count, _bookingSettings.MaxUserBookings);
+                throw new BookingLimitExceededException(userId.ToString(), userBookings.Count, _bookingSettings.MaxUserBookings);
 
             var newBooking = Booking.Create(eventId, userId);
             await bookingRepository.AddAsync(newBooking, ct);

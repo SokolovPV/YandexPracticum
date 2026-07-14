@@ -10,7 +10,7 @@ public static class DependencyInjection
 {
   public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
   {
-    services.Configure<BookingSettings>(configuration.GetSection(nameof(BookingSettings)));
+    services.Configure<BookingOptions>(configuration.GetSection(nameof(BookingOptions)));
     services.AddScoped<IBookingService, BookingService>();
 
     return services;

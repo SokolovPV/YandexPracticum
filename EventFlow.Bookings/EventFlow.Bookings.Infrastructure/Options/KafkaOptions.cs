@@ -1,4 +1,4 @@
-namespace EventFlow.Settings;
+namespace EventFlow.Bookings.Infrastructure.Options;
 
 /// <summary>
 /// Настройки подключения к Kafka
@@ -6,7 +6,7 @@ namespace EventFlow.Settings;
 public class KafkaOptions
 {
     /// <summary>
-    /// Адрес Kafka bootstrap servers
+    /// Адрес Kafka сервера
     /// </summary>
     public string BootstrapServers { get; set; } = string.Empty;
 }

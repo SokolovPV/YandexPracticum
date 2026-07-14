@@ -2,6 +2,7 @@
 using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using EventFlow.Entities.Brokers;
+using EventFlow.Events.Infrastructure.Options;
 using EventFlow.Settings;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

@@ -1,5 +1,6 @@
 using Confluent.Kafka;
 using EventFlow.Bookings.Application.Interfaces;
+using EventFlow.Bookings.Infrastructure.Options;
 using EventFlow.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

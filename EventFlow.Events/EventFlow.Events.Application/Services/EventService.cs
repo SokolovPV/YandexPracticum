@@ -151,4 +151,33 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
         }
         _logger.LogInformation("Событие удалено. ID: {eventId} ", eventId);
     }
+
+    public async Task<bool> TryReserveSeatAsync(Guid eventId, CancellationToken ct)
+    {
+        var existedEvent = await _repository.GetByIdAsync(eventId, ct);
+        if (existedEvent == null)
+            throw new KeyNotExistException(nameof(Event), eventId.ToString());
+
+        var state = existedEvent.TryReserveSeats();
+        if (!state)
+            return false;
+            
+        await _repository.UpdateAsync(existedEvent, ct);
+        return true;
+    }
+
+    public async Task<bool> ReleaseSeatAsync(Guid eventId, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        var existedEvent = await _repository.GetByIdAsync(eventId, ct);
+        if (existedEvent == null)
+        {
+            throw new KeyNotExistException(nameof(Event), eventId.ToString());
+        }
+
+        existedEvent.ReleaseSeats();
+        await _repository.UpdateAsync(existedEvent, ct);
+        return true;
+    }
 }

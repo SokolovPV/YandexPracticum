@@ -46,4 +46,18 @@ public interface IEventService
     /// <param name="eventId">ID события</param>
     /// <param name="ct">Токен отмены</param>
     Task RemoveEventAsync(Guid eventId, CancellationToken ct);
+
+    /// <summary>
+    /// Резервирование мест на событие.
+    /// </summary>
+    /// <param name="eventId">ID события</param>
+    /// <param name="ct">Токен отмены</param>
+    Task<bool> TryReserveSeatAsync(Guid eventId, CancellationToken ct);
+
+    /// <summary>
+    /// Освобождение мест на событие.
+    /// </summary>
+    /// <param name="eventId">ID события</param>
+    /// <param name="ct">Токен отмены</param>
+    Task<bool> ReleaseSeatAsync(Guid eventId, CancellationToken ct);
 }

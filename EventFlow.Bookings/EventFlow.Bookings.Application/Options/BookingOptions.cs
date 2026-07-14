@@ -3,7 +3,7 @@ namespace EventFlow.Bookings.Application.Options;
 /// <summary>
 /// Класс c настройками бронирования
 /// </summary>
-public class BookingSettings
+public class BookingOptions
 {
     /// <summary>
     /// максимальное количество бронирований пользователя 
