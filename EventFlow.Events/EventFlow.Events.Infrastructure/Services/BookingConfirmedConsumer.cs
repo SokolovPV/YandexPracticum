@@ -3,6 +3,7 @@ using System.Text.Json;
 using Confluent.Kafka;
 using EventFlow.Entities.Brokers;
 using EventFlow.Events.Application.Interfaces;
+using EventFlow.Events.Domain.Exceptions;
 using EventFlow.Events.Infrastructure.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -70,7 +71,7 @@ public class BookingConfirmedConsumer(
             return;
         }
 
-       // Пробуем забронировать места на мероприятие
+        // Пробуем забронировать места на мероприятие
         bool reserveSeatState;
         try
         {
@@ -86,10 +87,21 @@ public class BookingConfirmedConsumer(
             await processedRepository.AddAsync(message.MessageId, stoppingToken);
             return;
         }
+        catch (EventAlreadyStartedException ex)
+        {
+            logger.LogWarning(ex,
+                "Событие {EventId} для сообщения {MessageId} уже началось, бронирование невозможно. Помечаем сообщение как обработанное.",
+                message.EventId,
+                message.MessageId);
+
+            await processedRepository.AddAsync(message.MessageId, stoppingToken);
+            return;
+        }
+
 
         if (!reserveSeatState)
         {
-            logger.LogWarning("Не удалось уменьшить места для EventId={EventId}. Cвободных мест неты.", message.EventId);
+            logger.LogWarning("Не удалось уменьшить количество свободных мест для EventId={EventId}. Cвободных мест нет.", message.EventId);
             return;
         }
 

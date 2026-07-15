@@ -1,4 +1,4 @@
-namespace EventFlow.Bookings.Domain.Exceptions;
+namespace EventFlow.Events.Domain.Exceptions;
 
 /// <summary>
 /// Исключение, при бронирование если "Событие уже началось"

@@ -60,7 +60,8 @@ public class GlobalExceptionHandlingMiddleware
         {
             ValidationException ve => StatusCodes.Status400BadRequest,
             KeyNotExistException kne => StatusCodes.Status404NotFound,
-             NoAvailableSeatsException nac => StatusCodes.Status409Conflict,
+            EventAlreadyStartedException ease => StatusCodes.Status400BadRequest,
+            NoAvailableSeatsException nac => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
         };
 
@@ -70,6 +71,7 @@ public class GlobalExceptionHandlingMiddleware
           ValidationException ve => "Validation Failed",
           KeyNotExistException kne => "Invalid Identifier",
           NoAvailableSeatsException nac => "No available seats",
+          EventAlreadyStartedException ease => $"Event {ease.EventId} has already started",
           _ => "Unknown Error"
       };
 }

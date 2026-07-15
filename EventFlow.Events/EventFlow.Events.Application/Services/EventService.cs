@@ -158,6 +158,10 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
         if (existedEvent == null)
             throw new KeyNotExistException(nameof(Event), eventId.ToString());
 
+        if(DateTime.UtcNow > existedEvent.StartAt)    
+            throw new EventAlreadyStartedException(existedEvent.Id.ToString(), existedEvent.StartAt);
+
+
         var state = existedEvent.TryReserveSeats();
         if (!state)
             return false;
