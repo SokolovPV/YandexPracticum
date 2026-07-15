@@ -1,59 +1,34 @@
 services:
-  # kafka1:
-  #   image: apache/kafka:4.3.0
-  #   container_name: eventflow-kafka
-  #   depends_on:
-  #     zookeeper:
-  #       condition: service_healthy
-  #   ports:
-  #     # Внешний listener для подключения с хоста (например, из dotnet run локально).
-  #     - "9092:9092"
-  #   environment:
-  #     KAFKA_BROKER_ID: 1
-  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  #     # Два listener'а: INTERNAL — для сервисов внутри сети Docker, EXTERNAL — для хоста.
-  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-  #     KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
-  #     KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
-  #     KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-  #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
-  #     interval: 10s
-  #     timeout: 10s
-  #     retries: 15
-
-
   kafka:
     image: apache/kafka:latest
     container_name: eventflow_kafka
-    hostname: eventflow
+    hostname: eventflow 
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
-      # Уникальный ID узла
       KAFKA_NODE_ID: 1
-      # Роль: одновременно брокер и контроллер (для одного узла)
       KAFKA_PROCESS_ROLES: broker,controller
-      # Имя слушателя для контроллера
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      # Сопоставление имен слушателей с протоколами
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      # Где и на каких портах слушает Kafka внутри контейнера
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093
-      # Какой адрес сообщать клиентам (ваш хост)
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://eventflow:29092,PLAINTEXT_HOST://localhost:9092
-      # Список контроллеров для кворума (в нашем случае только один)
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@eventflow:29093
-      # Настройки для одного брокера (важно для корректной работы) [citation:1][citation:4]
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL  # <-- ADD THIS LINE
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://eventflow:29092,EXTERNAL://localhost:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@eventflow:29093  
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      # Автоматическое создание топиков (удобно для разработки)
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-    volumes:
-      - ./kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+    # volumes:
+    #   - kafka_data:/var/lib/kafka/data
+    # networks:
+    #   - eventflow-network
 
   # --- Веб-интерфейс AKHQ для управления Kafka ---
   akhq:
@@ -91,6 +66,19 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  users_api:
+    build:
+      context: .
+      dockerfile: EventFlow.Users/dockerfile
+    container_name: users_api
+    restart: unless-stopped
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=eventflow-user-postgres;Port=5432;Database=${USERS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+    ports:
+      - "5015:8080"
+    depends_on:
+      postgres_users:
+        condition: service_healthy
 
   # EVENTS DB
   postgres_events:
@@ -111,6 +99,22 @@ services:
       timeout: 5s
       retries: 10
 
+  event_api:
+    build:
+      context: .
+      dockerfile: EventFlow.Events/dockerfile
+    container_name: event_api
+    restart: unless-stopped
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=eventflow-events-postgres;Port=5432;Database=${EVENTS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+      KafkaOptions__BootstrapServers: eventflow:29092
+    ports:
+      - "5025:8080"
+    depends_on:
+      postgres_booking:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
   # BOOKING DB
   postgres_booking:
     image: postgres:16-alpine
@@ -129,7 +133,25 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-      
+
+  booking_api:
+    build:
+      context: .
+      dockerfile: EventFlow.Bookings/dockerfile
+    container_name: booking_api
+    restart: unless-stopped
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=eventflow-booking-postgres;Port=5432;Database=${BOOKING_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+      KafkaOptions__BootstrapServers: eventflow:29092
+    ports:
+      - "5035:8080"
+    depends_on:
+      postgres_booking:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+
 volumes:
   pg_users_data:
   pg_events_data:

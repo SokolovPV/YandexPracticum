@@ -48,7 +48,7 @@ public class BookingsController(IBookingService bookingService, ILogger<Bookings
         logger.LogDebug("Обработка запроса DELETE {methodName}. Удаление бронирования: {bookingId}", nameof(CancelBooking), bookingId);
 
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        var userRoleClaim = User.FindFirst("role");
+        var userRoleClaim = User.FindFirst(ClaimTypes.Role);
         if (string.IsNullOrEmpty(userIdClaim?.Value) || !Guid.TryParse(userIdClaim.Value, out Guid userId))
         {
             return Unauthorized("Не удалось определить идентификатор пользователя.");

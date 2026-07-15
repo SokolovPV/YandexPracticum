@@ -1,102 +1,128 @@
 # YandexPracticum
 
-Проект API для управления мероприятими (создание, изменение, кдаление) и их бронирования.
+Проект для управления мероприятими (создание, изменение, удаление) и их бронирования.
 
-`Проект разрабатывается в VS Code, версия NET.10 `
+## Технологии используемые в проекте
 
-Текущий сервис бронирований, разбит на четыре отдельных проекта по принципам чистой архитектуры: Domain, Application, Infrastructure, Presentation. Каждый проект — отдельная сборка с чётко очерченной ответственностью, а зависимости между ними направлены только «внутрь». 
+- .NET 10
+- ASP.NET Core Web API - HTTP-хост сервиса.
+- Entity Framework Core 10 - ORM для работы с базой данных.
+- PostgreSQL - БД, основное хранилище данных.
+- Confluent.Kafka - Асинхронный обмен событиями между сервисами (Event-Driven Architecture).
 
 
-# Domain (EventsApi.Domain)
-Проект описывает предметную область и не зависит от технологий.
-Содержит:
-- доменные сущности и перечисления -  Event (событие), Booking (бронирование), BookingStatus (перечисление статусов бронирования). Реализованы фабричные методы создания события и брони (Event.Create(...), Booking.Create(...), а так же т бизнес-правила (к примеру Event.TryReserveSeats(), Booking.Confirm(), Booking.Confirm() и т.д).
-- доменные исключения — KeyNotExistException (идентификатор мероприятия не найден), NoAvailableSeatsException (нет доступных мест для бронирования).
-
-Проект не зависит ни от чего внешнего.
-
-# Application (EventsApi.Application)
-Проект, содердит бизнес-логику и абстракции:
-- интерфейсы сервисов и их реализации (use cases): IEventService (работа с событиями), IBookingService (работа с бронированием). Реализации интерфейсов: EventService, BookingService;
-- интерфейсы портов — абстракции для доступа к данным (репозитории). Application определяет, что ему нужно от инфраструктуры (`EventsApi.Infrastructure`), через эти интерфейсы: IEventRepository, IBookingRepository;
-- DTO (объекты передачи данных между слоями `EventsApi.Application` и `EventsApi.Presentation`);
-- фоновые сервисы — Фоновый сервис для регистрации бронирования `BookingBackgroundService`;
-- extension-метод для регистрации всех Application-зависимостей в DI-контейнере - `AddApplicationServices`.
-
-Проект зависит только слоя Domain `(EventsApi.Domain)`.
-
-# Infrastructure (EventsApi.Infrastructure)
-Проект, содержит реализации, которые зависят от внешних технологий:
-
-- реализации интерфейсов репозиториев с использованием DbContext (реализует интерфейсы слоя Application);
-- DbContext — AppDbContext;
-- конфигурации сущностей: EventConfiguration, BookingConfiguration;
-- миграции БД;
-- extension-метод для регистрации всех Infrastructure-зависимостей в DI-контейнере.
-
-Проект зависит от Domain `(EventsApi.Domain)` и Application `(EventsApi.Application)`.
-
-# Presentation (EventsApi.Presentation)
-Веб-проект HTTP API.
-
-Содержит:
-- эндпоинты/контроллеры — что-бы получить HTTP-запрос, вызвать нужный обработчик/сервис в Application, вернуть ответ: EventsController (Контроллер для работы с мероприятиями) и BookingsController (Контроллер для работы с бронированием);
-- обработчик глобальных исключений с маппингом доменных исключений в HTTP-статусы, ответ формируется в формате ProblemDetails (RFC 7807): GlobalExceptionHandlingMiddleware;
-- composition root в Program.cs — регистрация всех зависимостей через extension-методы : AddInfrastructureServices(), AddApplicationServices(), AddPresentationServices().
-
-Проект зависит от Infrastructure `(EventsApi.Infrastructure)` и Application `(EventsApi.Application)`.
-
-## Cхема направления зависимостей проектов
+Текущий сервис бронирований, разбит на три отдельных проекта по принципам чистой архитектуры: Domain, Application, Infrastructure, Presentation. Каждый проект — отдельная сборка с чётко очерченной ответственностью, а зависимости между ними направлены только «внутрь». 
+## Cхема направления зависимостей в проектах
 
 ![схема направления зависимостей проектов](https://pictures.s3.yandex.net/resources/image_1779201047.png)
 
+## Реализованные проекты
+- `EventFlow.Users` — регистрация, логин и JWT-аутентификация пользователей
+- `EventFlow.Events` — управление событиями
+- `EventFlow.Booking` — создание, обработка и отмена бронирований
 
----
 
 ## Ролевая модель и разграничение прав
 
 Сервис бронирования использует **JWT-аутентификацию **
-
+JWT-токен выдаёт сервис `EventFlow.Users`, сервисы `EventFlow.Events` и `EventFlow.Booking` проверяют этот же токен, содержит GUID пользователя и роль `role`.
 
 ### Роли пользователей
 
 | Роль | Описание | Права доступа |
 |------|----------|---------------|
-| `User` | Обычный пользователь | • Обычный пользователь может только бронировать события и отменять собственные брони. |
+| `User` | Обычный пользователь | • Обычный пользователь может просматривать события, бронировать и отменять собственные брони. |
 | `Admin` | Администратор | • Администратор управляет событиями — создаёт, редактирует, удаляет их и может отменять любые брони |
 
-### Разграничение прав доступа к API
+Управление событиями доступно только роли Admin (403 для остальных), эндпоинты броней требуют аутентификации (401 без токена).
 
-#### Публичные endpoints (без аутентификации)
 
-```http
-GET  /Events              # Список событий (с фильтрацией и пагинацией)
-GET  /Events/{eventId}    # Информация о событии по идентификатору
-POST /auth/register       # Регистрация нового пользователя
-POST /auth/login          # Аутентификация и получение JWT-токена
+### Асинхронный обмен событиями между сервисами (Event-Driven Architecture)
+
+Используется брокер сообщений `Kafka`.
+Контракт Kafka лежит в `EventFlow.Shared/EventFlow.Entities/Brokers/BookingConfirmed.cs`.
+
+Имя Kafka-топика, общее для издателя и подписчика лежит в `EventFlow.Shared/EventFlow.Entities/Brokers/TopicNames.cs`.
+
+Используемый типы сообщения:
+
+- `BookingConfirmed`
+
+Сценарий работы:
+1. Пользователь создаёт бронь со статусом `Pending`
+2. Внетренний сервис `BookingBackgroundService` обрабатывает брони со статусом `Pending` и переводит их в статус `Confirmed`
+3. Сервис Bookings публикует событие BookingConfirmed в Kafka при подтверждении брони.
+4. Сервис Events подписан на топик и при получении события уменьшает доступные места.
+6. `Events` хранит обработанные сообщения в `ProcessedMessages` для исключения повторной обработки (идемпотентности).
+
+## Запуск проекта
+
+### Требования
+
+В системе должен быть установлен пакет docker и docker-compose (для ОС Windows должен быть установлен Docker Desktop) для запуска контейнера с БД PostgreSQL для хранения данных.
+В системе должен быть установлен пакет .NET 10 (для ОС Linux dotnet-sdk-10.0).
+
+### Запуск через Docker Compose
+
+Проект запускается с использованием файла `docker-compose.yml`.
+Для каждого микросервиса используется отдельный `dockerfile`:
+
+- `EventFlow.Users/dockerfile`
+- `EventFlow.Events/dockerfile`
+- `EventFlow.Booking/dockerfile`
+ 
+ контейнеры запускаемые с использованием docker:
+- `kafka`
+- `akhq`
+- `eventflow-user-postgres`
+- `eventflow-events-postgres`
+- `eventflow-booking-postgres`
+- `users_api`
+- `event_api`
+- `booking_api`
+
+настройки для `docker-compose.yml` файла хранятся в`.env` файле в корне проекта.
+
+Сборка и запуск контейнеров выполняется командой в Linux:
+
+```bash
+docker compose up -d
 ```
 
-#### Endpoints, требующие аутентификации
+после запуска будут доступны слудующии web-интерфейсы:
+- `Users API` — `http://localhost:5015`
+- `Events API` — `http://localhost:5025`
+- `Booking API` — `http://localhost:5035`
+- `AKHQ` — `http://localhost:8080`
 
-```http
-POST    /Events/                      # Метод для создания события
-PUT     /Events/{eventId}             # Метод обновления даных события
-DELETE  /Events/{eventId}             # Метод удаляет событие по идентификатору
-POST    /Events/{eventId}/book        # Метод для создания бронирования
-GET     /Bookings/{bookingId}         # Получение информации по бронированию
-DELETE  /Bookings/{bookingId}         # Отмена брони (только владелец или Admin)
+## Добавление миграции БД
+
+### Создание миграции
+
+Миграции создаются отдельно для каждого проекта. Для создания миграции необходимо выпонить команду 
+
+```bash
+dotnet ef migrations add <MigrationName> --project <Infrastructure Project> --startup-project <Startup Project>
 ```
+- `MigrationName` - имя миграции
+- `Infrastructure Project` - проект с БД и конфигурацией
+- `Startup Project` - проект со строкой подключения к БД
 
-**Ограничения для роли User:**
-- запрет бронирования события, которое уже началось (`400 EventAlreadyStartedException`)
-- запрет превышения лимита активных броней (по умолчанию 10) → `409 BookingLimitExceededException`
-- запрет отмены чужой брони → `403 AccessDeniedException`
+### Применение миграции к БД
+
+``` bash
+dotnet ef database update --project <Infrastructure Project> --startup-project <Startup Project>
+```
+- `Infrastructure Project` - проект с БД и конфигурацией
+- `Startup Project` - проект со строкой подключения к БД
+
+
 
 ### Инструкция по получению JWT-токена через Swagger
 
 1. **Регистрация пользователя**
 
-   Откройте Swagger UI: [https://localhost:5091/swagger/index.html](https://localhost:5001/swagger/index.html)
+   Откройте Swagger UI: [https://localhost:5015/swagger/index.html](https://localhost:5015/swagger/index.html)
 
    Endpoint `POST /auth/register`:
 
@@ -170,225 +196,6 @@ DELETE  /Bookings/{bookingId}         # Отмена брони (только в
 | `Audience` | string | Целевая аудитория токена (проверяется при валидации) |
 | `Lifetime` | int | Время жизни токена в **минутах** |
 
----
-
-### Рекомендации использовать безопасное значение в продакшене
-1. **Используйте User Secrets (для локального тестирования):**
-   ```bash
-   dotnet user-secrets set "JwtSettings:Secret" "ProdSecretKey+!@#!!!"
-   ```
-
-2. **Используйте переменные окружения :**
-   ```bash
-   export JwtSettings_Secret="ProdSecretKey+!@#!!!"
-
-### Хеширование паролей
-Для реализации хеширования строки и проверки соответствия пароля хешу используется библиотека  BCrypt.Net.BCrypt
-
-```c#
-		public string HashPassword(string password)
-		{
-			return BCrypt.Net.BCrypt.HashPassword(password);
-		}
-		
-		public bool VerifyHashedPassword(string providedPassword, string hashedPassword)
-		{
-			return BCrypt.Net.BCrypt.Verify(providedPassword, hashedPassword);
-		}
-```
-
-# Необходимые компоненты для приложения
-Проект разрабатывается на VS Code в ОС Linux с использованием ASP .NET Core 10
-
-## Требования
-В системе должен быть установлен пакет docker и docker-compose (для ОС Windows должен быть установлен Docker Desktop) для запуска контейнера с БД PostgreSQL для хранения данных.
-В системе должен быть установлен пакет .NET 10 (для ОС Linux dotnet-sdk-10.0).
-
-
-## Установка
-
-1. Клонирем репозиторий:
-
-```
-https://github.com/SokolovPV/YandexPracticum.git
-```
-
-2. Сборка проекта
-
-переходим дирректорию проекта решения и выполняем сборку проекта Presentation 
-
-```
-dotnet build EventsApi.Presentation
-```
-3. Запуск базы данных PostgreSQL в контейнере Docker
- 
- перходим в директорию проекта решения и выполняем команду
-
-для операционных систем семейства Linux
-```
-dotnet-compose up -d
-```
-
-для операционных систем семейства Windows
-```
-dotnet compose up -d
-```
-
-4. Запуск тестов
-
-Запустите сборку проекта с Unit тестами
-
-```
-dotnet build EventsApi.UnitTest
-```
-Выполнение Unit тестов
-
-```
-dotnet test EventsApi.UnitTest
-```
-
-
-Запустите сборку проекта с Интеграционными тестами
-```
-dotnet build EventsApi.IntegrationTests
-```
-
-Выполнение интеграционных тестов
-
-```
-dotnet test EventsApi.IntegrationTests
-```
-
-5. Запуск WebApi решения
-   
-```
-dotnet run --project EventsApi.Presentation
-```
-
-#### Для использования API переходим в браузере по адресу http://localhost:5091/swagger/index.html
-
-## Описание моделей данных
-
-### User
-
-Модель пользователя системы
-
-#### Описание модели пользователя
-
-| Поле          | Тип                | Обязательное | Описание                   |
-| ------------- | ------------------ | ------------ | -------------------------- |
-| `Id`          | `Guid`             | Да           | Идентификатор пользователя |
-| `Login`       | `string`           | Да           | Имя пользователя          | 
-| `PasswordHash`| `string`           | Да           | Хэш пароля пользователя    |
-| `Role`        | `RoleType`         | Да           | Роль пользователя          |
-
-#### Роли пользователя RoleType
-
-| Поле        | Описание                         |
-| ----------- | -------------------------------- |
-| `User`      | Роль простого пользователя       |
-| `Admin`     | Роль администратора              |
-
-
-### Event
-
-Модель представляет событие которое хранится в БД PostreSQL
-
-#### Описание модели события
-
-| Поле             | Тип        | Обязательное | Описание                          |
-| ---------------- | ---------- | ------------ | --------------------------------- |
-| `Id`             | `Guid`     | Да           | Идентификатор события             |
-| `Title`          | `string`   | Да           | Название события                  |
-| `Description`    | `string`   | Нет          | Описание события                  |
-| `StartAt`        | `DateTime` | Да           | Дата начала события               |
-| `EndAt`          | `DateTime` | Нет          | Дата окончания события            |
-| `TotalSeats`     | `int`      | Да           | Общее количество мест на событие  |
-| `AvailableSeats` | `int`      | Да           | Текущее количество свободных мест |
-
-### Booking
-
-Модель представляет бронирование которое хранится в БД PostreSQL
-
-#### Описание модели бронирования
-
-| Поле          | Тип                | Обязательное | Описание                                                          |
-| ------------- | ------------------ | ------------ | ----------------------------------------------------------------- |
-| `Id`          | `Guid`             | Да           | Идентификатор бронирования                                        |
-| `EventId`     | `string`           | Да           | Идентификатор события, к которому относится бронирование          |
-| `UserId`      | `Guid`             | Да           | Идентификатор пользователя,кто забронировал мероприятие           |
-| `Status`      | `BookingStatus`    | Да           | Текущий статус бронирования (при создании по умолчанию = Pending) |
-| `CreatedAt`   | `DateTime`         | Да           | Дата создания бронирования                                        |
-| `ProcessedAt` | `DateTime \| null` | Нет          | Дата обработки бронирования                                       |
-
-#### Статус бронирования BookingStatus
-
-| Поле        | Описание                         |
-| ----------- | -------------------------------- |
-| `Pending`   | Бронь создана, ожидает обработки |
-| `Confirmed` | Бронь подтверждена               |
-| `Rejected`  | Бронь отклонена ситемой          |
-| `Cancelled` | Бронь отклонена пользователем    |
-
-## Методы для работы с пользователями
-
-<details>
-<summary>Создание нового пользователя</summary>
-
-- **Метод:** `POST`
-- **URL:** `/auth/register`
-- **Параметры запроса:**
-  - `login` (обязательно) - имя пользователя 
-  - `password` (обязательно) - пароль пользователя 
-  - `role` (обязательно) - роль пользователя (0 - простой пользователь, 1 - администратор)
-
-- **Пример запроса:**
-
-```bash
-curl -X 'POST' \
-  'http://localhost:5091/auth/register' \
-  -H 'accept: */*' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "login": "ivan_ivanov",
-  "password": "Aqswdefr",
-  "role": "1"
-}'
-```
-- **Пример ответа**
-
-```json
-```
-
-</details>
-
-<details>
-<summary>Получение токена доступа пользователя</summary>
-
-- **Метод:** `POST`
-- **URL:** `/auth/login`
-- **Параметры запроса:**
-  - `login` (обязательно) - имя пользователя 
-  - `password` (обязательно) - пароль пользователя 
-
- **Пример запроса:**
-
-```bash
-curl -X 'POST' \
-  'http://localhost:5091/auth/login' \
-  -H 'accept: */*' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "login": "ivan_ivanov",
-  "password": "Aqswdefr"
-}'
-```
-- **Пример ответа**
-
-```json
-```
-
-</details>
 
 ## Методы для Cобытий
 
@@ -406,7 +213,7 @@ curl -X 'POST' \
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:5091/Events' \
+  'http://localhost:5025/Events' \
   -H 'accept: */*' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -447,7 +254,7 @@ curl -X 'POST' \
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:5091/Events/43623902-6ef0-4e54-9e0d-0973e780bede' \
+  'http://localhost:5025/Events/43623902-6ef0-4e54-9e0d-0973e780bede' \
   -H 'accept: */*' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -472,7 +279,7 @@ curl -X 'PUT' \
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:5091/Events/43623902-6ef0-4e54-9e0d-0973e780bede' \
+  'http://localhost:5025/Events/43623902-6ef0-4e54-9e0d-0973e780bede' \
   -H 'accept: application/json'
 ```
 
@@ -502,7 +309,7 @@ curl -X 'GET' \
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:5091/Events/43623902-6ef0-4e54-9e0d-0973e780bede' \
+  'http://localhost:5025/Events/43623902-6ef0-4e54-9e0d-0973e780bede' \
   -H 'accept: */*'
 ```
 
@@ -524,7 +331,7 @@ curl -X 'DELETE' \
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:5091/Events/43623902-6ef0-4e54-9e0d-0973e780bede' \
+  'http://localhost:5025/Events/43623902-6ef0-4e54-9e0d-0973e780bede' \
   -H 'accept: */*'
 ```
 
@@ -581,64 +388,6 @@ curl -X 'DELETE' \
 }
 ```
 
-## Операции с Бронированием
-
-Бронирование реализовано в фоновом сервисе, который опрашивает репозиторий с созданныйи бронированиями, и переводит их в статус "подтверждено" или в случае отмены бронирования "отклонено". Сервис обрабатывает события один раз в 5 секунд.
-
-- Создаем событие
-
-```bash
-curl -X 'POST' \
-  'https://localhost:5091/Events' \
-  -H 'accept: */*' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "title": "Новое событие",
-  "description": "",
-  "startAt": "2026-04-11T07:54:33.751Z",
-  "endAt": "2026-04-13T07:54:33.751Z"
-}'
-```
-
-Запрос для создания события. Из него берём идентификатор события.
-
-```json
-{
-  "id": "df00f0e9-2554-4c0e-b76f-c751ba8870fc",
-  "title": "Новое событие",
-  "description": "",
-  "startAt": "2026-04-11T07:54:33.751Z",
-  "endAt": "2026-04-13T07:54:33.751Z"
-}
-```
-
-- Запрос для создания бронирования
-
-```bash
-curl -X 'POST' \
-  'https://localhost:5091/Events/df00f0e9-2554-4c0e-b76f-c751ba8870fc/book' \
-  -H 'accept: */*' \
-  -d ''
-```
-
-из ответа забираем ID бронирования
-
-```json
-{
-  "id": "07c5ba9a-900a-43ba-931f-ee5f9ec58d79",
-  "eventID": "df00f0e9-2554-4c0e-b76f-c751ba8870fc",
-  "status": "Pending"
-}
-```
-
-- Через 5 секунд проверяем статус бронирования
-
-```bash
-curl -X 'GET' \
-  'https://localhost:5091/Bookings/07c5ba9a-900a-43ba-931f-ee5f9ec58d79' \
-  -H 'accept: */*'
-```
-
 ## Методы для бронирования
 
 <details>
@@ -652,7 +401,7 @@ curl -X 'GET' \
 
 ```bash
 curl -X 'POST' 
-  'https://localhost:5091/Events/07c5ba9a-900a-43ba-931f-ee5f9ec58d79/book' \
+  'https://localhost:5035/Bookings/07c5ba9a-900a-43ba-931f-ee5f9ec58d79/book' \
   -H 'accept: */*' \
   -d ''
 ```
@@ -702,41 +451,22 @@ curl -X 'GET' \
 
 </details>
 
-### Формат ошибок ProblemDetails (RFC 7807) для бронирования
-**Примеры ответа ошибка неправильный идентификатор**
-```json
-{
-  "type": "Invalid Identifier",
-  "status": 404,
-  "detail": "Идентификатор бронирования не найден."
-}
-```
+<details>
+<summary>Удаление (отмена) бронирования</summary>
 
-**Пример ответа при создании бронирования если недостаточно количество свободных мест**
-```json
-{
-  "type": "No available seats",
-  "status": 409,
-  "detail": "Для события ID=f1981d77-e952-420f-b9a1-13a8e2efcf8f отстутствуют свободные места для бронирования."
-}
-```
+- **Метод:** `DELETE`
+- **URL:** `/Bookings/{bookingId}`
+- **Параметры запроса:**
+  - `bookingId` (обязательно) - идентификатор бронирования
+- **Пример запроса:**
 
-## Добавление миграции БД
-
-### Создание миграции
-Для создания миграции необходимо выпонить команду 
 ```bash
-dotnet ef migrations add InitialCreate --project EventsApi.Infrastructure --startup-project EventsApi.Presentation
-```
-- `InitialCreate` - имя миграции
-- `EventsApi.Infrastructure` - проект с БД и конфигурацией
-- `EventsApi.Presentation` - проект со строкой подключения к БД
-
-### Применение миграции к БД
-
-``` bash
-dotnet ef database update --project EventsApi.Infrastructure --startup-project EventsApi.Presentation
+curl -X 'DELETE' \
+  'http://localhost:5035/Bookings/1f8eba62-75ab-4d7a-94de-00d8dc5de092' \
+  -H 'Authorization: Bearer eyJhbG...... \
+  -H 'accept: */*'
 ```
 
-- `EventsApi.Infrastructure` - проект с БД и конфигурацией
-- `EventsApi.Presentation` - проект со строкой подключения к БД
+   **Успешный ответ:** `204 No Content`
+
+</details>
