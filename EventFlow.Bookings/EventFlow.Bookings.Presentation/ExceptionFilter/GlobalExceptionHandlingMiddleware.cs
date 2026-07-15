@@ -60,7 +60,6 @@ public class GlobalExceptionHandlingMiddleware
         {
             ValidationException ve => StatusCodes.Status400BadRequest,
             KeyNotExistException kne => StatusCodes.Status404NotFound,
-            EventAlreadyStartedException ease => StatusCodes.Status400BadRequest,
             BookingLimitExceededException ble => StatusCodes.Status409Conflict,
             AccessDeniedException ade => StatusCodes.Status403Forbidden,
             _ => StatusCodes.Status500InternalServerError
@@ -71,6 +70,8 @@ public class GlobalExceptionHandlingMiddleware
       {
           ValidationException ve => "Validation Failed",
           KeyNotExistException kne => "Invalid Identifier",
+          BookingLimitExceededException blex => $"Booking Limit Exceded: {blex.MaxLimit}",
+          AccessDeniedException ade=> "Access Denied",
           _ => "Unknown Error"
       };
 }
