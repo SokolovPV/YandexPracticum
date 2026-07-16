@@ -1,26 +1,158 @@
-# PostgreSQL для EventApi — совпадает с ConnectionStrings:DefaultConnection в appsettings.json
-# Запуск из корня репозитория: docker compose up -d
-# Остановка: docker compose down
-# Данные сохраняются в именованном томе eventapi_pgdata
-
 services:
-  postgres:
+  kafka:
+    image: apache/kafka:latest
+    container_name: eventflow_kafka
+    hostname: eventflow 
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL  # <-- ADD THIS LINE
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://eventflow:29092,EXTERNAL://localhost:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@eventflow:29093  
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+    # volumes:
+    #   - kafka_data:/var/lib/kafka/data
+    # networks:
+    #   - eventflow-network
+
+  # --- Веб-интерфейс AKHQ для управления Kafka ---
+  akhq:
+    image: tchiotludo/akhq:latest
+    container_name: akhq
+    ports:
+      - "8080:8080"
+    environment:
+      # Конфигурация AKHQ передается через переменную окружения [citation:2][citation:9]
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            my-kafka-cluster:
+              properties:
+                # Адрес брокера для подключения изнутри Docker-сети
+                bootstrap.servers: "eventflow:29092"
+    depends_on:
+      - kafka
+        
+  # USERS DB
+  postgres_users:
     image: postgres:16-alpine
-    container_name: eventapi-postgres
+    container_name: eventflow-user-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: eventapi
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${USERS_DB}
     ports:
-      - "5432:5432"
+      - "${USERS_PORT}:5432"
     volumes:
-      - eventapi_pgdata:/var/lib/postgresql/data
+      - pg_users_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d eventapi"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${USERS_DB}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+  users_api:
+    build:
+      context: .
+      dockerfile: EventFlow.Users/dockerfile
+    container_name: users_api
+    restart: unless-stopped
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=eventflow-user-postgres;Port=5432;Database=${USERS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+    ports:
+      - "5015:8080"
+    depends_on:
+      postgres_users:
+        condition: service_healthy
+
+  # EVENTS DB
+  postgres_events:
+    image: postgres:16-alpine
+    container_name: eventflow-events-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${EVENTS_DB}
+    ports:
+      - "${EVENTS_PORT}:5432"
+    volumes:
+      - pg_events_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${EVENTS_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  event_api:
+    build:
+      context: .
+      dockerfile: EventFlow.Events/dockerfile
+    container_name: event_api
+    restart: unless-stopped
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=eventflow-events-postgres;Port=5432;Database=${EVENTS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+      KafkaOptions__BootstrapServers: eventflow:29092
+    ports:
+      - "5025:8080"
+    depends_on:
+      postgres_booking:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+  # BOOKING DB
+  postgres_booking:
+    image: postgres:16-alpine
+    container_name: eventflow-booking-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${BOOKING_DB}
+    ports:
+      - "${BOOKING_PORT}:5432"
+    volumes:
+      - pg_booking_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${BOOKING_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  booking_api:
+    build:
+      context: .
+      dockerfile: EventFlow.Bookings/dockerfile
+    container_name: booking_api
+    restart: unless-stopped
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=eventflow-booking-postgres;Port=5432;Database=${BOOKING_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+      KafkaOptions__BootstrapServers: eventflow:29092
+    ports:
+      - "5035:8080"
+    depends_on:
+      postgres_booking:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
 
 volumes:
-  eventapi_pgdata:
+  pg_users_data:
+  pg_events_data:
+  pg_booking_data:
