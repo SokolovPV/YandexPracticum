@@ -14,7 +14,7 @@ namespace EventFlow.Events.Presentation
 			// Логирование в консоль
 			builder.Logging.AddConsole();
 
-			builder.Services.AddInfrastructureServices(builder.Configuration);
+			builder.Services.AddInfrastructureServicesAsync(builder.Configuration);
 			builder.Services.AddApplicationServices();
 			builder.Services.AddPresentationServices(builder.Configuration);
 
