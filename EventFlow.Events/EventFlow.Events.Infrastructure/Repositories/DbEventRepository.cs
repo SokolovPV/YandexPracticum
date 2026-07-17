@@ -40,6 +40,19 @@ public class DbEventRepository(AppDbContext appDbContext) : IEventRepository
     {
         return await appDbContext.Events.FirstOrDefaultAsync(q => q.Id == id, ct);
     }
+
+    /// <inheritdoc/>
+    public async Task<List<Event>> GetTop10EventAsync(CancellationToken ct)
+    {
+        return await appDbContext
+        .Events
+        .AsNoTracking()
+        .Where(e => e.AvailableSeats < e.TotalSeats) // события с забронированными местами
+        .OrderByDescending(e => (double)(e.TotalSeats - e.AvailableSeats) / e.TotalSeats) // сортируем по % забронированных мест
+        .Take(10)
+        .ToListAsync(ct);
+    }
+
     /// <inheritdoc/>
     public async Task<List<Event>> ListAsync(Expression<Func<Event, bool>> query, int page, int pageSize, CancellationToken ct)
     {

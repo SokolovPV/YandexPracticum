@@ -158,14 +158,14 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
         if (existedEvent == null)
             throw new KeyNotExistException(nameof(Event), eventId.ToString());
 
-        if(DateTime.UtcNow > existedEvent.StartAt)    
+        if (DateTime.UtcNow > existedEvent.StartAt)
             throw new EventAlreadyStartedException(existedEvent.Id.ToString(), existedEvent.StartAt);
 
 
         var state = existedEvent.TryReserveSeats();
         if (!state)
             return false;
-            
+
         await _repository.UpdateAsync(existedEvent, ct);
         return true;
     }
@@ -183,5 +183,23 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
         existedEvent.ReleaseSeats();
         await _repository.UpdateAsync(existedEvent, ct);
         return true;
+    }
+
+    public async Task<PaginatedResultTop10> GetTop10EventsAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        _logger.LogInformation("Получение 10 популярных событий.");
+
+        var events = await _repository.GetTop10EventAsync(ct); // Получаем список топ-10 событий
+
+        return new PaginatedResultTop10(
+          Events: events.Select(q => new EventInfoDTO(Id: q.Id,
+                                                        Title: q.Title,
+                                                        Description: q.Description,
+                                                        StartAt: q.StartAt,
+                                                        EndAt: q.EndAt,
+                                                        TotalSeats: q.TotalSeats,
+                                                        AvailableSeats: q.AvailableSeats)).ToList());
     }
 }
