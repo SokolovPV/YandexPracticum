@@ -26,8 +26,7 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.Configure<KafkaOptions>(configuration.GetSection(nameof(KafkaOptions)));
-        services.Configure<RedisOptions>(configuration.GetSection(nameof(RedisOptions)));
-        
+               
         services.AddScoped<IEventRepository, DbEventRepository>();
         services.AddScoped<IProcessedMessageRepository, ProcessedMessageRepository>();
         services.AddSingleton<ICacheService, RedisCacheService>();
