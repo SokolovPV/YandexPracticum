@@ -1,8 +1,8 @@
 using EventFlow.Events.Application.Interfaces;
 using EventFlow.Events.Application.Options;
 using EventFlow.Events.Application.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace EventFlow.Events.Application;
 public static class DependencyInjection

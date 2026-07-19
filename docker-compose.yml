@@ -25,10 +25,10 @@ services:
       timeout: 10s
       retries: 10
       start_period: 40s
-    # volumes:
-    #   - kafka_data:/var/lib/kafka/data
-    # networks:
-    #   - eventflow-network
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - eventflow-network
 
   # --- Веб-интерфейс AKHQ для управления Kafka ---
   akhq:
@@ -46,19 +46,49 @@ services:
                 # Адрес брокера для подключения изнутри Docker-сети
                 bootstrap.servers: "eventflow:29092"
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
+    networks:
+      - eventflow-network
         
+  # ============= REDIS =============
   redis:
     image: redis:7.2-alpine
-    container_name: eventflow-redis     
+    container_name: eventflow-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
-      retries: 10      
+      retries: 10
+      start_period: 10s
+    networks:
+      - eventflow-network    
 
+  # ============= REDIS INSIGHT =============
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight_container
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    volumes:
+      - redisinsight_data:/db
+    environment:
+      - REDIS_HOST=eventflow-redis
+      - REDIS_PORT=6379
+      - REDISINSIGHT_ACCEPT_LICENSE=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - eventflow-network
+  
   # USERS DB
   postgres_users:
     image: postgres:16-alpine
@@ -77,6 +107,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - eventflow-network
   users_api:
     build:
       context: .
@@ -90,7 +122,8 @@ services:
     depends_on:
       postgres_users:
         condition: service_healthy
-
+    networks:
+      - eventflow-network
   # EVENTS DB
   postgres_events:
     image: postgres:16-alpine
@@ -109,6 +142,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - eventflow-network
 
   event_api:
     build:
@@ -123,12 +158,14 @@ services:
     ports:
       - "5025:8080"
     depends_on:
-      postgres_booking:
+      postgres_events:
         condition: service_healthy
       kafka:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - eventflow-network
   # BOOKING DB
   postgres_booking:
     image: postgres:16-alpine
@@ -147,7 +184,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-
+    networks:
+      - eventflow-network
   booking_api:
     build:
       context: .
@@ -164,9 +202,19 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+    networks:
+      - eventflow-network
 
-
+# ============= VOLUMES =============
 volumes:
   pg_users_data:
   pg_events_data:
   pg_booking_data:
+  redis_data:
+  redisinsight_data:
+  kafka_data:
+
+# ============= NETWORKS =============
+networks:
+  eventflow-network:
+    driver: bridge

@@ -16,7 +16,7 @@ public static class DependencyInjection
     /// <summary>
     /// Метод добавления инфраструктурных сервисов
     /// </summary>
-    public static async Task<IServiceCollection> AddInfrastructureServicesAsync(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -40,7 +40,7 @@ public static class DependencyInjection
             SyncTimeout = 3000,      // Тайм-аут синхронных операций, мс
         };
         services.AddSingleton<IConnectionMultiplexer>(
-            await ConnectionMultiplexer.ConnectAsync(redisOptions)
+            ConnectionMultiplexer.Connect(redisOptions)
         ); 
 
         services.AddHostedService<KafkaTopicInitializer>();

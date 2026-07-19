@@ -108,7 +108,7 @@ public class BookingConfirmedConsumer(
         }
 
         await processedRepository.AddAsync(message.MessageId, stoppingToken);
-        // при изменения события удаляем из кеша событие и топ
+        // при изменения события удаляем из кеша событие и топ 10
         await cache.KeyDeleteAsync(RedisKeys.ForEvent(message.EventId));
         await cache.KeyDeleteAsync(RedisKeys.TopEvents);
     }
