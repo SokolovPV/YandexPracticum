@@ -1,4 +1,4 @@
-namespace EventFlow.Events.Infrastructure.Options;
+namespace EventFlow.Events.Application.Options;
 
 /// <summary>
 /// Настройки подключения к Kafka
