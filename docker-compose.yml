@@ -89,26 +89,7 @@ services:
     networks:
       - eventflow-network
   
-  # USERS DB
-  postgres_users:
-    image: postgres:16-alpine
-    container_name: eventflow-user-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${USERS_DB}
-    ports:
-      - "${USERS_PORT}:5432"
-    volumes:
-      - pg_users_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${USERS_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks:
-      - eventflow-network
+  # APIs
   users_api:
     build:
       context: .
@@ -116,35 +97,14 @@ services:
     container_name: users_api
     restart: unless-stopped
     environment:
-      ConnectionStrings__DefaultConnection: "Host=eventflow-user-postgres;Port=5432;Database=${USERS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Host=eventflow-postgres;Port=5432;Database=${USERS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
     ports:
       - "5015:8080"
     depends_on:
-      postgres_users:
+      postgres_db:
         condition: service_healthy
     networks:
       - eventflow-network
-  # EVENTS DB
-  postgres_events:
-    image: postgres:16-alpine
-    container_name: eventflow-events-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${EVENTS_DB}
-    ports:
-      - "${EVENTS_PORT}:5432"
-    volumes:
-      - pg_events_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${EVENTS_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks:
-      - eventflow-network
-
   event_api:
     build:
       context: .
@@ -152,38 +112,18 @@ services:
     container_name: event_api
     restart: unless-stopped
     environment:
-      ConnectionStrings__DefaultConnection: "Host=eventflow-events-postgres;Port=5432;Database=${EVENTS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Host=eventflow-postgres;Port=5432;Database=${EVENTS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
       KafkaOptions__BootstrapServers: eventflow:29092
       ConnectionStrings__Redis: eventflow-redis:6379
     ports:
       - "5025:8080"
     depends_on:
-      postgres_events:
+      postgres_db:
         condition: service_healthy
       kafka:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks:
-      - eventflow-network
-  # BOOKING DB
-  postgres_booking:
-    image: postgres:16-alpine
-    container_name: eventflow-booking-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${BOOKING_DB}
-    ports:
-      - "${BOOKING_PORT}:5432"
-    volumes:
-      - pg_booking_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${BOOKING_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
     networks:
       - eventflow-network
   booking_api:
@@ -193,23 +133,46 @@ services:
     container_name: booking_api
     restart: unless-stopped
     environment:
-      ConnectionStrings__DefaultConnection: "Host=eventflow-booking-postgres;Port=5432;Database=${BOOKING_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Host=eventflow-postgres;Port=5432;Database=${BOOKING_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
       KafkaOptions__BootstrapServers: eventflow:29092
     ports:
       - "5035:8080"
     depends_on:
-      postgres_booking:
+      postgres_db:
         condition: service_healthy
       kafka:
         condition: service_healthy
     networks:
       - eventflow-network
-
+ 
+ # POSTGRES DB
+  postgres_db:
+    image: postgres:16-alpine
+    container_name: eventflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: postgres  # Стандартная БД для подключения
+      # Переменные для создания дополнительных БД
+      USERS_DB: ${USERS_DB}
+      EVENTS_DB: ${EVENTS_DB}
+      BOOKING_DB: ${BOOKING_DB}
+    ports:
+      - "${USERS_PORT}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${USERS_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - eventflow-network
 # ============= VOLUMES =============
 volumes:
-  pg_users_data:
-  pg_events_data:
-  pg_booking_data:
+  pg_data:
   redis_data:
   redisinsight_data:
   kafka_data:
