@@ -10,17 +10,17 @@
 - PostgreSQL - БД, основное хранилище данных.
 - Confluent.Kafka - Асинхронный обмен событиями между сервисами (Event-Driven Architecture).
 
+Текущий сервис бронирований, разбит на три отдельных проекта по принципам чистой архитектуры: Domain, Application, Infrastructure, Presentation. Каждый проект — отдельная сборка с чётко очерченной ответственностью, а зависимости между ними направлены только «внутрь».
 
-Текущий сервис бронирований, разбит на три отдельных проекта по принципам чистой архитектуры: Domain, Application, Infrastructure, Presentation. Каждый проект — отдельная сборка с чётко очерченной ответственностью, а зависимости между ними направлены только «внутрь». 
 ## Cхема направления зависимостей в проектах
 
 ![схема направления зависимостей проектов](https://pictures.s3.yandex.net/resources/image_1779201047.png)
 
 ## Реализованные проекты
+
 - `EventFlow.Users` — регистрация, логин и JWT-аутентификация пользователей
 - `EventFlow.Events` — управление событиями
 - `EventFlow.Booking` — создание, обработка и отмена бронирований
-
 
 ## Ролевая модель и разграничение прав
 
@@ -29,13 +29,12 @@ JWT-токен выдаёт сервис `EventFlow.Users`, сервисы `Even
 
 ### Роли пользователей
 
-| Роль | Описание | Права доступа |
-|------|----------|---------------|
-| `User` | Обычный пользователь | • Обычный пользователь может просматривать события, бронировать и отменять собственные брони. |
-| `Admin` | Администратор | • Администратор управляет событиями — создаёт, редактирует, удаляет их и может отменять любые брони |
+| Роль    | Описание             | Права доступа                                                                                       |
+| ------- | -------------------- | --------------------------------------------------------------------------------------------------- |
+| `User`  | Обычный пользователь | • Обычный пользователь может просматривать события, бронировать и отменять собственные брони.       |
+| `Admin` | Администратор        | • Администратор управляет событиями — создаёт, редактирует, удаляет их и может отменять любые брони |
 
 Управление событиями доступно только роли Admin (403 для остальных), эндпоинты броней требуют аутентификации (401 без токена).
-
 
 ### Асинхронный обмен событиями между сервисами (Event-Driven Architecture)
 
@@ -49,11 +48,12 @@ JWT-токен выдаёт сервис `EventFlow.Users`, сервисы `Even
 - `BookingConfirmed`
 
 Сценарий работы:
+
 1. Пользователь создаёт бронь со статусом `Pending`
 2. Внетренний сервис `BookingBackgroundService` обрабатывает брони со статусом `Pending` и переводит их в статус `Confirmed`
 3. Сервис Bookings публикует событие BookingConfirmed в Kafka при подтверждении брони.
 4. Сервис Events подписан на топик и при получении события уменьшает доступные места.
-6. `Events` хранит обработанные сообщения в `ProcessedMessages` для исключения повторной обработки (идемпотентности).
+5. `Events` хранит обработанные сообщения в `ProcessedMessages` для исключения повторной обработки (идемпотентности).
 
 ## Запуск проекта
 
@@ -70,8 +70,9 @@ JWT-токен выдаёт сервис `EventFlow.Users`, сервисы `Even
 - `EventFlow.Users/dockerfile`
 - `EventFlow.Events/dockerfile`
 - `EventFlow.Booking/dockerfile`
- 
- контейнеры запускаемые с использованием docker:
+
+контейнеры запускаемые с использованием docker:
+
 - `kafka`
 - `akhq`
 - `eventflow-user-postgres`
@@ -80,6 +81,8 @@ JWT-токен выдаёт сервис `EventFlow.Users`, сервисы `Even
 - `users_api`
 - `event_api`
 - `booking_api`
+- `redis`
+- `redisinsight`
 
 настройки для `docker-compose.yml` файла хранятся в`.env` файле в корне проекта.
 
@@ -90,6 +93,7 @@ docker compose up -d
 ```
 
 после запуска будут доступны слудующии web-интерфейсы:
+
 - `Users API` — `http://localhost:5015`
 - `Events API` — `http://localhost:5025`
 - `Booking API` — `http://localhost:5035`
@@ -99,24 +103,24 @@ docker compose up -d
 
 ### Создание миграции
 
-Миграции создаются отдельно для каждого проекта. Для создания миграции необходимо выпонить команду 
+Миграции создаются отдельно для каждого проекта. Для создания миграции необходимо выпонить команду
 
 ```bash
 dotnet ef migrations add <MigrationName> --project <Infrastructure Project> --startup-project <Startup Project>
 ```
+
 - `MigrationName` - имя миграции
 - `Infrastructure Project` - проект с БД и конфигурацией
 - `Startup Project` - проект со строкой подключения к БД
 
 ### Применение миграции к БД
 
-``` bash
+```bash
 dotnet ef database update --project <Infrastructure Project> --startup-project <Startup Project>
 ```
+
 - `Infrastructure Project` - проект с БД и конфигурацией
 - `Startup Project` - проект со строкой подключения к БД
-
-
 
 ### Инструкция по получению JWT-токена через Swagger
 
@@ -150,27 +154,28 @@ dotnet ef database update --project <Infrastructure Project> --startup-project <
    ```
 
    **Успешный ответ:**
+
    ```json
-    {
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJjYjc0Mjk2YS05OTYzLTQwMzYtODg4Ny1iM2I4YWYyNWJlMGUiLCJyb2xlIjoiVXNlciIsImp0aSI6IjQwMjkzZDc3LWNiNDctNDc3Yi04NDFmLTA4MTE5OTNmOWQzNyIsIm5iZiI6MTc4MjkxMzY0NiwiZXhwIjoxNzgyOTE3MjQ2LCJpYXQiOjE3ODI5MTM2NDYsImlzcyI6IkV2ZW50c0FwaUlzc3VlciIsImF1ZCI6IkV2ZW50c0FwaUF1ZGllbmNlIn0.tXoyTePqpt5EgYvaMu3z0TBtY5bELjq4KGA-3zFcvGo"
-    }
+   {
+     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJjYjc0Mjk2YS05OTYzLTQwMzYtODg4Ny1iM2I4YWYyNWJlMGUiLCJyb2xlIjoiVXNlciIsImp0aSI6IjQwMjkzZDc3LWNiNDctNDc3Yi04NDFmLTA4MTE5OTNmOWQzNyIsIm5iZiI6MTc4MjkxMzY0NiwiZXhwIjoxNzgyOTE3MjQ2LCJpYXQiOjE3ODI5MTM2NDYsImlzcyI6IkV2ZW50c0FwaUlzc3VlciIsImF1ZCI6IkV2ZW50c0FwaUF1ZGllbmNlIn0.tXoyTePqpt5EgYvaMu3z0TBtY5bELjq4KGA-3zFcvGo"
+   }
    ```
+
 3. **Авторизация в Swagger**
    - Нажмите кнопку **Authorize** в правом верхнем углу Swagger UI
    - Полученное значение `token` необходимо из метода `POST /auth/login` необходимо вставить в поле поле **Value**
    - Нажмите **Authorize**, затем **Close**
 
-
 ### Структура JWT-токена
 
 Токен содержит следующие claims:
 
-| Claim | Значение | Описание |
-|-------|----------|----------|
-| `sub` (`Name`) | Логин пользователя | Используется для идентификации пользователя при бронировании |
-| `role` | `User` или `Admin` | Для проверки роли в методах контроллера `[Authorize(Roles = "Admin")]` |
-| `jti` | GUID | Уникальный идентификатор токена |
-| `iat` | Unix timestamp | Время выдачи токена |
+| Claim          | Значение           | Описание                                                               |
+| -------------- | ------------------ | ---------------------------------------------------------------------- |
+| `sub` (`Name`) | Логин пользователя | Используется для идентификации пользователя при бронировании           |
+| `role`         | `User` или `Admin` | Для проверки роли в методах контроллера `[Authorize(Roles = "Admin")]` |
+| `jti`          | GUID               | Уникальный идентификатор токена                                        |
+| `iat`          | Unix timestamp     | Время выдачи токена                                                    |
 
 ### Настройка секрета JWT в конфигурации
 
@@ -188,14 +193,71 @@ dotnet ef database update --project <Infrastructure Project> --startup-project <
 }
 ```
 
-| Параметр | Тип | Описание |
-|----------|-----|----------|
-| `SchemeName` | string | Название схемы аутентификации |
-| `Secret` | string | **Секретный ключ для подписи JWT** (минимум 32 символа для HMAC SHA-256) |
-| `Issuer` | string | Издатель токена (проверяется при валидации) |
-| `Audience` | string | Целевая аудитория токена (проверяется при валидации) |
-| `Lifetime` | int | Время жизни токена в **минутах** |
+| Параметр     | Тип    | Описание                                                                 |
+| ------------ | ------ | ------------------------------------------------------------------------ |
+| `SchemeName` | string | Название схемы аутентификации                                            |
+| `Secret`     | string | **Секретный ключ для подписи JWT** (минимум 32 символа для HMAC SHA-256) |
+| `Issuer`     | string | Издатель токена (проверяется при валидации)                              |
+| `Audience`   | string | Целевая аудитория токена (проверяется при валидации)                     |
+| `Lifetime`   | int    | Время жизни токена в **минутах**                                         |
 
+### Стратегия кэширования
+
+Для снижения нагрузки на основную базу данных и ускорения ответов API сервис `EventFlow.Events` применяет Redis в качестве кэша для часто запрашиваемых данных.
+
+### Что кэшируется
+
+Кэшируются два типа данных: отдельное событие (ключ `event:{guid}`, TTL 5 минут) и топ-10 событий (ключ `events:top10`, TTL 10 минут). Все ключи перечислены в классе `EventFlow.Entities.Redis`.
+
+### Что не кэшируется
+
+В кэш не попадают пагинированные поисковые запросы с фильтрами (GET /Events) из-за множества уникальных комбинаций параметров и сложности инвалидации при обновлении событий. Операции записи (POST, PUT, DELETE) также не кэшируются — они напрямую обращаются к БД и сбрасывают затронутые кэш-ключи.
+
+### Стратегия инвалидации
+
+Используется стратегия cache-aside с инвалидацией при изменении - при изменении события соответствующий ключ удаляется из кеша. Следующий читающий запрос обратится к базе и прогреет кеш заново.
+
+| Операция                   | Инвалидируемые ключи       |
+| -------------------------- | -------------------------- |
+| `ChangeEventAsync`         | `event:{id}`               |
+| `RemoveEventAsync`         | `event:{id}`               |
+| `ReleaseSeatAsync`         | `event:{id}, events:top10` |
+| `BookingConfirmedConsumer` | `event:{id}, events:top10` |
+
+Ключ `events:top10` сбрасывается только при изменении занятости мест. При удалении события он не инвалидируется и обновляется по TTL.
+
+### Отказоустойчивость
+
+Для обеспечения отказоустойчивости работа с Redis абстрагирована через интерфейс `ICacheService`. При недоступности Redis:
+
+- `GetStringAsync` возвращает null → запрос прозрачно выполнятся из БД;
+- `SetStringAsync` и `KeyDeleteAsync` завершаются бесшумно (ошибки логируются, но не пробрасываются клиенту).
+
+Такой подход делает Redis опциональным компонентом, повышающим производительность, но не влияющим на функциональность системы при сбоях.
+
+
+### Конфигурация Redis
+
+Конфигурация Redis для сервиса `EventFlow.Events` определяется в секции RedisOptions файла `appsettings.json`:
+
+```json
+{
+  "RedisOptions": {
+    "SingleExpirationTTL": 5,
+    "TopExpirationTTL": 10
+  }
+}
+```
+
+Строка подключения к Redis указывается в секции `ConnectionStrings` файла `appsettings.json`.
+
+```json
+{
+  "ConnectionStrings": {
+    "Redis": "localhost:6379"
+  }
+}
+```
 
 ## Методы для Cобытий
 
@@ -367,10 +429,13 @@ curl -X 'DELETE' \
   "totalItems": 4
 }
 ```
+
 </details>
 
 ### Формат ошибок ProblemDetails (RFC 7807) для событий
+
 **Примеры ответа ошибка валидации входных параметров**
+
 ```json
 {
   "type": "Validation Failed",
@@ -380,6 +445,7 @@ curl -X 'DELETE' \
 ```
 
 **Примеры ответа ошибка неправильный идентификатор**
+
 ```json
 {
   "type": "Invalid Identifier",
@@ -400,7 +466,7 @@ curl -X 'DELETE' \
 - **Пример запроса:**
 
 ```bash
-curl -X 'POST' 
+curl -X 'POST'
   'https://localhost:5035/Bookings/07c5ba9a-900a-43ba-931f-ee5f9ec58d79/book' \
   -H 'accept: */*' \
   -d ''
@@ -467,6 +533,6 @@ curl -X 'DELETE' \
   -H 'accept: */*'
 ```
 
-   **Успешный ответ:** `204 No Content`
+**Успешный ответ:** `204 No Content`
 
 </details>

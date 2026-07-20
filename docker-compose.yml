@@ -25,10 +25,10 @@ services:
       timeout: 10s
       retries: 10
       start_period: 40s
-    # volumes:
-    #   - kafka_data:/var/lib/kafka/data
-    # networks:
-    #   - eventflow-network
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - eventflow-network
 
   # --- Веб-интерфейс AKHQ для управления Kafka ---
   akhq:
@@ -46,26 +46,50 @@ services:
                 # Адрес брокера для подключения изнутри Docker-сети
                 bootstrap.servers: "eventflow:29092"
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
+    networks:
+      - eventflow-network
         
-  # USERS DB
-  postgres_users:
-    image: postgres:16-alpine
-    container_name: eventflow-user-postgres
+  # ============= REDIS =============
+  redis:
+    image: redis:7.2-alpine
+    container_name: eventflow-redis
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${USERS_DB}
     ports:
-      - "${USERS_PORT}:5432"
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
     volumes:
-      - pg_users_data:/var/lib/postgresql/data
+      - redis_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${USERS_DB}"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 10s
+    networks:
+      - eventflow-network    
+
+  # ============= REDIS INSIGHT =============
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight_container
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    volumes:
+      - redisinsight_data:/db
+    environment:
+      - REDIS_HOST=eventflow-redis
+      - REDIS_PORT=6379
+      - REDISINSIGHT_ACCEPT_LICENSE=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - eventflow-network
+  
+  # APIs
   users_api:
     build:
       context: .
@@ -73,32 +97,14 @@ services:
     container_name: users_api
     restart: unless-stopped
     environment:
-      ConnectionStrings__DefaultConnection: "Host=eventflow-user-postgres;Port=5432;Database=${USERS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Host=eventflow-postgres;Port=5432;Database=${USERS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
     ports:
       - "5015:8080"
     depends_on:
-      postgres_users:
+      postgres_db:
         condition: service_healthy
-
-  # EVENTS DB
-  postgres_events:
-    image: postgres:16-alpine
-    container_name: eventflow-events-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${EVENTS_DB}
-    ports:
-      - "${EVENTS_PORT}:5432"
-    volumes:
-      - pg_events_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${EVENTS_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
+    networks:
+      - eventflow-network
   event_api:
     build:
       context: .
@@ -106,34 +112,20 @@ services:
     container_name: event_api
     restart: unless-stopped
     environment:
-      ConnectionStrings__DefaultConnection: "Host=eventflow-events-postgres;Port=5432;Database=${EVENTS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Host=eventflow-postgres;Port=5432;Database=${EVENTS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
       KafkaOptions__BootstrapServers: eventflow:29092
+      ConnectionStrings__Redis: eventflow-redis:6379
     ports:
       - "5025:8080"
     depends_on:
-      postgres_booking:
+      postgres_db:
         condition: service_healthy
       kafka:
         condition: service_healthy
-  # BOOKING DB
-  postgres_booking:
-    image: postgres:16-alpine
-    container_name: eventflow-booking-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${BOOKING_DB}
-    ports:
-      - "${BOOKING_PORT}:5432"
-    volumes:
-      - pg_booking_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${BOOKING_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
+      redis:
+        condition: service_healthy
+    networks:
+      - eventflow-network
   booking_api:
     build:
       context: .
@@ -141,18 +133,51 @@ services:
     container_name: booking_api
     restart: unless-stopped
     environment:
-      ConnectionStrings__DefaultConnection: "Host=eventflow-booking-postgres;Port=5432;Database=${BOOKING_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Host=eventflow-postgres;Port=5432;Database=${BOOKING_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
       KafkaOptions__BootstrapServers: eventflow:29092
     ports:
       - "5035:8080"
     depends_on:
-      postgres_booking:
+      postgres_db:
         condition: service_healthy
       kafka:
         condition: service_healthy
-
-
+    networks:
+      - eventflow-network
+ 
+ # POSTGRES DB
+  postgres_db:
+    image: postgres:16-alpine
+    container_name: eventflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: postgres  # Стандартная БД для подключения
+      # Переменные для создания дополнительных БД
+      USERS_DB: ${USERS_DB}
+      EVENTS_DB: ${EVENTS_DB}
+      BOOKING_DB: ${BOOKING_DB}
+    ports:
+      - "${USERS_PORT}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${USERS_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - eventflow-network
+# ============= VOLUMES =============
 volumes:
-  pg_users_data:
-  pg_events_data:
-  pg_booking_data:
+  pg_data:
+  redis_data:
+  redisinsight_data:
+  kafka_data:
+
+# ============= NETWORKS =============
+networks:
+  eventflow-network:
+    driver: bridge

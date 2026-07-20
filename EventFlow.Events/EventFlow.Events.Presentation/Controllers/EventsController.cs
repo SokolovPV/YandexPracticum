@@ -50,6 +50,22 @@ public class EventsController(IEventService eventService, ILogger<EventsControll
   }
 
   /// <summary>
+  /// Метод возвращает ТОП 10 событий
+  /// </summary>
+  /// <param name="ct">токен отмены</param>
+  [AllowAnonymous]
+  [HttpGet("top")]
+  [Tags("АПИ для событий")]
+  [ProducesResponseType(typeof(PaginatedResultTop10), StatusCodes.Status200OK)]
+  public async Task<IActionResult> GetTop10Events(CancellationToken ct)
+  {
+    logger.LogDebug("Обработка запроса GET {methodName}", nameof(GetTop10Events));
+
+    var result = await eventService.GetTop10EventsAsync(ct);
+    return Ok(result);
+  }
+
+  /// <summary>
   /// Метод создает мероприятие
   /// </summary>
   /// <param name="createEventDTO">Новое мероприятие</param>

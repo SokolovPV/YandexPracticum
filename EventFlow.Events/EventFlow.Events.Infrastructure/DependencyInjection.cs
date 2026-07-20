@@ -7,6 +7,7 @@ using EventFlow.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace EventFlow.Events.Infrastructure;
 
@@ -19,12 +20,28 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        var redisConnectionString = configuration.GetConnectionString("Redis")
+            ?? throw new InvalidOperationException("Connection string 'Redis' not found.");
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
 
         services.Configure<KafkaOptions>(configuration.GetSection(nameof(KafkaOptions)));
+               
         services.AddScoped<IEventRepository, DbEventRepository>();
         services.AddScoped<IProcessedMessageRepository, ProcessedMessageRepository>();
+        services.AddSingleton<ICacheService, RedisCacheService>();
+
+        var redisOptions = new ConfigurationOptions
+        {
+            EndPoints = { redisConnectionString },
+            AbortOnConnectFail = false,
+            ConnectRetry = 3,
+            ConnectTimeout = 5000, // Тайм-аут подключения, мс
+            SyncTimeout = 3000,      // Тайм-аут синхронных операций, мс
+        };
+        services.AddSingleton<IConnectionMultiplexer>(
+            ConnectionMultiplexer.Connect(redisOptions)
+        ); 
 
         services.AddHostedService<KafkaTopicInitializer>();
         services.AddHostedService<BookingConfirmedConsumer>();

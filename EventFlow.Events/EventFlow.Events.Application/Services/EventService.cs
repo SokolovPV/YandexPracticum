@@ -1,16 +1,23 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
+using System.Text.Json;
 using EventFlow.Entities.Constant;
+using EventFlow.Entities.Redis;
 using EventFlow.Events.Application.DTO;
 using EventFlow.Events.Application.Interfaces;
+using EventFlow.Events.Application.Options;
 using EventFlow.Events.Domain.Entities;
 using EventFlow.Events.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 namespace EventFlow.Events.Application.Services;
 /// <summary>
 /// Сервис для работы с событиями
 /// </summary>
-public class EventService(IEventRepository _repository, ILogger<EventService> _logger) : IEventService
+public class EventService(IEventRepository _repository,
+                            ICacheService _cache,
+                            IOptions<RedisOptions> redisOptions,
+                            ILogger<EventService> _logger) : IEventService
 {
 
     /// <inheritdoc/>
@@ -48,18 +55,26 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
     {
         ct.ThrowIfCancellationRequested();
         _logger.LogInformation("Получение события: {eventId}", eventId);
-        var _event = await _repository.GetByIdAsync(eventId, ct);
-        if (_event == null)
-            throw new KeyNotExistException(eventId.ToString(), nameof(Event));
 
-        return new EventInfoDTO(
-                Id: _event.Id,
-                Title: _event.Title,
-                Description: _event.Description,
-                StartAt: _event.StartAt,
-                EndAt: _event.EndAt,
-                TotalSeats: _event.TotalSeats,
-                AvailableSeats: _event.AvailableSeats);
+        var eventDto = await GetAndSetValueFromCacheAsync(
+            RedisKeys.ForEvent(eventId),
+            async () =>
+            {
+                var _event = await _repository.GetByIdAsync(eventId, ct);
+                if (_event == null)
+                    throw new KeyNotExistException(eventId.ToString(), nameof(Event));
+                return new EventInfoDTO(
+                    Id: _event.Id,
+                    Title: _event.Title,
+                    Description: _event.Description,
+                    StartAt: _event.StartAt,
+                    EndAt: _event.EndAt,
+                    TotalSeats: _event.TotalSeats,
+                    AvailableSeats: _event.AvailableSeats);
+            },
+           redisOptions.Value.SingleExpirationTTL);
+
+        return eventDto;
     }
 
     /// <inheritdoc/>
@@ -132,10 +147,20 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
         _event.Description = updateEvent.Description == null ? _event.Description : updateEvent.Description;
         _event.EndAt = updateEvent.EndAt.HasValue ? updateEvent.EndAt.Value : _event.EndAt;
         _event.StartAt = updateEvent.StartAt.HasValue ? updateEvent.StartAt.Value : _event.StartAt;
+        if (updateEvent.TotalSeats.HasValue)
+        {
+            var newTotal = updateEvent.TotalSeats.Value;
+            var oldTotal = _event.TotalSeats;
+            var oldAvailable = _event.AvailableSeats;
+            
+            _event.AvailableSeats = Math.Min(oldAvailable + (newTotal - oldTotal), newTotal);
+            _event.AvailableSeats = Math.Max(_event.AvailableSeats, 0);
+        }
         _event.TotalSeats = updateEvent.TotalSeats.HasValue ? updateEvent.TotalSeats.Value : _event.TotalSeats;
-        _event.AvailableSeats = updateEvent.TotalSeats.HasValue ? (updateEvent.TotalSeats.Value - _event.TotalSeats - _event.AvailableSeats) : _event.AvailableSeats;
 
         await _repository.UpdateAsync(_event, ct);
+        // при обновлении события - удаляем событие из кэша 
+        await _cache.KeyDeleteAsync(RedisKeys.ForEvent(eventId));
         _logger.LogInformation("Событие обновлено. ID: {eventId}", eventId);
     }
 
@@ -149,7 +174,9 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
         {
             throw new KeyNotExistException(eventId.ToString(), nameof(Event));
         }
+        await _cache.KeyDeleteAsync(RedisKeys.ForEvent(eventId));
         _logger.LogInformation("Событие удалено. ID: {eventId} ", eventId);
+
     }
 
     public async Task<bool> TryReserveSeatAsync(Guid eventId, CancellationToken ct)
@@ -158,15 +185,19 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
         if (existedEvent == null)
             throw new KeyNotExistException(nameof(Event), eventId.ToString());
 
-        if(DateTime.UtcNow > existedEvent.StartAt)    
+        if (DateTime.UtcNow > existedEvent.StartAt)
             throw new EventAlreadyStartedException(existedEvent.Id.ToString(), existedEvent.StartAt);
 
 
         var state = existedEvent.TryReserveSeats();
         if (!state)
             return false;
-            
+
         await _repository.UpdateAsync(existedEvent, ct);
+
+        // при изменения события удаляем из кеша событие и топ 10
+        await _cache.KeyDeleteAsync(RedisKeys.ForEvent(eventId));
+        await _cache.KeyDeleteAsync(RedisKeys.TopEvents);
         return true;
     }
 
@@ -182,6 +213,50 @@ public class EventService(IEventRepository _repository, ILogger<EventService> _l
 
         existedEvent.ReleaseSeats();
         await _repository.UpdateAsync(existedEvent, ct);
+        await _cache.KeyDeleteAsync(RedisKeys.ForEvent(eventId));
+        await _cache.KeyDeleteAsync(RedisKeys.TopEvents);
         return true;
     }
+
+    public async Task<PaginatedResultTop10> GetTop10EventsAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        _logger.LogInformation("Получение 10 популярных событий.");
+        var result = await GetAndSetValueFromCacheAsync(
+            RedisKeys.TopEvents,
+            async () =>
+            {
+                var events = await _repository.GetTop10EventAsync(ct); // Получаем список топ-10 событий
+                return new PaginatedResultTop10(
+                    Events: events.Select(q => new EventInfoDTO(Id: q.Id,
+                                                                Title: q.Title,
+                                                                Description: q.Description,
+                                                                StartAt: q.StartAt,
+                                                                EndAt: q.EndAt,
+                                                                TotalSeats: q.TotalSeats,
+                                                                AvailableSeats: q.AvailableSeats)).ToList());
+            },
+            redisOptions.Value.TopExpirationTTL);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Получение значения или добавление его в кэш
+    /// </summary>
+    private async Task<T?> GetAndSetValueFromCacheAsync<T>(
+        string cacheKey,
+        Func<Task<T>> getValueTask,
+        int expirationtimeinminutes)
+    {
+        var cachedValue = await _cache.GetStringAsync(cacheKey);
+        if (!string.IsNullOrEmpty(cachedValue))
+            return JsonSerializer.Deserialize<T>(cachedValue);
+
+        var result = await getValueTask();
+        await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(result), TimeSpan.FromMinutes(expirationtimeinminutes));
+        return result;
+    }
+
 }

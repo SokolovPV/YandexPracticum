@@ -49,4 +49,11 @@ public interface IEventRepository
     /// <param name="query">Предикат для фильтрации событий</param>
     /// <param name="ct">Токен отмены</param>
     Task<int> CountAsync(Expression<Func<Event, bool>> query, CancellationToken ct);
+
+    /// <summary>
+    /// Получить 10 самых популярных событий
+    /// </summary>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    Task<List<Event>> GetTop10EventAsync(CancellationToken ct);
 }
