@@ -194,6 +194,10 @@ public class EventService(IEventRepository _repository,
             return false;
 
         await _repository.UpdateAsync(existedEvent, ct);
+
+        // при изменения события удаляем из кеша событие и топ 10
+        await _cache.KeyDeleteAsync(RedisKeys.ForEvent(eventId));
+        await _cache.KeyDeleteAsync(RedisKeys.TopEvents);
         return true;
     }
 
