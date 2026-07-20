@@ -147,8 +147,16 @@ public class EventService(IEventRepository _repository,
         _event.Description = updateEvent.Description == null ? _event.Description : updateEvent.Description;
         _event.EndAt = updateEvent.EndAt.HasValue ? updateEvent.EndAt.Value : _event.EndAt;
         _event.StartAt = updateEvent.StartAt.HasValue ? updateEvent.StartAt.Value : _event.StartAt;
+        if (updateEvent.TotalSeats.HasValue)
+        {
+            var newTotal = updateEvent.TotalSeats.Value;
+            var oldTotal = _event.TotalSeats;
+            var oldAvailable = _event.AvailableSeats;
+            
+            _event.AvailableSeats = Math.Min(oldAvailable + (newTotal - oldTotal), newTotal);
+            _event.AvailableSeats = Math.Max(_event.AvailableSeats, 0);
+        }
         _event.TotalSeats = updateEvent.TotalSeats.HasValue ? updateEvent.TotalSeats.Value : _event.TotalSeats;
-        _event.AvailableSeats = updateEvent.TotalSeats.HasValue ? (updateEvent.TotalSeats.Value - _event.TotalSeats - _event.AvailableSeats) : _event.AvailableSeats;
 
         await _repository.UpdateAsync(_event, ct);
         // при обновлении события - удаляем событие из кэша 
@@ -167,7 +175,6 @@ public class EventService(IEventRepository _repository,
             throw new KeyNotExistException(eventId.ToString(), nameof(Event));
         }
         await _cache.KeyDeleteAsync(RedisKeys.ForEvent(eventId));
-        await _cache.KeyDeleteAsync(RedisKeys.TopEvents);
         _logger.LogInformation("Событие удалено. ID: {eventId} ", eventId);
 
     }
@@ -207,7 +214,7 @@ public class EventService(IEventRepository _repository,
         return true;
     }
 
-    public async Task<PaginatedResultTop10?> GetTop10EventsAsync(CancellationToken ct)
+    public async Task<PaginatedResultTop10> GetTop10EventsAsync(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
