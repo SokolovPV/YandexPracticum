@@ -27,22 +27,31 @@ public class BookingService(
     public async Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, RoleType role, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        logger.LogInformation("Отмена брони: {BookingId}", bookingId);
+        logger.LogInformation("Отмена бронирования: {bookingId}", bookingId);
         await _semaphore.WaitAsync(ct);
         try
         {
             var booking = await bookingRepository.GetByIdAsync(bookingId, ct);
             if (booking is null)
+            {
+                logger.LogWarning("Бронирование с идентификатором {bookingId} не найдено.", bookingId);
                 throw new KeyNotExistException(bookingId.ToString(), nameof(Booking));
+            }
             if (booking.Status == BookingStatus.Cancelled || booking.Status == BookingStatus.Rejected)
-                throw new InvalidOperationException($"Бронирование '{bookingId}' уже отменено ранее");
+            {
+                logger.LogInformation("Бронирование с идентификатором '{bookingId}' уже отменено ранее.", bookingId);
+                throw new InvalidOperationException($"Бронирование '{bookingId}' уже отменено ранее.");
+            }
             if (booking.UserId != userId && role != RoleType.Admin)
+            {
+                logger.LogWarning("Пользователь {userId} не имеет прав на выполнение действия {action}.", userId, nameof(CancelBookingAsync));
                 throw new AccessDeniedException(userId.ToString(), nameof(CancelBookingAsync));
+            }
 
             booking.Cancel();
             await bookingRepository.UpdateAsync(booking, ct);
 
-            logger.LogInformation("Бронирование ID: {bookingId} успешно отменено.", bookingId);
+            logger.LogInformation("Бронирование с идентификатором {bookingId} успешно отменено.", bookingId);
             return true;
         }
         finally
@@ -55,33 +64,22 @@ public class BookingService(
     public async Task<Booking> CreateBookingAsync(Guid eventId, Guid userId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        logger.LogInformation("Создание новой брони для события: {Event}", eventId);
+        logger.LogInformation("Создание нового бронирования для события: {eventId}", eventId);
         await _semaphore.WaitAsync(ct);
         try
         {
-            // var _event = await eventRepository.GetByIdAsync(eventId, ct);
-            // if (_event is null)
-            // {
-            //     logger.LogError("Идентификатор мероприятия {Id} не найден.", eventId);
-            //     throw new KeyNotExistException(eventId, ConstantValues.key_not_found_exception);
-            // }
-            // if (!_event.TryReserveSeats())
-            //     throw new NoAvailableSeatsException(_event.Id);
-
-            // if (_event.StartAt < DateTime.UtcNow)
-            // {
-            //     logger.LogError("Событие уже началось и недоступно для бронирования");
-            //     throw new EventAlreadyStartedException(eventId.ToString(), DateTime.UtcNow);
-            // }
-
             var userBookings = await bookingRepository.ListAsync(q => q.UserId == userId
                                     && q.Status != BookingStatus.Rejected && q.Status != BookingStatus.Cancelled, ct);
             if (userBookings != null && userBookings.Count >= _bookingSettings.MaxUserBookings)
+            {
+                logger.LogWarning("Превышен лимит активных бронирований пользователя {userId}. "
+                + "Текущее количество: {currentCount}, максимум: {maxLimit}", userId, userBookings.Count, _bookingSettings.MaxUserBookings);
                 throw new BookingLimitExceededException(userId.ToString(), userBookings.Count, _bookingSettings.MaxUserBookings);
+            }
 
             var newBooking = Booking.Create(eventId, userId);
             await bookingRepository.AddAsync(newBooking, ct);
-            logger.LogInformation("Бронирование создано. ID: {Id} ", newBooking.Id);
+            logger.LogInformation("Бронирование создано. Идентификатор бронирования: {bookingId} ", newBooking.Id);
             return newBooking;
         }
         finally
@@ -96,7 +94,10 @@ public class BookingService(
         logger.LogInformation("Получение бронирования : {bookingId}", bookingId);
         var booking = await bookingRepository.GetByIdAsync(bookingId, ct);
         if (booking is null)
+        {
+            logger.LogWarning("Бронирование с идентификатором {bookingId} не найдено.", bookingId);
             throw new KeyNotExistException(bookingId.ToString(), nameof(Booking));
+        }
         return booking;
     }
     /// <inheritdoc/>ы
@@ -107,10 +108,10 @@ public class BookingService(
             var saved = await bookingRepository.ConfirmAsync(booking.Id, ct);
             if (!saved)
             {
-                logger.LogWarning("Не удалось подтвердить бронирование {BookingId}.", booking.Id);
+                logger.LogWarning("Не удалось подтвердить бронирование {bookingId}.", booking.Id);
                 return;
             }
-            logger.LogInformation("Бронь {Id} подтверждена", booking.Id);
+            logger.LogInformation("Бронирование с идентификаторм {bookingId} подтверждено", booking.Id);
 
             var confirmedMessage = new BookingConfirmed(
                            Guid.NewGuid(),
@@ -127,12 +128,12 @@ public class BookingService(
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            logger.LogError(ex, "Ошибка при обработке бронирования {Id}", booking.Id);
+            logger.LogError(ex, "Ошибка при обработке бронирования {bookingId}", booking.Id);
 
             var rejected = await bookingRepository.RejectAsync(booking.Id, ct);
 
             if (rejected)
-                logger.LogInformation("Бронь {Id} отклонена", booking.Id);
+                logger.LogInformation("Бронирование {bookingId} отклонено", booking.Id);
 
             throw;
         }
