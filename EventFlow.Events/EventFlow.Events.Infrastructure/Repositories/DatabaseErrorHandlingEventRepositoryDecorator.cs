@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using EventFlow.Entities.Decorator;
 using EventFlow.Events.Application.Interfaces;
 using EventFlow.Events.Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -9,17 +10,14 @@ namespace EventFlow.Events.Infrastructure.Repositories;
 /// <summary>
 /// Декоратор для репозитория событий с обработкой ошибок PostgreSQL
 /// </summary>
-public class DatabaseErrorHandlingEventRepositoryDecorator : IEventRepository
+public class DatabaseErrorHandlingEventRepositoryDecorator
+    : BaseDatabaseErrorHandlingRepositoryDecorator<IEventRepository>, IEventRepository
 {
-    private readonly IEventRepository _inner;
-    private readonly ILogger<DatabaseErrorHandlingEventRepositoryDecorator> _logger;
-
     public DatabaseErrorHandlingEventRepositoryDecorator(
-        IEventRepository inner,
-        ILogger<DatabaseErrorHandlingEventRepositoryDecorator> logger)
+    IEventRepository inner,
+    ILogger<DatabaseErrorHandlingEventRepositoryDecorator> logger)
+    : base(inner, logger)
     {
-        _inner = inner;
-        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -84,60 +82,4 @@ public class DatabaseErrorHandlingEventRepositoryDecorator : IEventRepository
             nameof(UpdateAsync),
             $"EventId: {_event.Id}");
     }
-
-    #region Private Methods
-
-    private async Task<T> ExecuteWithErrorHandlingAsync<T>(
-        Func<Task<T>> operation,
-        string methodName,
-        string context)
-    {
-        try
-        {
-            return await operation();
-        }
-        catch (PostgresException ex)
-        {
-            _logger.LogError(ex, "Ошибка PostgreSQL в методе {MethodName}. {Context}", methodName, context);
-            throw;
-        }
-        catch (NpgsqlException ex)
-        {
-            _logger.LogError(ex, "Ошибка подключения к PostgreSQL в методе {MethodName}. {Context}", methodName, context);
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Неожиданная ошибка в методе {MethodName}. {Context}", methodName, context);
-            throw;
-        }
-    }
-
-    private async Task ExecuteWithErrorHandlingAsync(
-        Func<Task> operation,
-        string methodName,
-        string context)
-    {
-        try
-        {
-            await operation();
-        }
-        catch (PostgresException ex)
-        {
-            _logger.LogError(ex, "Ошибка PostgreSQL в методе {MethodName}. {Context}", methodName, context);
-            throw;
-        }
-        catch (NpgsqlException ex)
-        {
-            _logger.LogError(ex, "Ошибка подключения к PostgreSQL в методе {MethodName}. {Context}", methodName, context);
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Неожиданная ошибка в методе {MethodName}. {Context}", methodName, context);
-            throw;
-        }
-    }
-
-    #endregion
 }
