@@ -146,7 +146,7 @@ services:
     build:
       context: .
       dockerfile: EventFlow.Events/dockerfile
-    container_name: event_api
+    container_name: events_api
     restart: unless-stopped
     environment:
       ConnectionStrings__DefaultConnection: "Host=eventflow-postgres;Port=5432;Database=${EVENTS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
