@@ -26,8 +26,10 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.Configure<KafkaOptions>(configuration.GetSection(nameof(KafkaOptions)));
-               
+
         services.AddScoped<IEventRepository, DbEventRepository>();
+        services.Decorate<IEventRepository, DatabaseErrorHandlingEventRepositoryDecorator>();
+
         services.AddScoped<IProcessedMessageRepository, ProcessedMessageRepository>();
         services.AddSingleton<ICacheService, RedisCacheService>();
 
@@ -41,7 +43,7 @@ public static class DependencyInjection
         };
         services.AddSingleton<IConnectionMultiplexer>(
             ConnectionMultiplexer.Connect(redisOptions)
-        ); 
+        );
 
         services.AddHostedService<KafkaTopicInitializer>();
         services.AddHostedService<BookingConfirmedConsumer>();
