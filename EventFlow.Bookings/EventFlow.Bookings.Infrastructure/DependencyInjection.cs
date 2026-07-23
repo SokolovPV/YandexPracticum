@@ -48,6 +48,7 @@ public static class DependencyInjection
         services.Configure<KafkaOptions>(kafkaOptions);
 
         services.AddScoped<IBookingRepository, DbBookingRepository>();
+        services.Decorate<IBookingRepository, DatabaseErrorHandlingRepositoryDecorator>();
         services.AddScoped<IBookingConfirmedProducer, BookingConfirmedProducer>();
 
         services.AddHostedService<BookingBackgroundService>();
