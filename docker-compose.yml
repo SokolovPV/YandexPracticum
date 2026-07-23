@@ -89,6 +89,42 @@ services:
     networks:
       - eventflow-network
   
+  # ============= PROMETHEUS =============
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: eventflow-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - eventflow-network  
+  
+  # ============= JAEGER =============
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    container_name: eventflow-jaeger
+    ports:
+      - "16686:16686"   # UI
+      - "4317:4317"     # OTLP gRPC
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    networks:
+      - eventflow-network  
+  
+  # ============= GRAFANA =============
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: eventapi-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - eventflow-network  
+
   # APIs
   users_api:
     build:
@@ -98,6 +134,7 @@ services:
     restart: unless-stopped
     environment:
       ConnectionStrings__DefaultConnection: "Host=eventflow-postgres;Port=5432;Database=${USERS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
+      Otlp__Endpoint: http://eventflow-jaeger:4317 
     ports:
       - "5015:8080"
     depends_on:
@@ -115,6 +152,7 @@ services:
       ConnectionStrings__DefaultConnection: "Host=eventflow-postgres;Port=5432;Database=${EVENTS_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
       KafkaOptions__BootstrapServers: eventflow:29092
       ConnectionStrings__Redis: eventflow-redis:6379
+      Otlp__Endpoint: http://eventflow-jaeger:4317 
     ports:
       - "5025:8080"
     depends_on:
@@ -135,6 +173,7 @@ services:
     environment:
       ConnectionStrings__DefaultConnection: "Host=eventflow-postgres;Port=5432;Database=${BOOKING_DB};Username=${DB_USER};Password=${DB_PASSWORD}"
       KafkaOptions__BootstrapServers: eventflow:29092
+      Otlp__Endpoint: http://eventflow-jaeger:4317 
     ports:
       - "5035:8080"
     depends_on:
@@ -176,7 +215,7 @@ volumes:
   redis_data:
   redisinsight_data:
   kafka_data:
-
+  grafana-data: 
 # ============= NETWORKS =============
 networks:
   eventflow-network:

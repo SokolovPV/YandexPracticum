@@ -4,6 +4,8 @@ using EventFlow.Bookings.Application;
 using EventFlow.Bookings.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Serilog;
+using Serilog.Formatting.Compact;
 
 namespace EventFlow.Bookings.Presentation
 {
@@ -12,8 +14,10 @@ namespace EventFlow.Bookings.Presentation
 		public static async Task Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
-			// Логирование в консоль
-			builder.Logging.AddConsole();
+			builder.Host.UseSerilog((ctx, cfg) =>
+				cfg.ReadFrom.Configuration(ctx.Configuration)
+				.WriteTo.Console(new CompactJsonFormatter()));
+
 			builder.Services.AddInfrastructureServices(builder.Configuration);
 			builder.Services.AddApplicationServices(builder.Configuration);
 			builder.Services.AddPresentationServices(builder.Configuration);
@@ -58,7 +62,9 @@ namespace EventFlow.Bookings.Presentation
 			app.UseAuthentication();
 			app.UseAuthorization();
 
+			app.MapPrometheusScrapingEndpoint(); // доступен по /metrics 
 			app.MapControllers();
+
 			app.Run();
 		}
 	}
