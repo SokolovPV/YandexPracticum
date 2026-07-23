@@ -2,7 +2,6 @@
 using System.Text.Json;
 using Confluent.Kafka;
 using EventFlow.Entities.Brokers;
-using EventFlow.Entities.Redis;
 using EventFlow.Events.Application.Interfaces;
 using EventFlow.Events.Domain.Exceptions;
 using EventFlow.Events.Infrastructure.Options;
@@ -15,7 +14,6 @@ namespace EventFlow.Events.Infrastructure.Services;
 
 public class BookingConfirmedConsumer(
     IServiceScopeFactory scopeFactory,
-    ICacheService cache,
     IOptions<KafkaOptions> kafkaOptions,
     ILogger<BookingConfirmedConsumer> logger) : BackgroundService
 {
