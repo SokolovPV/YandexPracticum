@@ -3,6 +3,7 @@ using EventFlow.Bookings.Presentation.ExceptionFilter;
 using EventFlow.Bookings.Application;
 using EventFlow.Bookings.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace EventFlow.Bookings.Presentation
 {
@@ -18,10 +19,28 @@ namespace EventFlow.Bookings.Presentation
 			builder.Services.AddPresentationServices(builder.Configuration);
 
 			var app = builder.Build();
+
 			using (var scope = app.Services.CreateScope())
 			{
 				var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-				await db.Database.MigrateAsync();
+				var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+				try
+				{
+					// Проверяем подключение к БД при старте
+					await db.Database.CanConnectAsync();
+					logger.LogInformation("Подключение к базе данных успешно установлено");
+					await db.Database.MigrateAsync();
+				}
+				catch (NpgsqlException ex)
+				{
+					logger.LogCritical(ex, "Не удалось подключиться к PostgreSQL. Код ошибки: {SqlState}", ex.SqlState);
+					throw;
+				}
+				catch (Exception ex)
+				{
+					logger.LogCritical(ex, "Критическая ошибка при подключении к базе данных");
+					throw;
+				}
 			}
 			app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 			if (app.Environment.IsDevelopment())
