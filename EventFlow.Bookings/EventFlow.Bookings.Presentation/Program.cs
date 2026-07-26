@@ -46,7 +46,9 @@ namespace EventFlow.Bookings.Presentation
 					throw;
 				}
 			}
+			
 			app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+			
 			if (app.Environment.IsDevelopment())
 			{
 				builder.Host.UseDefaultServiceProvider(options =>
@@ -57,12 +59,12 @@ namespace EventFlow.Bookings.Presentation
 				app.UseSwagger();
 				app.UseSwaggerUI();
 			}
-
+  			
+			app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 			app.UseAuthentication();
 			app.UseAuthorization();
-
-			app.MapPrometheusScrapingEndpoint(); // доступен по /metrics 
+			
 			app.MapControllers();
 
 			app.Run();

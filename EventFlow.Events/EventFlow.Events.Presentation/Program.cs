@@ -40,11 +40,11 @@ namespace EventFlow.Events.Presentation
 				app.UseSwaggerUI();
 			}
 
+			app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 			app.UseAuthentication();
 			app.UseAuthorization();
 
-			app.MapPrometheusScrapingEndpoint(); // доступен по /metrics 
 			app.MapControllers();
 
 			app.Run();

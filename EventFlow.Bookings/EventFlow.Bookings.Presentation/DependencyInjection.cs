@@ -80,7 +80,7 @@ public static class DependencyInjection
         });
 
         services.AddOpenTelemetry()
-            .ConfigureResource(r => r.AddService(serviceName: "bookings-service"))
+            .ConfigureResource(r => r.AddService(serviceName: "bookings-api"))
             .WithTracing(tracing => tracing
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()

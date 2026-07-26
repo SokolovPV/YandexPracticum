@@ -80,7 +80,7 @@ public static class DependencyInjection
         });
 
         services.AddOpenTelemetry()
-            .ConfigureResource(r => r.AddService(serviceName: "events-service"))
+            .ConfigureResource(r => r.AddService(serviceName: "events-api"))
             .WithTracing(tracing => tracing
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()

@@ -142,7 +142,7 @@ services:
         condition: service_healthy
     networks:
       - eventflow-network
-  event_api:
+  events_api:
     build:
       context: .
       dockerfile: EventFlow.Events/dockerfile
@@ -164,11 +164,11 @@ services:
         condition: service_healthy
     networks:
       - eventflow-network
-  booking_api:
+  bookings_api:
     build:
       context: .
       dockerfile: EventFlow.Bookings/dockerfile
-    container_name: booking_api
+    container_name: bookings_api
     restart: unless-stopped
     environment:
       ConnectionStrings__DefaultConnection: "Host=eventflow-postgres;Port=5432;Database=${BOOKING_DB};Username=${DB_USER};Password=${DB_PASSWORD}"

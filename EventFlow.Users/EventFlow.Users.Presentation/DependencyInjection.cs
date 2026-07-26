@@ -81,7 +81,7 @@ public static class DependencyInjection
 
 
         services.AddOpenTelemetry()
-        .ConfigureResource(r => r.AddService(serviceName: "users-service")) 
+        .ConfigureResource(r => r.AddService(serviceName: "users-api")) 
         .WithTracing(tracing => tracing
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()

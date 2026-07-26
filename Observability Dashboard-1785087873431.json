@@ -24,7 +24,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afsz8c50awow0a"
+        "uid": "fft6l4m2iubk0b"
       },
       "fieldConfig": {
         "defaults": {
@@ -96,7 +96,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afsz8c50awow0a"
+        "uid": "fft6l4m2iubk0b"
       },
       "fieldConfig": {
         "defaults": {
@@ -168,7 +168,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afsz8c50awow0a"
+        "uid": "fft6l4m2iubk0b"
       },
       "description": "Текущее количество запросов в обработке",
       "fieldConfig": {
@@ -239,10 +239,7 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "afsz8c50awow0a"
-      },
+      "datasource": {},
       "description": "Latency измеряет время, необходимое приложению для обработки запроса. ",
       "fieldConfig": {
         "defaults": {
@@ -324,13 +321,17 @@
             "type": "prometheus",
             "uid": "afsz8c50awow0a"
           },
+          "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "histogram_quantile(0.99, sum(rate(http_server_request_duration_seconds_bucket[$__rate_interval])) by (le))",
+          "expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket[$__rate_interval])))",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
-          "refId": "A"
+          "refId": "A",
+          "useBackend": false
         },
         {
           "datasource": {
@@ -365,7 +366,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afsz8c50awow0a"
+        "uid": "fft6l4m2iubk0b"
       },
       "description": "Throughput показывает количество запросов, обрабатываемых приложением в единицу времени (обычно в секунду), то есть текущее количество запросов к серверу в секунду (RPS).",
       "fieldConfig": {
@@ -410,8 +411,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -531,6 +531,6 @@
   "timezone": "browser",
   "title": "Observability Dashboard",
   "uid": "ffszbuhg0tl34c",
-  "version": 10,
+  "version": 3,
   "weekStart": ""
 }
