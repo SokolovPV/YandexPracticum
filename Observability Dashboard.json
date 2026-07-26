@@ -29,7 +29,39 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -40,58 +72,83 @@
                 "value": null
               },
               {
+                "color": "#EAB839",
+                "value": 10
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 50
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "bookings-service"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
               }
             ]
           }
-        },
-        "overrides": []
+        ]
       },
       "gridPos": {
-        "h": 9,
-        "w": 6,
+        "h": 10,
+        "w": 24,
         "x": 0,
         "y": 0
       },
-      "id": 5,
+      "id": 8,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "10.4.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "afsz8c50awow0a"
+            "uid": "fft6l4m2iubk0b"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum(http_server_active_requests{job=\"users-service\"})",
+          "expr": "dotnet_thread_pool_queue_length_total",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "{{job}}",
           "range": true,
           "refId": "A",
           "useBackend": false
         }
       ],
-      "title": "Запросов в обработке Users API",
-      "type": "stat"
+      "title": "Thread Pool Queue Length",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -101,7 +158,39 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -116,127 +205,50 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 6,
-        "x": 6,
-        "y": 0
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 10
       },
-      "id": 4,
+      "id": 7,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "10.4.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "afsz8c50awow0a"
+            "uid": "fft6l4m2iubk0b"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "http_server_active_requests{job=\"events-service\"}",
+          "expr": "sum by(gc_heap_generation, job) (rate(dotnet_gc_collections_total{job=~\"users-service|events-service|bookings-service\"}[5m]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "{{job}} - {{gc_heap_generation}}",
           "range": true,
           "refId": "A",
           "useBackend": false
         }
       ],
-      "title": "Запросов в обработке Events API",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "fft6l4m2iubk0b"
-      },
-      "description": "Текущее количество запросов в обработке",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 6,
-        "x": 12,
-        "y": 0
-      },
-      "id": 3,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "10.4.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "afsz8c50awow0a"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "http_server_active_requests{job=\"bookings-service\"}",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "запросов в обработке Booking API",
-      "type": "stat"
+      "title": "GC Collections Rate",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -300,10 +312,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
-        "w": 18,
+        "h": 8,
+        "w": 24,
         "x": 0,
-        "y": 9
+        "y": 22
       },
       "id": 6,
       "options": {
@@ -324,7 +336,7 @@
             "type": "prometheus",
             "uid": "fft6l4m2iubk0b"
           },
-          "editorMode": "code",
+          "editorMode": "builder",
           "expr": "sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"}[$__rate_interval])) \r\n/ \r\nsum(rate(http_server_request_duration_seconds_count[$__rate_interval])) * 100",
           "instant": false,
           "legendFormat": "__auto",
@@ -336,7 +348,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": {},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "fft6l4m2iubk0b"
+      },
       "description": "Latency измеряет время, необходимое приложению для обработки запроса. ",
       "fieldConfig": {
         "defaults": {
@@ -395,9 +410,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 18,
+        "w": 24,
         "x": 0,
-        "y": 16
+        "y": 30
       },
       "id": 2,
       "options": {
@@ -421,11 +436,11 @@
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_request_duration_seconds_bucket[$__rate_interval])))",
+          "expr": "histogram_quantile(0.99, sum by(le, job) (rate(http_server_request_duration_seconds_bucket[$__rate_interval])))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "Quantile 0.99 - {{job}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -435,26 +450,34 @@
             "type": "prometheus",
             "uid": "afsz8c50awow0a"
           },
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_request_duration_seconds_bucket[$__rate_interval])) by (le))",
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "histogram_quantile(0.95, sum by(le, job) (rate(http_server_request_duration_seconds_bucket[$__rate_interval])))",
+          "fullMetaSearch": false,
           "hide": false,
+          "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "Quantile 0.95 - {{job}}",
           "range": true,
-          "refId": "B"
+          "refId": "B",
+          "useBackend": false
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "afsz8c50awow0a"
           },
-          "editorMode": "code",
-          "expr": "histogram_quantile(0.50, sum(rate(http_server_request_duration_seconds_bucket[$__rate_interval])) by (le))",
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "histogram_quantile(0.5, sum by(le, job) (rate(http_server_request_duration_seconds_bucket[$__rate_interval])))",
+          "fullMetaSearch": false,
           "hide": false,
+          "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "Quantile 0.50 - {{job}}",
           "range": true,
-          "refId": "C"
+          "refId": "C",
+          "useBackend": false
         }
       ],
       "title": "Latency",
@@ -522,10 +545,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 10,
-        "w": 18,
+        "h": 9,
+        "w": 24,
         "x": 0,
-        "y": 24
+        "y": 38
       },
       "id": 1,
       "options": {
@@ -554,7 +577,7 @@
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "Common",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -566,48 +589,14 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"users-service\"}[$__rate_interval]))",
+          "expr": "sum by(job) (rate(http_server_request_duration_seconds_count[$__rate_interval]))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "{{job}}",
           "range": true,
           "refId": "B",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "afsz8c50awow0a"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"bookings-service\"}[$__rate_interval]))",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "C",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "afsz8c50awow0a"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"events-service\"}[$__rate_interval]))",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "D",
           "useBackend": false
         }
       ],
@@ -622,13 +611,13 @@
     "list": []
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Observability Dashboard",
   "uid": "ffszbuhg0tl34c",
-  "version": 4,
+  "version": 8,
   "weekStart": ""
 }
