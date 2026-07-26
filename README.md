@@ -75,12 +75,12 @@ JWT-токен выдаёт сервис `EventFlow.Users`, сервисы `Even
 
 - `kafka`
 - `akhq`
-- `eventflow-user-postgres`
-- `eventflow-events-postgres`
-- `eventflow-booking-postgres`
+- `eventflow-prometheus`
+- `eventflow-jaeger`
+- `eventflow-postgres`
 - `users_api`
-- `event_api`
-- `booking_api`
+- `events_api`
+- `bookings_api`
 - `redis`
 - `redisinsight`
 
@@ -98,6 +98,28 @@ docker compose up -d
 - `Events API` — `http://localhost:5025`
 - `Booking API` — `http://localhost:5035`
 - `AKHQ` — `http://localhost:8080`
+- `Prometheus` — `http://localhost:9090`
+- `RedisInsight` — `http://localhost:5540`
+- `Jaeger` — `http://localhost:16686`
+- `Grafana` — `http://localhost:3000`
+
+## Наблюдаемость
+
+В проект добавлен базовый observability-стек:
+
+`Prometheus` — сбор метрик
+`Grafana` — визуализация метрик и дашборды
+`Jaeger` — трассировка
+`AKHQ` — UI Kafka (просмотр топиков/сообщений)
+
+### Адреса web-интерфейсов
+
+| Сервис       | URL                    |
+| ------------ | ---------------------- |
+| `AKHQ`       | http://localhost:8080  |
+| `Grafana`    | http://localhost:3000  |
+| `Prometheus` | http://localhost:9090  |
+| `Jaeger`     | http://localhost:16686 |
 
 ## Добавление миграции БД
 
@@ -234,7 +256,6 @@ dotnet ef database update --project <Infrastructure Project> --startup-project <
 - `SetStringAsync` и `KeyDeleteAsync` завершаются бесшумно (ошибки логируются, но не пробрасываются клиенту).
 
 Такой подход делает Redis опциональным компонентом, повышающим производительность, но не влияющим на функциональность системы при сбоях.
-
 
 ### Конфигурация Redis
 

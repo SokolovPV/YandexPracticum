@@ -8,6 +8,7 @@ namespace EventFlow.Users.Application.Interfaces
 		/// Метод генерации токена
 		/// </summary>
 		/// <param name="user">модель пользователя</param>
+		/// <param name="ct">токен отмены операции (для асинхронности)</param>
 		/// <returns></returns>
 		String GenerateToken(User user, CancellationToken ct);
 	}

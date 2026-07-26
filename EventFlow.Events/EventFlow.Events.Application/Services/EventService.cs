@@ -120,25 +120,32 @@ public class EventService(IEventRepository _repository,
         if (updateEvent.StartAt.HasValue && updateEvent.EndAt.HasValue &&
             updateEvent.StartAt > updateEvent.EndAt)
         {
-            _logger.LogError(StringConstant.dateFrom_more_dateTo_exception);
+            _logger.LogWarning("При обновлении события {eventId} дата начала мероприятия {StartAt} позже даты завершения {EndAt}.",
+                eventId,
+                updateEvent.StartAt,
+                updateEvent.EndAt);
             throw new ValidationException(StringConstant.dateFrom_more_dateTo_exception);// false;
         }
 
         if (updateEvent.TotalSeats.HasValue && (updateEvent.TotalSeats > 100 || updateEvent.TotalSeats < 1))
         {
-            _logger.LogError(StringConstant.totalSeats_more_range_exception);
+            _logger.LogWarning("При обновлении события {eventId} общее количество мест на должно быть больше 1 и меньше 100. TotalSeats: {TotalSeats}",
+                eventId,
+                updateEvent.TotalSeats);
             throw new ValidationException(StringConstant.totalSeats_more_range_exception);
         }
 
         var _event = await _repository.GetByIdAsync(eventId, ct);
         if (_event is null)
         {
-            _logger.LogError("Ошибка обновления: событие не найдено. Идентификатор ID: {eventId}", eventId);
+            _logger.LogWarning("Ошибка обновления: событие не найдено. Идентификатор события: {eventId}", eventId);
             throw new KeyNotExistException(eventId.ToString(), nameof(Event));
         }
         if (updateEvent.TotalSeats.HasValue && (updateEvent.TotalSeats < (_event.TotalSeats - _event.AvailableSeats))) // с учетом уже занятых мест
         {
-            _logger.LogError(StringConstant.totalSeats_less_availableSeats_exception);
+            _logger.LogWarning("При обновлении события {eventId} общее количество мест: {TotalSeats} меньше количества свободных мест.",
+                eventId,
+                updateEvent.TotalSeats);
             throw new ValidationException(StringConstant.totalSeats_less_availableSeats_exception);
         }
 
@@ -152,7 +159,7 @@ public class EventService(IEventRepository _repository,
             var newTotal = updateEvent.TotalSeats.Value;
             var oldTotal = _event.TotalSeats;
             var oldAvailable = _event.AvailableSeats;
-            
+
             _event.AvailableSeats = Math.Min(oldAvailable + (newTotal - oldTotal), newTotal);
             _event.AvailableSeats = Math.Max(_event.AvailableSeats, 0);
         }

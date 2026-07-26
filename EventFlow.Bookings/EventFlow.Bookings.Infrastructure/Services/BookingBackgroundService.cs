@@ -40,7 +40,7 @@ public class BookingBackgroundService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Критическая ошибка в основном цикле обработки бронирований");
+                _logger.LogError(ex, "Критическая ошибка в основном цикле обработки бронирований.");
             }
 
             await Task.Delay(TimeSpan.FromSeconds(_pollingInterval), stoppingToken);

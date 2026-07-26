@@ -37,7 +37,7 @@ public class AuthController(IAuthenticationService authService ,ILogger<AuthCont
 	{
 		logger.LogDebug("Обработка запроса POST {methodName}. Аутентификация пользователя: {login}", nameof(Login), request.Login);
 
-		var token = await authService.LoginAsync(request.Login, request.Password,  ct);
+		var token = await authService.LoginAsync(request.Login!, request.Password!,  ct);
 		if (token == null)
 			return NotFound(new { message = "Неверные авторизационные данные." });
 

@@ -45,6 +45,6 @@ public sealed class BookingConfirmedProducer : IBookingConfirmedProducer, IDispo
             },
             ct);
 
-        _logger.LogInformation("Сообщение опубликовано. Topic={Topic}, Key={Key}", topic, key);
+        _logger.LogInformation("Данные по бронированию опубликовано брокер сообщений. Topic={Topic}, Key={Key}", topic, key);
     }
 }

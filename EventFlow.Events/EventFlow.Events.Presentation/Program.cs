@@ -3,6 +3,8 @@ using EventFlow.Events.Infrastructure;
 using EventFlow.Events.Infrastructure.Context;
 using EventFlow.Events.Presentation.ExceptionFilter;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Formatting.Compact;
 
 namespace EventFlow.Events.Presentation
 {
@@ -11,8 +13,10 @@ namespace EventFlow.Events.Presentation
 		public static async Task Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
-			// Логирование в консоль
-			builder.Logging.AddConsole();
+			builder.Host.UseSerilog((ctx, cfg) =>
+				cfg.ReadFrom.Configuration(ctx.Configuration)
+				.WriteTo.Console(new CompactJsonFormatter()));
+
 
 			builder.Services.AddInfrastructureServices(builder.Configuration);
 			builder.Services.AddApplicationServices(builder.Configuration);
@@ -36,11 +40,13 @@ namespace EventFlow.Events.Presentation
 				app.UseSwaggerUI();
 			}
 
+			app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 			app.UseAuthentication();
 			app.UseAuthorization();
 
 			app.MapControllers();
+
 			app.Run();
 		}
 	}

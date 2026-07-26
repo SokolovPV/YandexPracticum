@@ -26,6 +26,7 @@ public static class DependencyInjection
 
         // добавляем репозитории
         services.AddScoped<IUserRepository, UserRepository>();
+        services.Decorate<IUserRepository, DatabaseErrorHandlingUserRepositoryDecorator>();
 
         // регистрируем службы
         services.AddScoped<IPasswordHasher, CustomPasswordHasher>();
